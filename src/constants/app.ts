@@ -1,0 +1,14 @@
+export const APP_CONSTANTS = {
+  PAGINATION: {
+    DEFAULT_PAGE_SIZE: 10,
+    MAX_PAGE_SIZE: 100,
+  },
+  TIMEOUTS: {
+    API_REQUEST: 30000,
+    DEBOUNCE: 300,
+  },
+  LIMITS: {
+    MAX_FILE_SIZE: 5 * 1024 * 1024,
+    MAX_UPLOAD_FILES: 10,
+  },
+} as const;
