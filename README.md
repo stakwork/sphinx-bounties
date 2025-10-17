@@ -1,15 +1,21 @@
-## Getting Started
+# Sphinx Bounties
 
-First, run the development server:
+Bounties Platform built with Next.js.
+
+## Quick Start
 
 ```bash
+npm install
+cp .env.example .env.local
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Scripts
+
+```bash
+npm run build          # Production build
+npm run test           # Unit tests
+npm run test:e2e       # E2E tests
+npm run db:push        # Sync database
+npm run db:studio      # Open Prisma Studio
+```
