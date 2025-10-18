@@ -6,3 +6,4 @@ export * from "./form-tag-input";
 export * from "./form-amount-input";
 
 export * from "./bounty";
+export * from "./workspace";
