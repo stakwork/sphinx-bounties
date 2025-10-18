@@ -1,40 +1,45 @@
-import { toast } from "sonner";
+import { toast as sonnerToast } from "sonner";
 
-export const showSuccess = (message: string, description?: string) => {
-  toast.success(message, {
-    description,
-  });
+export const toast = {
+  success: (message: string, description?: string) => {
+    sonnerToast.success(message, { description });
+  },
+
+  error: (message: string, description?: string) => {
+    sonnerToast.error(message, { description });
+  },
+
+  info: (message: string, description?: string) => {
+    sonnerToast.info(message, { description });
+  },
+
+  warning: (message: string, description?: string) => {
+    sonnerToast.warning(message, { description });
+  },
+
+  loading: (message: string) => {
+    return sonnerToast.loading(message);
+  },
+
+  promise: <T>(
+    promise: Promise<T>,
+    messages: {
+      loading: string;
+      success: string | ((data: T) => string);
+      error: string | ((error: unknown) => string);
+    }
+  ) => {
+    return sonnerToast.promise(promise, messages);
+  },
+
+  dismiss: (id?: string | number) => {
+    sonnerToast.dismiss(id);
+  },
 };
 
-export const showError = (message: string, description?: string) => {
-  toast.error(message, {
-    description,
-  });
-};
-
-export const showInfo = (message: string, description?: string) => {
-  toast.info(message, {
-    description,
-  });
-};
-
-export const showWarning = (message: string, description?: string) => {
-  toast.warning(message, {
-    description,
-  });
-};
-
-export const showLoading = (message: string) => {
-  return toast.loading(message);
-};
-
-export const updateToast = (
-  toastId: string | number,
-  options: Record<string, unknown>
-) => {
-  toast(toastId, options);
-};
-
-export const dismissToast = (toastId?: string | number) => {
-  toast.dismiss(toastId);
-};
+export const showSuccess = toast.success;
+export const showError = toast.error;
+export const showInfo = toast.info;
+export const showWarning = toast.warning;
+export const showLoading = toast.loading;
+export const dismissToast = toast.dismiss;
