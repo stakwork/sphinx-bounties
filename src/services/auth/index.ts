@@ -1,8 +1,10 @@
-import { userService } from "@/services/user";
+import { db } from "@/lib/db";
 
 export const authService = {
   async validateUser(pubKey: string) {
-    const user = await userService.findByPubKey(pubKey);
+    const user = await db.user.findUnique({
+      where: { pubkey: pubKey },
+    });
     return user;
   },
 
