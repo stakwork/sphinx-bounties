@@ -1,5 +1,5 @@
-import { Skeleton } from '@/components/ui/skeleton';
-import { BountySkeleton } from '@/components/loading/bounty-skeleton';
+import { Skeleton } from "@/components/ui/skeleton";
+import { BountySkeleton } from "@/components/loading/bounty-skeleton";
 
 export default function Loading() {
   return (

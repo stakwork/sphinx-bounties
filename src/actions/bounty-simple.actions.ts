@@ -2,12 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
-import {
-  ValidationError,
-  NotFoundError,
-  ForbiddenError,
-  ConflictError,
-} from "@/lib";
+import { ValidationError, NotFoundError, ForbiddenError, ConflictError } from "@/lib";
 
 const getCurrentUserPubkey = (): string => {
   // TODO: Implement actual authentication
@@ -17,12 +12,12 @@ const getCurrentUserPubkey = (): string => {
 export async function createBountyAction(formData: FormData) {
   try {
     const userPubkey = getCurrentUserPubkey();
-    
+
     const workspaceId = formData.get("workspaceId") as string;
     const title = formData.get("title") as string;
     const description = formData.get("description") as string;
     const amount = BigInt(formData.get("amount") as string);
-    
+
     if (!workspaceId || !title || !description || !amount) {
       throw new ValidationError("Missing required fields");
     }

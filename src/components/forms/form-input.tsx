@@ -8,8 +8,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 
-export interface FormInputProps
-  extends React.InputHTMLAttributes<HTMLInputElement> {
+export interface FormInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
   description?: string;
 }

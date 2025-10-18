@@ -1,4 +1,4 @@
-import { AppError } from './base';
+import { AppError } from "./base";
 
 interface LogContext {
   userId?: string;
@@ -8,10 +8,7 @@ interface LogContext {
   [key: string]: unknown;
 }
 
-export function logError(
-  error: Error | AppError,
-  context?: LogContext
-): void {
+export function logError(error: Error | AppError, context?: LogContext): void {
   const isAppError = error instanceof AppError;
   const isOperational = isAppError ? error.isOperational : false;
 
@@ -30,16 +27,16 @@ export function logError(
   };
 
   if (!isOperational) {
-    console.error('[CRITICAL ERROR]', logData);
+    console.error("[CRITICAL ERROR]", logData);
   } else if (isAppError && error.statusCode >= 500) {
-    console.error('[SERVER ERROR]', logData);
+    console.error("[SERVER ERROR]", logData);
   } else if (isAppError && error.statusCode >= 400) {
-    console.warn('[CLIENT ERROR]', logData);
+    console.warn("[CLIENT ERROR]", logData);
   } else {
-    console.log('[ERROR]', logData);
+    console.error("[ERROR]", logData);
   }
 
-  if (process.env.NODE_ENV === 'production') {
+  if (process.env.NODE_ENV === "production") {
     console.error("[ERROR]", logData);
     // TODO: Send to error tracking service (Sentry, DataDog, etc.)
   }
@@ -56,6 +53,6 @@ export function logApiError(
   logError(error, {
     url: request.url,
     method: request.method,
-    userAgent: request.headers?.['user-agent'],
+    userAgent: request.headers?.["user-agent"],
   });
 }

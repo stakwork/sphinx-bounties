@@ -1,5 +1,5 @@
-import { NextResponse } from 'next/server';
-import type { ApiResponse, ApiError, ApiMeta, PaginationMeta } from '@/types/api';
+import { NextResponse } from "next/server";
+import type { ApiResponse, ApiError, ApiMeta, PaginationMeta } from "@/types/api";
 
 export function apiSuccess<T>(
   data: T,
@@ -19,7 +19,6 @@ export function apiSuccess<T>(
   );
 }
 
-
 export function apiError(
   error: ApiError,
   status = 400,
@@ -37,7 +36,6 @@ export function apiError(
     { status }
   );
 }
-
 
 export function apiPaginated<T>(
   data: T[],
@@ -75,11 +73,9 @@ export function apiPaginated<T>(
   );
 }
 
-
 export function apiCreated<T>(data: T, meta?: Partial<ApiMeta>): NextResponse<ApiResponse<T>> {
   return apiSuccess(data, meta, 201);
 }
-
 
 export function apiNoContent(): NextResponse {
   return new NextResponse(null, { status: 204 });

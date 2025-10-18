@@ -1,5 +1,5 @@
 import { db } from "@/lib/db";
-import { Prisma } from "@prisma/client";
+import type { Prisma } from "@prisma/client";
 import type { PaginationParams, SortParams } from "@/types";
 
 export type UserFilters = {
@@ -16,11 +16,7 @@ export const userQueries = {
   /**
    * Get all users with optional filters, pagination, and sorting
    */
-  async getAll(
-    filters?: UserFilters,
-    pagination?: PaginationParams,
-    sort?: UserSortParams
-  ) {
+  async getAll(filters?: UserFilters, pagination?: PaginationParams, sort?: UserSortParams) {
     const page = pagination?.page ?? 1;
     const pageSize = pagination?.pageSize ?? 20;
     const skip = (page - 1) * pageSize;

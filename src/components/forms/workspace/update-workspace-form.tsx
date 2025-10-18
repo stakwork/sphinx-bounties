@@ -29,11 +29,7 @@ interface UpdateWorkspaceFormProps {
   onCancel?: () => void;
 }
 
-export function UpdateWorkspaceForm({
-  workspace,
-  onSuccess,
-  onCancel,
-}: UpdateWorkspaceFormProps) {
+export function UpdateWorkspaceForm({ workspace, onSuccess, onCancel }: UpdateWorkspaceFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm<UpdateWorkspaceInput>({

@@ -11,7 +11,5 @@ export function middleware() {
 
 // All API routes (for now)
 export const config = {
-  matcher: [
-    "/api/:path*",
-  ],
+  matcher: ["/api/:path*"],
 };

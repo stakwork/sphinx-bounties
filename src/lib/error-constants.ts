@@ -1,8 +1,7 @@
 import { ErrorCode } from "../types/error";
 
 export const ERROR_MESSAGES: Record<ErrorCode | string, string> = {
-  [ErrorCode.INTERNAL_SERVER_ERROR]:
-    "An unexpected error occurred. Please try again later.",
+  [ErrorCode.INTERNAL_SERVER_ERROR]: "An unexpected error occurred. Please try again later.",
   [ErrorCode.BAD_REQUEST]: "Invalid request. Please check your input.",
   [ErrorCode.UNAUTHORIZED]: "You are not authenticated. Please sign in.",
   [ErrorCode.FORBIDDEN]: "You do not have permission to access this resource.",
@@ -12,8 +11,7 @@ export const ERROR_MESSAGES: Record<ErrorCode | string, string> = {
   [ErrorCode.RATE_LIMIT]: "Too many requests. Please try again later.",
   [ErrorCode.SERVICE_UNAVAILABLE]: "Service is temporarily unavailable.",
   [ErrorCode.INVALID_CREDENTIALS]: "Invalid credentials. Please try again.",
-  [ErrorCode.SESSION_EXPIRED]:
-    "Your session has expired. Please sign in again.",
+  [ErrorCode.SESSION_EXPIRED]: "Your session has expired. Please sign in again.",
   [ErrorCode.PERMISSION_DENIED]: "Permission denied.",
   [ErrorCode.RESOURCE_NOT_FOUND]: "Resource not found.",
 };

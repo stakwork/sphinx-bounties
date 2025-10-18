@@ -1,2 +1,2 @@
-export { ErrorCard } from './error-card';
-export { ErrorBoundary } from './error-boundary';
+export { ErrorCard } from "./error-card";
+export { ErrorBoundary } from "./error-boundary";

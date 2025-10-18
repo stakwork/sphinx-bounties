@@ -15,10 +15,7 @@ export default function GlobalError({
         <div className="container mx-auto py-10">
           <ErrorCard
             title="Critical Error"
-            message={
-              error.message ||
-              "A critical error occurred. Please refresh the page."
-            }
+            message={error.message || "A critical error occurred. Please refresh the page."}
             code={error.digest}
             onRetry={reset}
           />

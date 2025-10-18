@@ -9,8 +9,7 @@ import {
 } from "@/components/ui/form";
 import { cn } from "@/lib/utils";
 
-export interface FormTextareaProps
-  extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
+export interface FormTextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
   label?: string;
   description?: string;
   showCharCount?: boolean;
@@ -18,9 +17,7 @@ export interface FormTextareaProps
 
 export const FormTextarea = forwardRef<HTMLTextAreaElement, FormTextareaProps>(
   ({ label, description, showCharCount, maxLength, value, onChange, ...props }, ref) => {
-    const [charCount, setCharCount] = useState(
-      typeof value === "string" ? value.length : 0
-    );
+    const [charCount, setCharCount] = useState(typeof value === "string" ? value.length : 0);
 
     const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
       setCharCount(e.target.value.length);

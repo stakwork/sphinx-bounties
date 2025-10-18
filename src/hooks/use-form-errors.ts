@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import { FieldErrors, FieldValues, Path, UseFormSetError } from "react-hook-form";
+import type { FieldErrors, FieldValues, Path, UseFormSetError } from "react-hook-form";
 import { AppError } from "@/lib/errors/base";
 import { ErrorCode } from "@/types/error";
 
@@ -8,9 +8,7 @@ export interface ValidationErrorDetail {
   message: string;
 }
 
-export function useFormErrors<T extends FieldValues>(
-  setError: UseFormSetError<T>
-) {
+export function useFormErrors<T extends FieldValues>(setError: UseFormSetError<T>) {
   const setFieldErrors = useCallback(
     (errors: ValidationErrorDetail[]) => {
       errors.forEach((error) => {
@@ -66,21 +64,15 @@ export function useFormErrors<T extends FieldValues>(
     []
   );
 
-  const hasFieldError = useCallback(
-    (fieldName: Path<T>, errors: FieldErrors<T>): boolean => {
-      return !!errors[fieldName];
-    },
-    []
-  );
+  const hasFieldError = useCallback((fieldName: Path<T>, errors: FieldErrors<T>): boolean => {
+    return !!errors[fieldName];
+  }, []);
 
-  const getRootError = useCallback(
-    (errors: FieldErrors<T>): string | undefined => {
-      const rootError = errors.root;
-      if (!rootError) return undefined;
-      return rootError.message as string | undefined;
-    },
-    []
-  );
+  const getRootError = useCallback((errors: FieldErrors<T>): string | undefined => {
+    const rootError = errors.root;
+    if (!rootError) return undefined;
+    return rootError.message as string | undefined;
+  }, []);
 
   return {
     setFieldErrors,

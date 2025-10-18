@@ -45,14 +45,14 @@ export const FormDatePicker = forwardRef<HTMLButtonElement, FormDatePickerProps>
 
     const getMinDate = () => {
       if (disablePast) {
-        return new Date().toISOString().split('T')[0];
+        return new Date().toISOString().split("T")[0];
       }
       return undefined;
     };
 
     const getMaxDate = () => {
       if (disableFuture) {
-        return new Date().toISOString().split('T')[0];
+        return new Date().toISOString().split("T")[0];
       }
       return undefined;
     };
@@ -80,7 +80,7 @@ export const FormDatePicker = forwardRef<HTMLButtonElement, FormDatePickerProps>
           <PopoverContent className="w-auto p-0" align="start">
             <input
               type="date"
-              value={value ? value.toISOString().split('T')[0] : ''}
+              value={value ? value.toISOString().split("T")[0] : ""}
               onChange={(e) => handleSelect(e.target.value ? new Date(e.target.value) : undefined)}
               min={getMinDate()}
               max={getMaxDate()}

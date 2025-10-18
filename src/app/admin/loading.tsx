@@ -1,6 +1,6 @@
-import { Skeleton } from '@/components/ui/skeleton';
-import { CardSkeleton } from '@/components/loading/card-skeleton';
-import { TableSkeleton } from '@/components/loading/table-skeleton';
+import { Skeleton } from "@/components/ui/skeleton";
+import { CardSkeleton } from "@/components/loading/card-skeleton";
+import { TableSkeleton } from "@/components/loading/table-skeleton";
 
 export default function Loading() {
   return (

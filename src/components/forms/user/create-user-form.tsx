@@ -21,7 +21,11 @@ const createUserSchema = z.object({
     .max(20, "Username must not exceed 20 characters")
     .regex(/^[a-zA-Z0-9_]+$/, "Username can only contain letters, numbers, and underscores"),
   alias: z.string().max(50, "Alias must not exceed 50 characters").optional().or(z.literal("")),
-  description: z.string().max(500, "Description must not exceed 500 characters").optional().or(z.literal("")),
+  description: z
+    .string()
+    .max(500, "Description must not exceed 500 characters")
+    .optional()
+    .or(z.literal("")),
   avatarUrl: z.string().url("Must be a valid URL").optional().or(z.literal("")),
   contactKey: z.string().length(66, "Invalid contact key format").optional().or(z.literal("")),
 });

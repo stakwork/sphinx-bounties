@@ -199,9 +199,7 @@ export function UpdateBountyForm({ bounty, onSuccess, onCancel }: UpdateBountyFo
         <FormField
           control={form.control}
           name="status"
-          render={({ field }) => (
-            <FormSelect label="Status" options={statusOptions} {...field} />
-          )}
+          render={({ field }) => <FormSelect label="Status" options={statusOptions} {...field} />}
         />
 
         <div className="flex justify-end gap-4">

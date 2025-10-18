@@ -1,5 +1,5 @@
 import { db } from "@/lib/db";
-import { BountyStatus, Prisma, ProgrammingLanguage } from "@prisma/client";
+import type { BountyStatus, Prisma, ProgrammingLanguage } from "@prisma/client";
 import type { PaginationParams, SortParams } from "@/types";
 
 export type BountyFilters = {
@@ -17,11 +17,7 @@ export type BountySortParams = SortParams & {
 };
 
 export const bountyQueries = {
-  async getAll(
-    filters?: BountyFilters,
-    pagination?: PaginationParams,
-    sort?: BountySortParams
-  ) {
+  async getAll(filters?: BountyFilters, pagination?: PaginationParams, sort?: BountySortParams) {
     const page = pagination?.page ?? 1;
     const pageSize = pagination?.pageSize ?? 20;
     const skip = (page - 1) * pageSize;
@@ -63,10 +59,7 @@ export const bountyQueries = {
       };
     }
 
-    if (
-      filters?.programmingLanguages &&
-      filters.programmingLanguages.length > 0
-    ) {
+    if (filters?.programmingLanguages && filters.programmingLanguages.length > 0) {
       where.codingLanguages = {
         hasSome: filters.programmingLanguages as ProgrammingLanguage[],
       };
@@ -124,7 +117,6 @@ export const bountyQueries = {
     };
   },
 
- 
   async getById(id: string) {
     const bounty = await db.bounty.findUnique({
       where: { id, deletedAt: null },
@@ -178,46 +170,30 @@ export const bountyQueries = {
     return bounty;
   },
 
- 
   async getByWorkspaceId(
     workspaceId: string,
     pagination?: PaginationParams,
     sort?: BountySortParams
   ) {
-    return bountyQueries.getAll(
-      { workspaceId },
-      pagination,
-      sort
-    );
+    return bountyQueries.getAll({ workspaceId }, pagination, sort);
   },
 
-  
   async getByAssigneePubkey(
     assigneePubkey: string,
     pagination?: PaginationParams,
     sort?: BountySortParams
   ) {
-    return bountyQueries.getAll(
-      { assigneePubkey },
-      pagination,
-      sort
-    );
+    return bountyQueries.getAll({ assigneePubkey }, pagination, sort);
   },
-
 
   async getByCreatorPubkey(
     creatorPubkey: string,
     pagination?: PaginationParams,
     sort?: BountySortParams
   ) {
-    return bountyQueries.getAll(
-      { creatorPubkey },
-      pagination,
-      sort
-    );
+    return bountyQueries.getAll({ creatorPubkey }, pagination, sort);
   },
 
- 
   async getProofsByBountyId(bountyId: string) {
     const proofs = await db.bountyProof.findMany({
       where: {

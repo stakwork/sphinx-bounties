@@ -1,5 +1,6 @@
 import { db } from "@/lib/db";
-import { Prisma, WorkspaceRole } from "@prisma/client";
+import type { Prisma } from "@prisma/client";
+import { WorkspaceRole } from "@prisma/client";
 import type { PaginationParams, SortParams } from "@/types";
 
 export type WorkspaceFilters = {

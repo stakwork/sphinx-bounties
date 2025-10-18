@@ -1,13 +1,13 @@
 /**
  * LEADERBOARD PAGE
  * Route: /leaderboard
- * 
+ *
  * Features:
  * - Top bounty hunters by earnings
  * - Top workspace creators by bounties posted
  * - Most active users
  * - Recent completions
- * 
+ *
  * Components: LeaderboardTable, LeaderboardFilters, UserRankCard
  * API: GET /api/bounties/leaderboard, GET /api/users with stats
  * Models: User, Bounty, Transaction
@@ -18,9 +18,7 @@ export default function LeaderboardPage() {
     <div className="container mx-auto py-8">
       <div className="mb-8">
         <h1 className="text-4xl font-bold mb-2">Leaderboard</h1>
-        <p className="text-muted-foreground">
-          Top bounty hunters and workspace creators
-        </p>
+        <p className="text-muted-foreground">Top bounty hunters and workspace creators</p>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3 mb-8">

@@ -1,5 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { workspaceQueries, type WorkspaceFilters, type WorkspaceSortParams } from "@/services/workspace/queries";
+import {
+  workspaceQueries,
+  type WorkspaceFilters,
+  type WorkspaceSortParams,
+} from "@/services/workspace/queries";
 import type { PaginationParams } from "@/types";
 import {
   createWorkspaceAction,
@@ -10,7 +14,6 @@ import {
   removeMemberAction,
 } from "@/actions";
 import { showSuccess, showError } from "@/lib/toast";
-
 
 export const workspaceKeys = {
   all: ["workspaces"] as const,
@@ -27,7 +30,6 @@ export const workspaceKeys = {
     [...workspaceKeys.all, "role", workspaceId, userPubkey] as const,
 };
 
-
 export function useGetWorkspaces(
   filters?: WorkspaceFilters,
   pagination?: PaginationParams,
@@ -39,7 +41,6 @@ export function useGetWorkspaces(
   });
 }
 
-
 export function useGetWorkspace(id: string, enabled = true) {
   return useQuery({
     queryKey: workspaceKeys.detail(id),
@@ -47,7 +48,6 @@ export function useGetWorkspace(id: string, enabled = true) {
     enabled: enabled && !!id,
   });
 }
-
 
 export function useGetWorkspacesByOwner(
   ownerPubkey: string,
@@ -61,7 +61,6 @@ export function useGetWorkspacesByOwner(
   });
 }
 
-
 export function useGetWorkspacesByMember(
   memberPubkey: string,
   pagination?: PaginationParams,
@@ -73,7 +72,6 @@ export function useGetWorkspacesByMember(
     enabled: !!memberPubkey,
   });
 }
-
 
 export function useGetWorkspaceMembers(workspaceId: string) {
   return useQuery({
@@ -91,7 +89,6 @@ export function useGetUserRole(workspaceId: string, userPubkey: string) {
   });
 }
 
-
 export function useGetWorkspaceBudget(workspaceId: string) {
   return useQuery({
     queryKey: workspaceKeys.budget(workspaceId),
@@ -99,7 +96,6 @@ export function useGetWorkspaceBudget(workspaceId: string) {
     enabled: !!workspaceId,
   });
 }
-
 
 export function useCreateWorkspace() {
   const queryClient = useQueryClient();
@@ -110,7 +106,6 @@ export function useCreateWorkspace() {
       return result.data;
     },
     onSuccess: (data) => {
-
       queryClient.invalidateQueries({ queryKey: workspaceKeys.lists() });
 
       if (data?.ownerPubkey) {
@@ -125,7 +120,6 @@ export function useCreateWorkspace() {
   });
 }
 
-
 export function useUpdateWorkspace() {
   const queryClient = useQueryClient();
 
@@ -136,9 +130,9 @@ export function useUpdateWorkspace() {
     },
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: workspaceKeys.detail(variables.id) });
-      
+
       queryClient.invalidateQueries({ queryKey: workspaceKeys.lists() });
-      
+
       if (data?.ownerPubkey) {
         queryClient.invalidateQueries({ queryKey: workspaceKeys.owner(data.ownerPubkey) });
       }
@@ -161,9 +155,9 @@ export function useDeleteWorkspace() {
     },
     onSuccess: (_, workspaceId) => {
       queryClient.removeQueries({ queryKey: workspaceKeys.detail(workspaceId) });
-      
+
       queryClient.invalidateQueries({ queryKey: workspaceKeys.lists() });
-      
+
       queryClient.invalidateQueries({ queryKey: [...workspaceKeys.all, "owner"] });
       queryClient.invalidateQueries({ queryKey: [...workspaceKeys.all, "member"] });
 
@@ -184,7 +178,6 @@ export function useAddMember() {
       return result.data;
     },
     onSuccess: (data, variables) => {
-
       queryClient.invalidateQueries({ queryKey: workspaceKeys.detail(variables.workspaceId) });
       queryClient.invalidateQueries({ queryKey: workspaceKeys.members(variables.workspaceId) });
 
@@ -200,7 +193,6 @@ export function useAddMember() {
     },
   });
 }
-
 
 export function useUpdateMemberRole() {
   const queryClient = useQueryClient();
@@ -219,7 +211,6 @@ export function useUpdateMemberRole() {
       return result.data;
     },
     onSuccess: (data, variables) => {
-   
       queryClient.invalidateQueries({ queryKey: workspaceKeys.detail(variables.workspaceId) });
       queryClient.invalidateQueries({ queryKey: workspaceKeys.members(variables.workspaceId) });
 
@@ -230,7 +221,6 @@ export function useUpdateMemberRole() {
     },
   });
 }
-
 
 export function useRemoveMember() {
   const queryClient = useQueryClient();
@@ -248,10 +238,8 @@ export function useRemoveMember() {
       return result.data;
     },
     onSuccess: (data, variables) => {
-  
       queryClient.invalidateQueries({ queryKey: workspaceKeys.detail(variables.workspaceId) });
       queryClient.invalidateQueries({ queryKey: workspaceKeys.members(variables.workspaceId) });
-      
 
       if (variables.userPubkey) {
         queryClient.invalidateQueries({ queryKey: workspaceKeys.member(variables.userPubkey) });

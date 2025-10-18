@@ -1,5 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { bountyQueries, type BountyFilters, type BountySortParams } from "@/services/bounty/queries";
+import {
+  bountyQueries,
+  type BountyFilters,
+  type BountySortParams,
+} from "@/services/bounty/queries";
 import type { PaginationParams } from "@/types";
 import {
   createBountyAction,
@@ -34,7 +38,6 @@ export function useGetBounties(
     queryFn: () => bountyQueries.getAll(filters, pagination, sort),
   });
 }
-
 
 export function useGetBounty(id: string, enabled = true) {
   return useQuery({
@@ -80,7 +83,6 @@ export function useGetBountiesByCreator(
   });
 }
 
-
 export function useGetBountyProofs(bountyId: string) {
   return useQuery({
     queryKey: bountyKeys.proofs(bountyId),
@@ -89,7 +91,6 @@ export function useGetBountyProofs(bountyId: string) {
   });
 }
 
-
 export function useGetProof(proofId: string, enabled = true) {
   return useQuery({
     queryKey: bountyKeys.proof(proofId),
@@ -97,7 +98,6 @@ export function useGetProof(proofId: string, enabled = true) {
     enabled: enabled && !!proofId,
   });
 }
-
 
 export function useCreateBounty() {
   const queryClient = useQueryClient();
@@ -108,9 +108,7 @@ export function useCreateBounty() {
       return result.data;
     },
     onSuccess: (data) => {
-
       queryClient.invalidateQueries({ queryKey: bountyKeys.lists() });
-      
 
       if (data?.workspaceId) {
         queryClient.invalidateQueries({ queryKey: bountyKeys.workspace(data.workspaceId) });
@@ -133,12 +131,10 @@ export function useUpdateBounty() {
       return result.data;
     },
     onSuccess: (data, variables) => {
-    
       queryClient.invalidateQueries({ queryKey: bountyKeys.detail(variables.id) });
-      
+
       queryClient.invalidateQueries({ queryKey: bountyKeys.lists() });
-      
- 
+
       if (data?.workspaceId) {
         queryClient.invalidateQueries({ queryKey: bountyKeys.workspace(data.workspaceId) });
       }
@@ -151,23 +147,25 @@ export function useUpdateBounty() {
   });
 }
 
-
 export function useAssignBounty() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ bountyId, assigneePubkey }: { bountyId: string; assigneePubkey: string }) => {
+    mutationFn: async ({
+      bountyId,
+      assigneePubkey,
+    }: {
+      bountyId: string;
+      assigneePubkey: string;
+    }) => {
       const result = await assignBountyAction(bountyId, assigneePubkey);
       return result.data;
     },
     onSuccess: (data, variables) => {
-
       queryClient.invalidateQueries({ queryKey: bountyKeys.detail(variables.bountyId) });
-      
 
       queryClient.invalidateQueries({ queryKey: bountyKeys.lists() });
-      
- 
+
       queryClient.invalidateQueries({ queryKey: bountyKeys.assignee(variables.assigneePubkey) });
 
       showSuccess("Bounty assigned successfully");
@@ -178,7 +176,6 @@ export function useAssignBounty() {
   });
 }
 
-
 export function useSubmitProof() {
   const queryClient = useQueryClient();
 
@@ -188,7 +185,6 @@ export function useSubmitProof() {
       return result.data;
     },
     onSuccess: (data) => {
-
       if (data?.bountyId) {
         queryClient.invalidateQueries({ queryKey: bountyKeys.detail(data.bountyId) });
         queryClient.invalidateQueries({ queryKey: bountyKeys.proofs(data.bountyId) });
@@ -202,7 +198,6 @@ export function useSubmitProof() {
   });
 }
 
-
 export function useReviewProof() {
   const queryClient = useQueryClient();
 
@@ -212,14 +207,13 @@ export function useReviewProof() {
       return result.data;
     },
     onSuccess: (data, variables) => {
-
       queryClient.invalidateQueries({ queryKey: bountyKeys.proof(variables.proofId) });
 
       if (data?.bountyId) {
         queryClient.invalidateQueries({ queryKey: bountyKeys.detail(data.bountyId) });
         queryClient.invalidateQueries({ queryKey: bountyKeys.proofs(data.bountyId) });
       }
-      
+
       queryClient.invalidateQueries({ queryKey: bountyKeys.lists() });
 
       showSuccess("Proof reviewed successfully");
