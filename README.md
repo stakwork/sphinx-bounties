@@ -1,5 +1,8 @@
 # Sphinx Bounties
 
+[![CI](https://github.com/fayekelmith/sphinx-bounties/actions/workflows/ci.yml/badge.svg)](https://github.com/fayekelmith/sphinx-bounties/actions/workflows/ci.yml)
+[![E2E Tests](https://github.com/fayekelmith/sphinx-bounties/actions/workflows/e2e.yml/badge.svg)](https://github.com/fayekelmith/sphinx-bounties/actions/workflows/e2e.yml)
+
 Bounties Platform built with Next.js.
 
 ## Quick Start
