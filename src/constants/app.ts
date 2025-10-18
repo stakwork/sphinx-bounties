@@ -1,14 +1,41 @@
+export const APP_NAME = "Sphinx Bounties" as const;
+
+export const PAGINATION = {
+  DEFAULT_PAGE: 1,
+  DEFAULT_PAGE_SIZE: 20,
+  MAX_PAGE_SIZE: 100,
+  PAGE_SIZE_OPTIONS: [10, 20, 50, 100] as const,
+} as const;
+
+export const TIMEOUTS = {
+  API_REQUEST: 30000,
+  DEBOUNCE: 300,
+  TOAST_DURATION: 5000,
+  RETRY_DELAY: 1000,
+} as const;
+
+export const LIMITS = {
+  MAX_FILE_SIZE: 5 * 1024 * 1024,
+  MAX_UPLOAD_FILES: 10,
+  MAX_TITLE_LENGTH: 200,
+  MAX_DESCRIPTION_LENGTH: 5000,
+  MIN_BOUNTY_AMOUNT: 100,
+  MAX_BOUNTY_AMOUNT: 1000000000,
+  MAX_TAGS: 10,
+} as const;
+
+export const FEATURE_FLAGS = {
+  ENABLE_LIGHTNING: true,
+  ENABLE_NOSTR: true,
+  ENABLE_NOTIFICATIONS: true,
+  ENABLE_ADMIN: true,
+  MAINTENANCE_MODE: false,
+} as const;
+
 export const APP_CONSTANTS = {
-  PAGINATION: {
-    DEFAULT_PAGE_SIZE: 10,
-    MAX_PAGE_SIZE: 100,
-  },
-  TIMEOUTS: {
-    API_REQUEST: 30000,
-    DEBOUNCE: 300,
-  },
-  LIMITS: {
-    MAX_FILE_SIZE: 5 * 1024 * 1024,
-    MAX_UPLOAD_FILES: 10,
-  },
+  APP_NAME,
+  PAGINATION,
+  TIMEOUTS,
+  LIMITS,
+  FEATURE_FLAGS,
 } as const;
