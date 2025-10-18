@@ -13,23 +13,3 @@ export enum ErrorCode {
   PERMISSION_DENIED = "PERMISSION_DENIED",
   RESOURCE_NOT_FOUND = "RESOURCE_NOT_FOUND",
 }
-
-export interface ApiError {
-  code: ErrorCode | string;
-  message: string;
-  statusCode: number;
-  details?: Record<string, unknown>;
-  timestamp?: string;
-}
-
-export interface ApiResponse<T = unknown> {
-  success: boolean;
-  data?: T;
-  error?: ApiError;
-}
-
-export interface ValidationErrorDetails {
-  field: string;
-  message: string;
-  value?: unknown;
-}
