@@ -1,6 +1,5 @@
-
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
   binaryTargets = ["native", "rhel-openssl-3.0.x"]
 }
 
@@ -9,10 +8,426 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum WorkspaceRole {
+  OWNER
+  ADMIN
+  CONTRIBUTOR
+  VIEWER
+}
+
+enum BountyStatus {
+  DRAFT
+  OPEN
+  ASSIGNED
+  IN_REVIEW
+  COMPLETED
+  PAID
+  CANCELLED
+}
+
+enum ProofStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  CHANGES_REQUESTED
+}
+
+enum BountyActivityAction {
+  CREATED
+  UPDATED
+  ASSIGNED
+  UNASSIGNED
+  PROOF_SUBMITTED
+  PROOF_REVIEWED
+  COMPLETED
+  PAID
+  CANCELLED
+}
+
+enum ProgrammingLanguage {
+  TYPESCRIPT
+  JAVASCRIPT
+  PYTHON
+  RUST
+  GO
+  JAVA
+  CSHARP
+  CPP
+  C
+  RUBY
+  PHP
+  SWIFT
+  KOTLIN
+  SOLIDITY
+  REACT
+  VUE
+  ANGULAR
+  NEXTJS
+  NUXTJS
+  SVELTE
+  NODEJS
+  DJANGO
+  FLASK
+  RAILS
+  LARAVEL
+  DOTNET
+  SPRING
+  EXPRESS
+  NESTJS
+  OTHER
+}
+
+enum TransactionType {
+  DEPOSIT
+  WITHDRAWAL
+  PAYMENT
+  REFUND
+  STAKE
+  STAKE_RETURN
+}
+
+enum TransactionStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  EXPIRED
+}
+
+enum InvoiceStatus {
+  PENDING
+  PAID
+  EXPIRED
+  CANCELLED
+}
+
+enum NotificationType {
+  BOUNTY_ASSIGNED
+  BOUNTY_COMPLETED
+  PAYMENT_RECEIVED
+  PROOF_REVIEWED
+  WORKSPACE_INVITE
+  MEMBER_ADDED
+  MEMBER_REMOVED
+}
+
+enum InviteStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  EXPIRED
+}
+
+enum WorkspaceActivityAction {
+  MEMBER_ADDED
+  MEMBER_REMOVED
+  ROLE_CHANGED
+  BUDGET_DEPOSITED
+  BUDGET_WITHDRAWN
+  SETTINGS_UPDATED
+}
+
 model User {
-  id    Int     @id @default(autoincrement())
-  username String  @unique
-  pubkey  String  @unique
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id              String    @id @default(cuid())
+  pubkey          String    @unique @db.VarChar(66)
+  username        String    @unique @db.VarChar(20)
+  alias           String?   @db.VarChar(50)
+  description     String?   @db.Text
+  avatarUrl       String?   @db.VarChar(2048)
+  contactKey      String?   @db.VarChar(66)
+  routeHint       String?   @db.Text
+  githubUsername  String?   @db.VarChar(50)
+  githubVerified  Boolean   @default(false)
+  twitterUsername String?   @db.VarChar(50)
+  twitterVerified Boolean   @default(false)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  lastLogin       DateTime?
+  deletedAt       DateTime?
+
+  createdWorkspaces   Workspace[]         @relation("WorkspaceOwner")
+  memberships         WorkspaceMember[]   @relation("UserMemberships")
+  createdBounties     Bounty[]            @relation("BountyCreator")
+  assignedBounties    Bounty[]            @relation("BountyAssignee")
+  submittedProofs     BountyProof[]       @relation("ProofSubmitter")
+  reviewedProofs      BountyProof[]       @relation("ProofReviewer")
+  bountyActivities    BountyActivity[]    @relation("BountyActivityUser")
+  transactionsFrom    Transaction[]       @relation("TransactionFromUser")
+  transactionsTo      Transaction[]       @relation("TransactionToUser")
+  createdCodes        ConnectionCode[]    @relation("ConnectionCodeCreator")
+  usedCodes           ConnectionCode[]    @relation("ConnectionCodeUser")
+  sentInvites         WorkspaceInvite[]   @relation("InviteSender")
+  notifications       Notification[]      @relation("UserNotifications")
+  workspaceActivities WorkspaceActivity[] @relation("WorkspaceActivityUser")
+
+  @@index([pubkey])
+  @@index([username])
+  @@index([deletedAt])
+  @@map("users")
+}
+
+model Workspace {
+  id          String    @id @default(cuid())
+  name        String    @unique @db.VarChar(50)
+  ownerPubkey String    @db.VarChar(66)
+  description String?   @db.VarChar(120)
+  mission     String?   @db.Text
+  avatarUrl   String?   @db.VarChar(2048)
+  websiteUrl  String?   @db.VarChar(2048)
+  githubUrl   String?   @db.VarChar(2048)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+
+  owner        User                @relation("WorkspaceOwner", fields: [ownerPubkey], references: [pubkey], onDelete: Restrict)
+  members      WorkspaceMember[]   @relation("WorkspaceMembers")
+  bounties     Bounty[]            @relation("WorkspaceBounties")
+  budget       WorkspaceBudget?    @relation("WorkspaceBudget")
+  transactions Transaction[]       @relation("WorkspaceTransactions")
+  invoices     Invoice[]           @relation("WorkspaceInvoices")
+  invites      WorkspaceInvite[]   @relation("WorkspaceInvites")
+  activities   WorkspaceActivity[] @relation("WorkspaceActivities")
+
+  @@index([name])
+  @@index([ownerPubkey])
+  @@index([deletedAt])
+  @@map("workspaces")
+}
+
+model WorkspaceMember {
+  id          String        @id @default(cuid())
+  workspaceId String
+  userPubkey  String        @db.VarChar(66)
+  role        WorkspaceRole @default(CONTRIBUTOR)
+  joinedAt    DateTime      @default(now())
+
+  workspace Workspace @relation("WorkspaceMembers", fields: [workspaceId], references: [id], onDelete: Cascade)
+  user      User      @relation("UserMemberships", fields: [userPubkey], references: [pubkey], onDelete: Cascade)
+
+  @@unique([workspaceId, userPubkey])
+  @@index([workspaceId])
+  @@index([userPubkey])
+  @@map("workspace_members")
+}
+
+model Bounty {
+  id                      String                @id @default(cuid())
+  workspaceId             String
+  creatorPubkey           String                @db.VarChar(66)
+  assigneePubkey          String?               @db.VarChar(66)
+  title                   String                @db.VarChar(200)
+  description             String                @db.Text
+  deliverables            String                @db.Text
+  amount                  BigInt
+  status                  BountyStatus          @default(DRAFT)
+  codingLanguages         ProgrammingLanguage[]
+  tags                    String[]
+  estimatedHours          Int?
+  estimatedCompletionDate DateTime?
+  githubIssueUrl          String?               @db.VarChar(2048)
+  loomVideoUrl            String?               @db.VarChar(2048)
+  createdAt               DateTime              @default(now())
+  updatedAt               DateTime              @updatedAt
+  assignedAt              DateTime?
+  completedAt             DateTime?
+  paidAt                  DateTime?
+  deletedAt               DateTime?
+
+  workspace    Workspace        @relation("WorkspaceBounties", fields: [workspaceId], references: [id], onDelete: Restrict)
+  creator      User             @relation("BountyCreator", fields: [creatorPubkey], references: [pubkey], onDelete: Restrict)
+  assignee     User?            @relation("BountyAssignee", fields: [assigneePubkey], references: [pubkey], onDelete: Restrict)
+  proofs       BountyProof[]    @relation("BountyProofs")
+  activities   BountyActivity[] @relation("BountyActivities")
+  transactions Transaction[]    @relation("BountyTransactions")
+
+  @@index([workspaceId])
+  @@index([creatorPubkey])
+  @@index([assigneePubkey])
+  @@index([status])
+  @@index([deletedAt])
+  @@index([workspaceId, status])
+  @@index([assigneePubkey, status])
+  @@map("bounties")
+}
+
+model BountyProof {
+  id                String      @id @default(cuid())
+  bountyId          String
+  submittedByPubkey String      @db.VarChar(66)
+  description       String      @db.Text
+  proofUrl          String      @db.VarChar(2048)
+  status            ProofStatus @default(PENDING)
+  reviewNotes       String?     @db.Text
+  reviewedByPubkey  String?     @db.VarChar(66)
+  reviewedAt        DateTime?
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+
+  bounty    Bounty @relation("BountyProofs", fields: [bountyId], references: [id], onDelete: Cascade)
+  submitter User   @relation("ProofSubmitter", fields: [submittedByPubkey], references: [pubkey], onDelete: Restrict)
+  reviewer  User?  @relation("ProofReviewer", fields: [reviewedByPubkey], references: [pubkey], onDelete: Restrict)
+
+  @@index([bountyId])
+  @@index([submittedByPubkey])
+  @@index([status])
+  @@map("bounty_proofs")
+}
+
+model BountyActivity {
+  id         String               @id @default(cuid())
+  bountyId   String
+  userPubkey String               @db.VarChar(66)
+  action     BountyActivityAction
+  details    Json?
+  timestamp  DateTime             @default(now())
+
+  bounty Bounty @relation("BountyActivities", fields: [bountyId], references: [id], onDelete: Cascade)
+  user   User   @relation("BountyActivityUser", fields: [userPubkey], references: [pubkey], onDelete: Restrict)
+
+  @@index([bountyId])
+  @@index([bountyId, timestamp(sort: Desc)])
+  @@map("bounty_activities")
+}
+
+model WorkspaceBudget {
+  id              String   @id @default(cuid())
+  workspaceId     String   @unique
+  totalBudget     BigInt   @default(0)
+  availableBudget BigInt   @default(0)
+  reservedBudget  BigInt   @default(0)
+  paidBudget      BigInt   @default(0)
+  updatedAt       DateTime @updatedAt
+
+  workspace Workspace @relation("WorkspaceBudget", fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId])
+  @@map("workspace_budgets")
+}
+
+model Transaction {
+  id               String            @id @default(cuid())
+  workspaceId      String
+  bountyId         String?
+  type             TransactionType
+  amount           BigInt
+  fromUserPubkey   String?           @db.VarChar(66)
+  toUserPubkey     String?           @db.VarChar(66)
+  lightningInvoice String?           @db.Text
+  paymentHash      String?           @db.VarChar(64)
+  preimage         String?           @db.VarChar(64)
+  status           TransactionStatus @default(PENDING)
+  memo             String?           @db.Text
+  errorMessage     String?           @db.Text
+  createdAt        DateTime          @default(now())
+  completedAt      DateTime?
+
+  workspace Workspace @relation("WorkspaceTransactions", fields: [workspaceId], references: [id], onDelete: Restrict)
+  bounty    Bounty?   @relation("BountyTransactions", fields: [bountyId], references: [id], onDelete: Restrict)
+  fromUser  User?     @relation("TransactionFromUser", fields: [fromUserPubkey], references: [pubkey], onDelete: Restrict)
+  toUser    User?     @relation("TransactionToUser", fields: [toUserPubkey], references: [pubkey], onDelete: Restrict)
+  invoice   Invoice?  @relation("TransactionInvoice")
+
+  @@index([workspaceId])
+  @@index([bountyId])
+  @@index([paymentHash])
+  @@index([status])
+  @@index([workspaceId, type, status])
+  @@map("transactions")
+}
+
+model Invoice {
+  id             String        @id @default(cuid())
+  workspaceId    String
+  transactionId  String        @unique
+  paymentRequest String        @unique @db.Text
+  paymentHash    String        @unique @db.VarChar(64)
+  amount         BigInt
+  memo           String?       @db.Text
+  status         InvoiceStatus @default(PENDING)
+  expiresAt      DateTime
+  paidAt         DateTime?
+  createdAt      DateTime      @default(now())
+
+  workspace   Workspace   @relation("WorkspaceInvoices", fields: [workspaceId], references: [id], onDelete: Restrict)
+  transaction Transaction @relation("TransactionInvoice", fields: [transactionId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId])
+  @@index([paymentRequest])
+  @@index([paymentHash])
+  @@index([status])
+  @@map("invoices")
+}
+
+model ConnectionCode {
+  id               String    @id @default(cuid())
+  connectionString String    @unique @db.VarChar(100)
+  creatorPubkey    String    @db.VarChar(66)
+  routeHint        String?   @db.Text
+  satsAmount       BigInt
+  isUsed           Boolean   @default(false)
+  usedByPubkey     String?   @db.VarChar(66)
+  usedAt           DateTime?
+  createdAt        DateTime  @default(now())
+
+  creator User  @relation("ConnectionCodeCreator", fields: [creatorPubkey], references: [pubkey], onDelete: Restrict)
+  usedBy  User? @relation("ConnectionCodeUser", fields: [usedByPubkey], references: [pubkey], onDelete: Restrict)
+
+  @@index([connectionString])
+  @@index([creatorPubkey])
+  @@index([isUsed])
+  @@map("connection_codes")
+}
+
+model WorkspaceInvite {
+  id            String        @id @default(cuid())
+  workspaceId   String
+  inviterPubkey String        @db.VarChar(66)
+  inviteePubkey String        @db.VarChar(66)
+  role          WorkspaceRole @default(CONTRIBUTOR)
+  status        InviteStatus  @default(PENDING)
+  expiresAt     DateTime
+  createdAt     DateTime      @default(now())
+  respondedAt   DateTime?
+
+  workspace Workspace @relation("WorkspaceInvites", fields: [workspaceId], references: [id], onDelete: Cascade)
+  inviter   User      @relation("InviteSender", fields: [inviterPubkey], references: [pubkey], onDelete: Restrict)
+
+  @@index([workspaceId])
+  @@index([inviteePubkey])
+  @@index([status])
+  @@map("workspace_invites")
+}
+
+model Notification {
+  id                String           @id @default(cuid())
+  userPubkey        String           @db.VarChar(66)
+  type              NotificationType
+  title             String           @db.VarChar(200)
+  message           String           @db.Text
+  relatedEntityType String?          @db.VarChar(50)
+  relatedEntityId   String?
+  read              Boolean          @default(false)
+  createdAt         DateTime         @default(now())
+
+  user User @relation("UserNotifications", fields: [userPubkey], references: [pubkey], onDelete: Cascade)
+
+  @@index([userPubkey])
+  @@index([read])
+  @@index([userPubkey, read, createdAt(sort: Desc)])
+  @@map("notifications")
+}
+
+model WorkspaceActivity {
+  id          String                  @id @default(cuid())
+  workspaceId String
+  userPubkey  String                  @db.VarChar(66)
+  action      WorkspaceActivityAction
+  details     Json?
+  timestamp   DateTime                @default(now())
+
+  workspace Workspace @relation("WorkspaceActivities", fields: [workspaceId], references: [id], onDelete: Cascade)
+  user      User      @relation("WorkspaceActivityUser", fields: [userPubkey], references: [pubkey], onDelete: Restrict)
+
+  @@index([workspaceId])
+  @@index([workspaceId, timestamp(sort: Desc)])
+  @@map("workspace_activities")
 }
