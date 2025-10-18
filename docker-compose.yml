@@ -1,0 +1,38 @@
+version: "3.8"
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: sphinx-bounties-postgres
+    environment:
+      POSTGRES_DB: sphinx_bounties
+      POSTGRES_USER: sphinx_bounties
+      POSTGRES_PASSWORD: bounties_password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sphinx_bounties -d sphinx_bounties"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  sphinx-bounties-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: sphinx-bounties-app
+    environment:
+      - DATABASE_URL=postgresql://sphinx_bounties:bounties_password@postgres:5432/sphinx_bounties
+      - NODE_ENV=production
+    ports:
+      - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
