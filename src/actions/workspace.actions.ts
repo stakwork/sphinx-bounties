@@ -2,12 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
-import {
-  ValidationError,
-  NotFoundError,
-  ForbiddenError,
-  ConflictError,
-} from "@/lib";
+import { ValidationError, NotFoundError, ForbiddenError, ConflictError } from "@/lib";
 import { WorkspaceRole } from "@prisma/client";
 
 const getCurrentUserPubkey = (): string => {
@@ -70,10 +65,7 @@ export async function createWorkspaceAction(formData: FormData) {
   }
 }
 
-export async function updateWorkspaceAction(
-  workspaceId: string,
-  formData: FormData
-) {
+export async function updateWorkspaceAction(workspaceId: string, formData: FormData) {
   try {
     const userPubkey = getCurrentUserPubkey();
 
@@ -189,10 +181,7 @@ export async function deleteWorkspaceAction(workspaceId: string) {
   }
 }
 
-export async function addMemberAction(
-  workspaceId: string,
-  formData: FormData
-) {
+export async function addMemberAction(workspaceId: string, formData: FormData) {
   try {
     const userPubkey = getCurrentUserPubkey();
 
@@ -217,7 +206,10 @@ export async function addMemberAction(
     }
 
     const requesterMember = workspace.members[0];
-    if (!requesterMember || (requesterMember.role !== "ADMIN" && requesterMember.role !== "OWNER")) {
+    if (
+      !requesterMember ||
+      (requesterMember.role !== "ADMIN" && requesterMember.role !== "OWNER")
+    ) {
       throw new ForbiddenError("Only workspace admins can add members");
     }
 
@@ -331,10 +323,7 @@ export async function updateMemberRoleAction(
   }
 }
 
-export async function removeMemberAction(
-  workspaceId: string,
-  membershipId: string
-) {
+export async function removeMemberAction(workspaceId: string, membershipId: string) {
   try {
     const userPubkey = getCurrentUserPubkey();
 
@@ -352,7 +341,10 @@ export async function removeMemberAction(
     }
 
     const requesterMember = workspace.members[0];
-    if (!requesterMember || (requesterMember.role !== "ADMIN" && requesterMember.role !== "OWNER")) {
+    if (
+      !requesterMember ||
+      (requesterMember.role !== "ADMIN" && requesterMember.role !== "OWNER")
+    ) {
       throw new ForbiddenError("Only workspace admins can remove members");
     }
 

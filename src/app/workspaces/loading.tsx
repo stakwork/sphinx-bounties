@@ -1,5 +1,5 @@
-import { Skeleton } from '@/components/ui/skeleton';
-import { WorkspaceSkeleton } from '@/components/loading/workspace-skeleton';
+import { Skeleton } from "@/components/ui/skeleton";
+import { WorkspaceSkeleton } from "@/components/loading/workspace-skeleton";
 
 export default function Loading() {
   return (

@@ -14,9 +14,8 @@ export function useOptimisticUpdate<TData, TInput>(
   const { onSuccess, onError, rollbackOnError = true } = options;
 
   const [data, setData] = useState<TData>(initialData);
-  const [optimisticData, addOptimisticUpdate] = useOptimistic(
-    data,
-    (current, newInput: TInput) => updateFn(current, newInput)
+  const [optimisticData, addOptimisticUpdate] = useOptimistic(data, (current, newInput: TInput) =>
+    updateFn(current, newInput)
   );
 
   const update = useCallback(

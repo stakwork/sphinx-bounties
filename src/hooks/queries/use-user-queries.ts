@@ -12,7 +12,6 @@ import {
 } from "@/actions";
 import { showSuccess, showError } from "@/lib/toast";
 
-
 export const userKeys = {
   all: ["users"] as const,
   lists: () => [...userKeys.all, "list"] as const,
@@ -26,7 +25,6 @@ export const userKeys = {
   twitterVerified: () => [...userKeys.all, "twitter-verified"] as const,
 };
 
-
 export function useGetUsers(
   filters?: UserFilters,
   pagination?: PaginationParams,
@@ -38,7 +36,6 @@ export function useGetUsers(
   });
 }
 
-
 export function useGetUser(pubkey: string, enabled = true) {
   return useQuery({
     queryKey: userKeys.detail(pubkey),
@@ -46,7 +43,6 @@ export function useGetUser(pubkey: string, enabled = true) {
     enabled: enabled && !!pubkey,
   });
 }
-
 
 export function useGetUserByUsername(username: string, enabled = true) {
   return useQuery({
@@ -56,7 +52,6 @@ export function useGetUserByUsername(username: string, enabled = true) {
   });
 }
 
-
 export function useGetUserProfile(pubkey: string, enabled = true) {
   return useQuery({
     queryKey: userKeys.profile(pubkey),
@@ -64,7 +59,6 @@ export function useGetUserProfile(pubkey: string, enabled = true) {
     enabled: enabled && !!pubkey,
   });
 }
-
 
 export function useSearchUsers(query: string, pagination?: PaginationParams) {
   return useQuery({
@@ -74,14 +68,12 @@ export function useSearchUsers(query: string, pagination?: PaginationParams) {
   });
 }
 
-
 export function useGetGithubVerifiedUsers(pagination?: PaginationParams) {
   return useQuery({
     queryKey: userKeys.githubVerified(),
     queryFn: () => userQueries.getGithubVerified(pagination),
   });
 }
-
 
 export function useGetTwitterVerifiedUsers(pagination?: PaginationParams) {
   return useQuery({
@@ -99,7 +91,6 @@ export function useCheckUsernameAvailability(username: string, excludePubkey?: s
   });
 }
 
-
 export function useCreateUser() {
   const queryClient = useQueryClient();
 
@@ -109,9 +100,8 @@ export function useCreateUser() {
       return result.data;
     },
     onSuccess: () => {
-
       queryClient.invalidateQueries({ queryKey: userKeys.lists() });
-  
+
       queryClient.invalidateQueries({ queryKey: [...userKeys.all, "username-available"] });
 
       showSuccess("User created successfully");
@@ -121,7 +111,6 @@ export function useCreateUser() {
     },
   });
 }
-
 
 export function useUpdateProfile() {
   const queryClient = useQueryClient();
@@ -136,7 +125,7 @@ export function useUpdateProfile() {
       queryClient.invalidateQueries({ queryKey: userKeys.profile(variables.pubkey) });
 
       queryClient.invalidateQueries({ queryKey: userKeys.lists() });
-      
+
       if (data?.username) {
         queryClient.invalidateQueries({ queryKey: userKeys.detailByUsername(data.username) });
       }
@@ -149,7 +138,6 @@ export function useUpdateProfile() {
   });
 }
 
-
 export function useUpdateSocialLinks() {
   const queryClient = useQueryClient();
 
@@ -159,10 +147,9 @@ export function useUpdateSocialLinks() {
       return result.data;
     },
     onSuccess: (data, variables) => {
-
       queryClient.invalidateQueries({ queryKey: userKeys.detail(variables.pubkey) });
       queryClient.invalidateQueries({ queryKey: userKeys.profile(variables.pubkey) });
-      
+
       queryClient.invalidateQueries({ queryKey: userKeys.githubVerified() });
       queryClient.invalidateQueries({ queryKey: userKeys.twitterVerified() });
 
@@ -207,7 +194,7 @@ export function useDeleteUser() {
 
       queryClient.removeQueries({ queryKey: userKeys.detail(pubkey) });
       queryClient.removeQueries({ queryKey: userKeys.profile(pubkey) });
- 
+
       queryClient.invalidateQueries({ queryKey: userKeys.lists() });
 
       queryClient.invalidateQueries({ queryKey: userKeys.githubVerified() });
@@ -232,10 +219,9 @@ export function useVerifyGithub() {
       return result.data;
     },
     onSuccess: (data, variables) => {
-
       queryClient.invalidateQueries({ queryKey: userKeys.detail(variables.pubkey) });
       queryClient.invalidateQueries({ queryKey: userKeys.profile(variables.pubkey) });
-      
+
       queryClient.invalidateQueries({ queryKey: userKeys.githubVerified() });
 
       showSuccess("GitHub account verified successfully");

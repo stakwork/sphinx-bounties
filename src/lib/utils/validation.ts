@@ -32,7 +32,10 @@ export function sanitizeUsername(username: string): string {
 }
 
 export function sanitizeTwitterHandle(handle: string): string {
-  return handle.replace(/^@/, "").replace(/[^a-zA-Z0-9_]/g, "").slice(0, 15);
+  return handle
+    .replace(/^@/, "")
+    .replace(/[^a-zA-Z0-9_]/g, "")
+    .slice(0, 15);
 }
 
 export function extractGithubUsername(url: string): string | null {

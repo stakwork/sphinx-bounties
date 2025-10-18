@@ -1,6 +1,7 @@
 "use client";
 
-import React, { ReactNode } from "react";
+import type { ReactNode } from "react";
+import React from "react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 
@@ -14,10 +15,7 @@ interface ErrorBoundaryState {
   error: Error | null;
 }
 
-export class ErrorBoundary extends React.Component<
-  ErrorBoundaryProps,
-  ErrorBoundaryState
-> {
+export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
   constructor(props: ErrorBoundaryProps) {
     super(props);
     this.state = { hasError: false, error: null };
@@ -49,11 +47,7 @@ export class ErrorBoundary extends React.Component<
             <AlertTitle>Something went wrong</AlertTitle>
             <AlertDescription className="mt-2">
               <p className="text-sm mb-4">{this.state.error.message}</p>
-              <Button
-                onClick={this.resetError}
-                variant="outline"
-                size="sm"
-              >
+              <Button onClick={this.resetError} variant="outline" size="sm">
                 Try again
               </Button>
             </AlertDescription>

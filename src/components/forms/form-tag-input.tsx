@@ -1,4 +1,5 @@
-import { forwardRef, useState, KeyboardEvent } from "react";
+import type { KeyboardEvent } from "react";
+import { forwardRef, useState } from "react";
 import { X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -49,9 +50,9 @@ export const FormTagInput = forwardRef<HTMLInputElement, FormTagInputProps>(
 
     const addTag = () => {
       const trimmedValue = inputValue.trim().toLowerCase();
-      
+
       if (!trimmedValue) return;
-      
+
       if (value.includes(trimmedValue)) {
         setInputValue("");
         return;

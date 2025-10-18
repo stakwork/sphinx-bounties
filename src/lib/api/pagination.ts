@@ -1,5 +1,4 @@
-import type { PaginationParams, PaginationMeta } from '@/types/api';
-
+import type { PaginationParams, PaginationMeta } from "@/types/api";
 
 export function getPaginationValues(params: PaginationParams) {
   const page = params.page || 1;
@@ -9,7 +8,6 @@ export function getPaginationValues(params: PaginationParams) {
 
   return { skip, take, page, pageSize };
 }
-
 
 export function getPaginationMeta(
   page: number,

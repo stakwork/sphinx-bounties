@@ -1,4 +1,5 @@
 # Phase 1: Authentication & Authorization System
+
 ## Implementation Plan & Deliverables
 
 **Goal**: Build a production-ready, secure authentication system for sphinx-bounties using LNURL-auth, JWT sessions, and workspace-scoped role-based access control.
@@ -8,6 +9,7 @@
 ## Overview
 
 ### Key Decisions
+
 - ✅ **LNURL-auth**: Lightning Network pubkey-based authentication
 - ✅ **JWT in HTTP-only cookies**: Secure session storage, edge-compatible
 - ✅ **Workspace-scoped roles**: OWNER, ADMIN, MEMBER, VIEWER (from Prisma schema)
@@ -16,6 +18,7 @@
 - ✅ **Standardized errors**: Consistent auth error responses
 
 ### Security Best Practices
+
 - HTTP-only, Secure, SameSite=Lax cookies
 - Edge middleware for performance
 - Short JWT expiry (7 days) with refresh mechanism
@@ -67,9 +70,11 @@ src/
 ## Implementation Steps
 
 ### Step 1: Core Auth Library
+
 **Deliverables**: JWT utilities, session management, LNURL-auth helpers
 
 #### 1.1 JWT Library (`src/lib/auth/jwt.ts`)
+
 ```typescript
 // Functions to implement:
 - signJWT(payload: JWTPayload): Promise<string>
@@ -94,6 +99,7 @@ src/
 ---
 
 #### 1.2 Session Management (`src/lib/auth/session.ts`)
+
 ```typescript
 // Functions to implement:
 - setSession(response: NextResponse, token: string): void
@@ -110,7 +116,8 @@ interface Session {
 }
 ```
 
-**Cookie config**: 
+**Cookie config**:
+
 - Name: `sphinx_session`
 - HTTP-only: `true`
 - Secure: `process.env.NODE_ENV === 'production'`
@@ -123,6 +130,7 @@ interface Session {
 ---
 
 #### 1.3 LNURL-auth Implementation (`src/lib/auth/lnurl.ts`)
+
 ```typescript
 // Functions to implement:
 - generateChallenge(): Promise<LNURLChallenge>
@@ -151,6 +159,7 @@ interface VerifyParams {
 ---
 
 #### 1.4 Permission Utilities (`src/lib/auth/permissions.ts`)
+
 ```typescript
 // Functions to implement:
 - hasWorkspaceRole(userId: string, workspaceId: string, role: WorkspaceRole): Promise<boolean>
@@ -170,6 +179,7 @@ OWNER > ADMIN > MEMBER > VIEWER
 ---
 
 #### 1.5 Auth Error Classes (`src/lib/errors/auth-errors.ts`)
+
 ```typescript
 // Classes to implement:
 - UnauthorizedError (401)
@@ -192,9 +202,11 @@ OWNER > ADMIN > MEMBER > VIEWER
 ---
 
 ### Step 2: API Routes
+
 **Deliverables**: Auth endpoints for challenge, verify, logout, session
 
 #### 2.1 Challenge Endpoint (`/api/auth/challenge`)
+
 ```typescript
 // POST /api/auth/challenge
 // Body: { callbackUrl?: string }
@@ -213,6 +225,7 @@ OWNER > ADMIN > MEMBER > VIEWER
 ---
 
 #### 2.2 Verify Endpoint (`/api/auth/verify`)
+
 ```typescript
 // POST /api/auth/verify
 // Body: { k1: string, sig: string, key: string }
@@ -227,7 +240,8 @@ OWNER > ADMIN > MEMBER > VIEWER
 6. Return success + optional redirect
 ```
 
-**Error responses**: 
+**Error responses**:
+
 - 401 if signature invalid
 - 401 if challenge expired/not found
 - 500 if user creation fails
@@ -237,6 +251,7 @@ OWNER > ADMIN > MEMBER > VIEWER
 ---
 
 #### 2.3 Logout Endpoint (`/api/auth/logout`)
+
 ```typescript
 // POST /api/auth/logout
 // Response: { success: true } + Clear-Cookie
@@ -253,6 +268,7 @@ OWNER > ADMIN > MEMBER > VIEWER
 ---
 
 #### 2.4 Session Endpoint (`/api/auth/session`)
+
 ```typescript
 // GET /api/auth/session
 // Response: { user: User, expiresAt: string } | { user: null }
@@ -270,9 +286,11 @@ OWNER > ADMIN > MEMBER > VIEWER
 ---
 
 ### Step 3: Next.js Middleware
+
 **Deliverables**: Edge middleware for auth and role-based route protection
 
 #### 3.1 Middleware Implementation (`src/middleware.ts`)
+
 ```typescript
 // Middleware logic:
 1. Extract JWT from cookies
@@ -291,7 +309,8 @@ OWNER > ADMIN > MEMBER > VIEWER
 
 **Performance**: Runs on edge, <10ms overhead
 **Headers**: Add `x-user-pubkey` header for downstream route handlers
-**Redirects**: 
+**Redirects**:
+
 - Unauthenticated → `/login?redirect={current}`
 - Unauthorized → `/unauthorized`
 
@@ -300,6 +319,7 @@ OWNER > ADMIN > MEMBER > VIEWER
 ---
 
 #### 3.2 Middleware Helpers (`src/lib/auth/middleware-helpers.ts`)
+
 ```typescript
 // Functions for use in middleware:
 - isPublicRoute(pathname: string): boolean
@@ -313,9 +333,11 @@ OWNER > ADMIN > MEMBER > VIEWER
 ---
 
 ### Step 4: Server Actions
+
 **Deliverables**: Server Actions for auth mutations
 
 #### 4.1 Auth Actions (`src/actions/auth.ts`)
+
 ```typescript
 // Server Actions:
 'use server'
@@ -339,9 +361,11 @@ interface LoginResult {
 ---
 
 ### Step 5: Client Hooks
+
 **Deliverables**: React hooks for auth state in client components
 
 #### 5.1 useAuth Hook (`src/hooks/use-auth.ts`)
+
 ```typescript
 // Hook exports:
 const {
@@ -365,6 +389,7 @@ const {
 ---
 
 #### 5.2 useSession Hook (`src/hooks/use-session.ts`)
+
 ```typescript
 // Hook exports:
 const {
@@ -386,6 +411,7 @@ const {
 ---
 
 #### 5.3 usePermissions Hook (`src/hooks/use-permissions.ts`)
+
 ```typescript
 // Hook exports:
 const {
@@ -406,9 +432,11 @@ const {
 ---
 
 ### Step 6: Auth UI Components
+
 **Deliverables**: Login modal, logout button, auth guards
 
 #### 6.1 LoginModal Component (`src/components/auth/login-modal.tsx`)
+
 ```typescript
 // Features:
 - Display LNURL-auth QR code
@@ -423,6 +451,7 @@ const {
 ---
 
 #### 6.2 LogoutButton Component (`src/components/auth/logout-button.tsx`)
+
 ```typescript
 // Features:
 - Confirm logout action
@@ -436,6 +465,7 @@ const {
 ---
 
 #### 6.3 AuthGuard Component (`src/components/auth/auth-guard.tsx`)
+
 ```typescript
 // Usage: Wrap protected client components
 <AuthGuard fallback={<LoginPrompt />}>
@@ -453,19 +483,21 @@ const {
 ---
 
 ### Step 7: Type Definitions
+
 **Deliverables**: TypeScript types for auth system
 
 #### 7.1 Auth Types (`src/types/auth.ts`)
+
 ```typescript
 // Types to define:
-- JWTPayload
-- Session
-- LNURLChallenge
-- VerifyParams
-- LoginResult
-- AuthError
-- PermissionCheck
-- WorkspaceContext
+-JWTPayload -
+  Session -
+  LNURLChallenge -
+  VerifyParams -
+  LoginResult -
+  AuthError -
+  PermissionCheck -
+  WorkspaceContext;
 ```
 
 **Testing**: Type-level tests with `expectType` (Vitest)
@@ -475,6 +507,7 @@ const {
 ## Testing Strategy
 
 ### Unit Tests
+
 - JWT sign/verify/decode
 - Session management (set/get/clear)
 - LNURL challenge generation
@@ -483,6 +516,7 @@ const {
 - Error classes
 
 ### Integration Tests
+
 - Challenge endpoint → verify endpoint flow
 - Login flow end-to-end
 - Logout flow
@@ -491,6 +525,7 @@ const {
 - Permission checks with database
 
 ### E2E Tests (Playwright)
+
 - Complete LNURL-auth flow
 - Login → protected page → logout
 - Role-based access (admin vs member)
@@ -543,6 +578,7 @@ npm install @synonymdev/lnurl      # LNURL utilities (or custom)
 ## Rollout Plan
 
 ### Phase 1a: Core Library (Days 1-2)
+
 - [ ] JWT utilities
 - [ ] Session management
 - [ ] LNURL-auth helpers
@@ -550,32 +586,38 @@ npm install @synonymdev/lnurl      # LNURL utilities (or custom)
 - [ ] Error classes
 
 ### Phase 1b: API Routes (Days 3-4)
+
 - [ ] Challenge endpoint
 - [ ] Verify endpoint
 - [ ] Logout endpoint
 - [ ] Session endpoint
 
 ### Phase 1c: Middleware (Day 5)
+
 - [ ] Next.js middleware
 - [ ] Route protection rules
 - [ ] Header injection
 
 ### Phase 1d: Server Actions (Day 6)
+
 - [ ] Login action
 - [ ] Logout action
 - [ ] Refresh action
 
 ### Phase 1e: Client Hooks (Day 7)
+
 - [ ] useAuth hook
 - [ ] useSession hook
 - [ ] usePermissions hook
 
 ### Phase 1f: UI Components (Day 8)
+
 - [ ] LoginModal
 - [ ] LogoutButton
 - [ ] AuthGuard
 
 ### Phase 1g: Testing (Days 9-10)
+
 - [ ] Unit tests (80%+ coverage)
 - [ ] Integration tests
 - [ ] E2E tests

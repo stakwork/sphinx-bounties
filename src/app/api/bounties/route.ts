@@ -1,4 +1,4 @@
-import { NextRequest } from "next/server";
+import type { NextRequest } from "next/server";
 import { z } from "zod";
 import {
   apiPaginated,
@@ -84,9 +84,7 @@ export async function GET(request: NextRequest) {
     };
 
     // Build orderBy clause
-    const orderBy = sortBy
-      ? { [sortBy]: sortOrder }
-      : { createdAt: "desc" as const };
+    const orderBy = sortBy ? { [sortBy]: sortOrder } : { createdAt: "desc" as const };
 
     // Fetch bounties and total count in parallel
     const [bounties, totalCount] = await Promise.all([

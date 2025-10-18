@@ -1,14 +1,14 @@
 /**
  * SETTINGS PAGE
  * Route: /settings
- * 
+ *
  * Child pages to implement:
  * - profile/page.tsx             Profile settings
  * - notifications/page.tsx       Notification preferences
  * - security/page.tsx            Lightning auth settings
  * - connections/page.tsx         GitHub, Twitter integrations
  * - preferences/page.tsx         UI preferences
- * 
+ *
  * Components: SettingsSidebar, SettingsForm, ToggleSwitch
  * API: PATCH /api/users/[id]
  * Models: User, Notification
@@ -19,9 +19,7 @@ export default function SettingsPage() {
     <div className="container mx-auto py-8">
       <div className="mb-8">
         <h1 className="text-4xl font-bold mb-2">Settings</h1>
-        <p className="text-muted-foreground">
-          Manage your account and preferences
-        </p>
+        <p className="text-muted-foreground">Manage your account and preferences</p>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-4">
@@ -31,7 +29,10 @@ export default function SettingsPage() {
             <a href="/settings/profile" className="block px-3 py-2 rounded-md hover:bg-accent">
               Profile
             </a>
-            <a href="/settings/notifications" className="block px-3 py-2 rounded-md hover:bg-accent">
+            <a
+              href="/settings/notifications"
+              className="block px-3 py-2 rounded-md hover:bg-accent"
+            >
               Notifications
             </a>
             <a href="/settings/security" className="block px-3 py-2 rounded-md hover:bg-accent">

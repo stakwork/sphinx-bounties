@@ -8,101 +8,95 @@ export const createBountySchema = z.object({
     .min(5, "Title must be at least 5 characters")
     .max(LIMITS.MAX_TITLE_LENGTH, `Title must not exceed ${LIMITS.MAX_TITLE_LENGTH} characters`)
     .trim(),
-  
+
   description: z
     .string()
     .min(20, "Description must be at least 20 characters")
-    .max(LIMITS.MAX_DESCRIPTION_LENGTH, `Description must not exceed ${LIMITS.MAX_DESCRIPTION_LENGTH} characters`)
+    .max(
+      LIMITS.MAX_DESCRIPTION_LENGTH,
+      `Description must not exceed ${LIMITS.MAX_DESCRIPTION_LENGTH} characters`
+    )
     .trim(),
-  
+
   amount: z
     .number()
     .int("Amount must be a whole number")
     .min(LIMITS.MIN_BOUNTY_AMOUNT, `Minimum bounty amount is ${LIMITS.MIN_BOUNTY_AMOUNT} sats`)
     .max(LIMITS.MAX_BOUNTY_AMOUNT, `Maximum bounty amount is ${LIMITS.MAX_BOUNTY_AMOUNT} sats`),
-  
-  workspaceId: z
-    .string()
-    .cuid("Invalid workspace ID"),
-  
-  deadline: z
-    .date()
-    .min(new Date(), "Deadline must be in the future")
-    .optional(),
-  
+
+  workspaceId: z.string().cuid("Invalid workspace ID"),
+
+  deadline: z.date().min(new Date(), "Deadline must be in the future").optional(),
+
   githubIssueUrl: z
     .string()
     .url("Must be a valid URL")
-    .regex(/^https:\/\/github\.com\/[\w-]+\/[\w-]+\/issues\/\d+$/, "Must be a valid GitHub issue URL")
+    .regex(
+      /^https:\/\/github\.com\/[\w-]+\/[\w-]+\/issues\/\d+$/,
+      "Must be a valid GitHub issue URL"
+    )
     .optional()
     .or(z.literal("")),
-  
+
   tags: z
     .array(z.string().min(2).max(30))
     .max(LIMITS.MAX_TAGS, `Maximum ${LIMITS.MAX_TAGS} tags allowed`)
     .optional()
     .default([]),
-  
-  programmingLanguages: z
-    .array(z.string())
-    .optional()
-    .default([]),
-  
-  status: z
-    .nativeEnum(BountyStatus)
-    .default(BountyStatus.DRAFT),
+
+  programmingLanguages: z.array(z.string()).optional().default([]),
+
+  status: z.nativeEnum(BountyStatus).default(BountyStatus.DRAFT),
 });
 
 export const updateBountySchema = z.object({
   id: z.string().cuid("Invalid bounty ID"),
-  
+
   title: z
     .string()
     .min(5, "Title must be at least 5 characters")
     .max(LIMITS.MAX_TITLE_LENGTH, `Title must not exceed ${LIMITS.MAX_TITLE_LENGTH} characters`)
     .trim()
     .optional(),
-  
+
   description: z
     .string()
     .min(20, "Description must be at least 20 characters")
-    .max(LIMITS.MAX_DESCRIPTION_LENGTH, `Description must not exceed ${LIMITS.MAX_DESCRIPTION_LENGTH} characters`)
+    .max(
+      LIMITS.MAX_DESCRIPTION_LENGTH,
+      `Description must not exceed ${LIMITS.MAX_DESCRIPTION_LENGTH} characters`
+    )
     .trim()
     .optional(),
-  
+
   amount: z
     .number()
     .int("Amount must be a whole number")
     .min(LIMITS.MIN_BOUNTY_AMOUNT, `Minimum bounty amount is ${LIMITS.MIN_BOUNTY_AMOUNT} sats`)
     .max(LIMITS.MAX_BOUNTY_AMOUNT, `Maximum bounty amount is ${LIMITS.MAX_BOUNTY_AMOUNT} sats`)
     .optional(),
-  
-  deadline: z
-    .date()
-    .min(new Date(), "Deadline must be in the future")
-    .optional()
-    .nullable(),
-  
+
+  deadline: z.date().min(new Date(), "Deadline must be in the future").optional().nullable(),
+
   githubIssueUrl: z
     .string()
     .url("Must be a valid URL")
-    .regex(/^https:\/\/github\.com\/[\w-]+\/[\w-]+\/issues\/\d+$/, "Must be a valid GitHub issue URL")
+    .regex(
+      /^https:\/\/github\.com\/[\w-]+\/[\w-]+\/issues\/\d+$/,
+      "Must be a valid GitHub issue URL"
+    )
     .optional()
     .nullable()
     .or(z.literal("")),
-  
+
   tags: z
     .array(z.string().min(2).max(30))
     .max(LIMITS.MAX_TAGS, `Maximum ${LIMITS.MAX_TAGS} tags allowed`)
     .optional(),
-  
-  programmingLanguages: z
-    .array(z.string())
-    .optional(),
-  
-  status: z
-    .nativeEnum(BountyStatus)
-    .optional(),
+
+  programmingLanguages: z.array(z.string()).optional(),
+
+  status: z.nativeEnum(BountyStatus).optional(),
 });
 
 export const claimBountySchema = z.object({
@@ -121,12 +115,9 @@ export const unclaimBountySchema = z.object({
 
 export const submitProofSchema = z.object({
   bountyId: z.string().cuid("Invalid bounty ID"),
-  
-  proofUrl: z
-    .string()
-    .url("Must be a valid URL")
-    .min(1, "Proof URL is required"),
-  
+
+  proofUrl: z.string().url("Must be a valid URL").min(1, "Proof URL is required"),
+
   description: z
     .string()
     .min(20, "Description must be at least 20 characters")
@@ -136,9 +127,9 @@ export const submitProofSchema = z.object({
 
 export const reviewProofSchema = z.object({
   proofId: z.string().cuid("Invalid proof ID"),
-  
+
   approved: z.boolean(),
-  
+
   feedback: z
     .string()
     .min(10, "Feedback must be at least 10 characters")

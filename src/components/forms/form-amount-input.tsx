@@ -20,15 +20,7 @@ export interface FormAmountInputProps
 
 export const FormAmountInput = forwardRef<HTMLInputElement, FormAmountInputProps>(
   (
-    {
-      label,
-      description,
-      value,
-      onValueChange,
-      showFormatted = true,
-      className,
-      ...props
-    },
+    { label, description, value, onValueChange, showFormatted = true, className, ...props },
     ref
   ) => {
     const [inputValue, setInputValue] = useState(value?.toString() || "");
@@ -66,7 +58,11 @@ export const FormAmountInput = forwardRef<HTMLInputElement, FormAmountInputProps
       }
     };
 
-    const displayValue = isFocused ? inputValue : (inputValue && !isNaN(parseInt(inputValue, 10)) ? formatNumber(parseInt(inputValue, 10)) : inputValue);
+    const displayValue = isFocused
+      ? inputValue
+      : inputValue && !isNaN(parseInt(inputValue, 10))
+        ? formatNumber(parseInt(inputValue, 10))
+        : inputValue;
 
     const formattedAmount = value !== undefined && value > 0 ? formatSats(value) : null;
 

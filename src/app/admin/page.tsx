@@ -1,7 +1,7 @@
 /**
  * ADMIN DASHBOARD PAGE
  * Route: /admin
- * 
+ *
  * Child pages to implement:
  * - bounties/page.tsx             All bounties management
  * - workspaces/page.tsx           All workspaces management
@@ -9,7 +9,7 @@
  * - transactions/page.tsx         Financial monitoring
  * - analytics/page.tsx            Platform analytics
  * - settings/page.tsx             Platform settings
- * 
+ *
  * Components: AdminStats, AdminTable, AdminSidebar (@sidebar parallel route)
  * API: All endpoints with elevated permissions
  * Auth: Super admin only
@@ -20,9 +20,7 @@ export default function AdminPage() {
     <div className="container mx-auto py-8">
       <div className="mb-8">
         <h1 className="text-4xl font-bold mb-2">Admin Dashboard</h1>
-        <p className="text-muted-foreground">
-          Platform management and analytics
-        </p>
+        <p className="text-muted-foreground">Platform management and analytics</p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-8">

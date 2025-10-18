@@ -132,10 +132,7 @@ export const WORKSPACE_ROLE_HIERARCHY: readonly WorkspaceRole[] = [
   WorkspaceRole.VIEWER,
 ] as const;
 
-export function hasHigherRole(
-  userRole: WorkspaceRole,
-  requiredRole: WorkspaceRole
-): boolean {
+export function hasHigherRole(userRole: WorkspaceRole, requiredRole: WorkspaceRole): boolean {
   const userLevel = WORKSPACE_ROLE_CONFIG[userRole].level;
   const requiredLevel = WORKSPACE_ROLE_CONFIG[requiredRole].level;
   return userLevel >= requiredLevel;

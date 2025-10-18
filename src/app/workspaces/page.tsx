@@ -1,7 +1,7 @@
 /**
  * WORKSPACES PAGE
  * Route: /workspaces
- * 
+ *
  * Child pages to implement:
  * - [id]/page.tsx                     Workspace overview
  * - [id]/bounties/page.tsx            Workspace bounties list
@@ -9,7 +9,7 @@
  * - [id]/members/page.tsx             Workspace members management
  * - [id]/budget/page.tsx              Budget management
  * - [id]/settings/page.tsx            Workspace settings
- * 
+ *
  * Components: WorkspaceCard, WorkspaceGrid, CreateWorkspaceButton
  * API: GET /api/workspaces
  * Models: Workspace, WorkspaceMember, WorkspaceBudget
@@ -21,11 +21,9 @@ export default function WorkspacesPage() {
       <div className="mb-8 flex items-center justify-between">
         <div>
           <h1 className="text-4xl font-bold mb-2">Workspaces</h1>
-          <p className="text-muted-foreground">
-            Organizations posting bounties
-          </p>
+          <p className="text-muted-foreground">Organizations posting bounties</p>
         </div>
-        
+
         <button className="rounded-md bg-primary px-4 py-2 text-primary-foreground hover:bg-primary/90">
           Create Workspace
         </button>

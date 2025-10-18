@@ -2,12 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
-import {
-  ValidationError,
-  NotFoundError,
-  ForbiddenError,
-  ConflictError,
-} from "@/lib";
+import { ValidationError, NotFoundError, ForbiddenError, ConflictError } from "@/lib";
 
 const getCurrentUserPubkey = (): string => {
   // TODO: Implement actual authentication
@@ -29,10 +24,7 @@ export async function createUserAction(formData: FormData) {
 
     const existingUser = await db.user.findFirst({
       where: {
-        OR: [
-          { pubkey },
-          { username },
-        ],
+        OR: [{ pubkey }, { username }],
       },
     });
 
@@ -128,10 +120,7 @@ export async function updateProfileAction(pubkey: string, formData: FormData) {
   }
 }
 
-export async function updateSocialLinksAction(
-  pubkey: string,
-  formData: FormData
-) {
+export async function updateSocialLinksAction(pubkey: string, formData: FormData) {
   try {
     const currentUserPubkey = getCurrentUserPubkey();
 

@@ -68,11 +68,7 @@ export function MemberList({
       const formData = new FormData();
       formData.append("role", newRole);
 
-      const result = await updateMemberRoleAction(
-        workspaceId,
-        editingMember.id,
-        formData
-      );
+      const result = await updateMemberRoleAction(workspaceId, editingMember.id, formData);
 
       if (result.success) {
         showSuccess("Member role updated successfully!");
@@ -122,10 +118,7 @@ export function MemberList({
     <>
       <div className="space-y-4">
         {members.map((member) => (
-          <div
-            key={member.id}
-            className="flex items-center justify-between p-4 border rounded-lg"
-          >
+          <div key={member.id} className="flex items-center justify-between p-4 border rounded-lg">
             <div className="flex items-center gap-4">
               {member.user.avatarUrl && (
                 <img
@@ -135,12 +128,8 @@ export function MemberList({
                 />
               )}
               <div>
-                <div className="font-medium">
-                  {member.user.alias || member.user.username}
-                </div>
-                <div className="text-sm text-muted-foreground">
-                  @{member.user.username}
-                </div>
+                <div className="font-medium">{member.user.alias || member.user.username}</div>
+                <div className="text-sm text-muted-foreground">@{member.user.username}</div>
               </div>
               <Badge variant={member.role === WorkspaceRole.OWNER ? "default" : "secondary"}>
                 {member.role}
@@ -161,11 +150,7 @@ export function MemberList({
                 </Button>
               )}
               {canRemove(member) && (
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  onClick={() => setRemovingMember(member)}
-                >
+                <Button variant="destructive" size="sm" onClick={() => setRemovingMember(member)}>
                   Remove
                 </Button>
               )}
@@ -209,8 +194,8 @@ export function MemberList({
           <DialogHeader>
             <DialogTitle>Remove Member</DialogTitle>
             <DialogDescription>
-              Are you sure you want to remove {removingMember?.user.username} from this
-              workspace? This action cannot be undone.
+              Are you sure you want to remove {removingMember?.user.username} from this workspace?
+              This action cannot be undone.
             </DialogDescription>
           </DialogHeader>
 
@@ -218,11 +203,7 @@ export function MemberList({
             <Button variant="outline" onClick={() => setRemovingMember(null)}>
               Cancel
             </Button>
-            <Button
-              variant="destructive"
-              onClick={handleRemoveMember}
-              disabled={isSubmitting}
-            >
+            <Button variant="destructive" onClick={handleRemoveMember} disabled={isSubmitting}>
               {isSubmitting ? "Removing..." : "Remove Member"}
             </Button>
           </DialogFooter>

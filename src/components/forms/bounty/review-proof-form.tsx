@@ -91,11 +91,7 @@ export function ReviewProofForm({ proofId, onSuccess, onCancel }: ReviewProofFor
           >
             {isSubmitting ? "Processing..." : "Reject"}
           </Button>
-          <Button
-            type="button"
-            onClick={() => handleReview(true)}
-            disabled={isSubmitting}
-          >
+          <Button type="button" onClick={() => handleReview(true)} disabled={isSubmitting}>
             {isSubmitting ? "Processing..." : "Approve"}
           </Button>
         </div>

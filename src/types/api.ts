@@ -1,4 +1,3 @@
-
 export interface ApiResponse<T = unknown> {
   success: boolean;
   data?: T;
@@ -7,10 +6,10 @@ export interface ApiResponse<T = unknown> {
 }
 
 export interface ApiError {
-  code: string;           
-  message: string;        
-  details?: Record<string, unknown>;  
-  field?: string;       
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+  field?: string;
 }
 
 export interface ApiMeta {
@@ -43,7 +42,7 @@ export interface PaginationParams {
 
 export interface SortParams {
   sortBy?: string;
-  sortOrder?: 'asc' | 'desc';
+  sortOrder?: "asc" | "desc";
 }
 
 export interface FilterParams {

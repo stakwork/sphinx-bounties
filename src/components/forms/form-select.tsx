@@ -43,11 +43,7 @@ export const FormSelect = forwardRef<HTMLButtonElement, FormSelectProps>(
           </FormControl>
           <SelectContent>
             {options.map((option) => (
-              <SelectItem
-                key={option.value}
-                value={option.value}
-                disabled={option.disabled}
-              >
+              <SelectItem key={option.value} value={option.value} disabled={option.disabled}>
                 {option.label}
               </SelectItem>
             ))}

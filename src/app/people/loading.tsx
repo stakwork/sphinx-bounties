@@ -1,5 +1,5 @@
-import { Skeleton } from '@/components/ui/skeleton';
-import { ListSkeleton } from '@/components/loading/list-skeleton';
+import { Skeleton } from "@/components/ui/skeleton";
+import { ListSkeleton } from "@/components/loading/list-skeleton";
 
 export default function Loading() {
   return (

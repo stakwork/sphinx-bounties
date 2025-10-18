@@ -1,8 +1,8 @@
-import { z, ZodSchema } from 'zod';
-import { NextRequest } from 'next/server';
-import { apiError } from './response';
-import { ErrorCode } from '@/types/error';
-
+import type { ZodSchema } from "zod";
+import { z } from "zod";
+import type { NextRequest } from "next/server";
+import { apiError } from "./response";
+import { ErrorCode } from "@/types/error";
 
 export async function validateBody<T>(
   request: NextRequest,
@@ -19,10 +19,10 @@ export async function validateBody<T>(
         error: apiError(
           {
             code: ErrorCode.VALIDATION_ERROR,
-            message: 'Request validation failed',
+            message: "Request validation failed",
             details: {
               errors: err.issues.map((issue) => ({
-                field: issue.path.join('.'),
+                field: issue.path.join("."),
                 message: issue.message,
                 code: issue.code,
               })),
@@ -37,14 +37,13 @@ export async function validateBody<T>(
       error: apiError(
         {
           code: ErrorCode.BAD_REQUEST,
-          message: 'Invalid JSON in request body',
+          message: "Invalid JSON in request body",
         },
         400
       ),
     };
   }
 }
-
 
 export function validateQuery<T>(
   searchParams: URLSearchParams,
@@ -61,10 +60,10 @@ export function validateQuery<T>(
         error: apiError(
           {
             code: ErrorCode.VALIDATION_ERROR,
-            message: 'Query parameter validation failed',
+            message: "Query parameter validation failed",
             details: {
               errors: err.issues.map((issue) => ({
-                field: issue.path.join('.'),
+                field: issue.path.join("."),
                 message: issue.message,
                 code: issue.code,
               })),
@@ -79,14 +78,13 @@ export function validateQuery<T>(
       error: apiError(
         {
           code: ErrorCode.BAD_REQUEST,
-          message: 'Invalid query parameters',
+          message: "Invalid query parameters",
         },
         400
       ),
     };
   }
 }
-
 
 export const paginationSchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
@@ -95,16 +93,16 @@ export const paginationSchema = z.object({
 
 export const sortSchema = z.object({
   sortBy: z.string().optional(),
-  sortOrder: z.enum(['asc', 'desc']).default('desc'),
+  sortOrder: z.enum(["asc", "desc"]).default("desc"),
 });
 
 export const idSchema = z.object({
-  id: z.string().uuid('Invalid UUID format'),
+  id: z.string().uuid("Invalid UUID format"),
 });
 
 export const pubkeySchema = z.object({
   pubkey: z
     .string()
-    .min(64, 'Pubkey must be at least 64 characters')
-    .max(66, 'Pubkey must be at most 66 characters'),
+    .min(64, "Pubkey must be at least 64 characters")
+    .max(66, "Pubkey must be at most 66 characters"),
 });

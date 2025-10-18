@@ -1,6 +1,5 @@
-import { ErrorCode } from '@/types/error';
-import { ERROR_MESSAGES, ERROR_STATUS_CODES } from '@/lib/error-constants';
-
+import type { ErrorCode } from "@/types/error";
+import { ERROR_MESSAGES, ERROR_STATUS_CODES } from "@/lib/error-constants";
 
 export class AppError extends Error {
   public readonly statusCode: number;
@@ -16,7 +15,7 @@ export class AppError extends Error {
     isOperational = true,
     metadata?: Record<string, unknown>
   ) {
-    const errorMessage = message || ERROR_MESSAGES[code] || 'An error occurred';
+    const errorMessage = message || ERROR_MESSAGES[code] || "An error occurred";
     super(errorMessage);
 
     this.name = this.constructor.name;
@@ -39,7 +38,6 @@ export class AppError extends Error {
       timestamp: this.timestamp,
     };
   }
-
 
   toApiError() {
     return {

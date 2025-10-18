@@ -1,5 +1,5 @@
-import { AppError } from './base';
-import { ErrorCode } from '@/types/error';
+import { AppError } from "./base";
+import { ErrorCode } from "@/types/error";
 
 export class ValidationError extends AppError {
   constructor(message?: string, metadata?: Record<string, unknown>) {
