@@ -1,8 +1,20 @@
-import { NextResponse } from "next/server";
+import { NextRequest } from "next/server";
+import { z } from "zod";
+import {
+  apiPaginated,
+  apiError,
+  validateQuery,
+  paginationSchema,
+  sortSchema,
+  getPaginationValues,
+} from "@/lib/api";
+import { ErrorCode } from "@/types/error";
+import { db } from "@/lib/db";
+import { BountyStatus } from "@prisma/client";
 
 /**
  * BOUNTIES API
- * 
+ *
  * Child routes to implement:
  * - [id]/route.ts                 GET, PATCH, DELETE bounty
  * - [id]/assign/route.ts          POST, DELETE assign/unassign hunter
@@ -14,24 +26,115 @@ import { NextResponse } from "next/server";
  * - [id]/timing/start/route.ts    PUT start timing
  * - [id]/timing/close/route.ts    PUT close timing
  * - leaderboard/route.ts          GET bounty leaderboard
- * 
+ *
  * Models: Bounty, BountyProof, BountyActivity, Transaction
  */
 
-export async function GET() {
+// Query schema for GET /api/bounties exampple
+const bountiesQuerySchema = paginationSchema.merge(sortSchema).extend({
+  status: z.nativeEnum(BountyStatus).optional(),
+  workspaceId: z.string().uuid().optional(),
+  assigneePubkey: z.string().optional(),
+  creatorPubkey: z.string().optional(),
+  search: z.string().optional(),
+});
+
+export async function GET(request: NextRequest) {
   try {
-    // TODO: Implement list bounties with filters
-    // TODO: Filters: status, workspace, assignee, creator, languages, tags
-    // TODO: Add pagination, sorting, search
-    
-    return NextResponse.json({
-      data: [],
-      meta: { total: 0, page: 1, perPage: 20 }
+    const { searchParams } = new URL(request.url);
+
+    // Validate query parameters
+    const { data: queryData, error: validationError } = validateQuery(
+      searchParams,
+      bountiesQuerySchema
+    );
+
+    if (validationError) {
+      return validationError;
+    }
+
+    const {
+      page,
+      pageSize,
+      sortBy,
+      sortOrder,
+      status,
+      workspaceId,
+      assigneePubkey,
+      creatorPubkey,
+      search,
+    } = queryData!;
+
+    // Get pagination values for Prisma
+    const { skip, take } = getPaginationValues({ page, pageSize });
+
+    // Build where clause
+    const where = {
+      ...(status && { status }),
+      ...(workspaceId && { workspaceId }),
+      ...(assigneePubkey && { assigneePubkey }),
+      ...(creatorPubkey && { creatorPubkey }),
+      ...(search && {
+        OR: [
+          { title: { contains: search, mode: "insensitive" as const } },
+          { description: { contains: search, mode: "insensitive" as const } },
+        ],
+      }),
+      deletedAt: null, // Soft delete filter
+    };
+
+    // Build orderBy clause
+    const orderBy = sortBy
+      ? { [sortBy]: sortOrder }
+      : { createdAt: "desc" as const };
+
+    // Fetch bounties and total count in parallel
+    const [bounties, totalCount] = await Promise.all([
+      db.bounty.findMany({
+        where,
+        skip,
+        take,
+        orderBy,
+        include: {
+          creator: {
+            select: {
+              pubkey: true,
+              githubUsername: true,
+              avatarUrl: true,
+            },
+          },
+          assignee: {
+            select: {
+              pubkey: true,
+              githubUsername: true,
+              avatarUrl: true,
+            },
+          },
+          workspace: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+        },
+      }),
+      db.bounty.count({ where }),
+    ]);
+
+    // Return paginated response
+    return apiPaginated(bounties, {
+      page,
+      pageSize,
+      totalCount,
     });
-  } catch {
-    return NextResponse.json(
-      { error: "Failed to fetch bounties" },
-      { status: 500 }
+  } catch (error) {
+    console.error("Error fetching bounties:", error);
+    return apiError(
+      {
+        code: ErrorCode.INTERNAL_SERVER_ERROR,
+        message: "Failed to fetch bounties",
+      },
+      500
     );
   }
 }
