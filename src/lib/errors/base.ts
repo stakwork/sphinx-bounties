@@ -48,8 +48,4 @@ export class AppError extends Error {
       details: this.metadata,
     };
   }
-
-  log(){
-    console.error(`[${this.timestamp}] ${this.name}: ${this.message}`, this.metadata);
-  }
 }
