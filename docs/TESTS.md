@@ -365,3 +365,229 @@
 - cannot remove workspace owner
 - cannot change owner's role
 - non-admin cannot manage members
+
+## Phase 8: User Forms & Actions
+
+### User Server Action Tests (src/actions/user.actions.ts)
+
+#### createUserAction
+
+- validates required pubkey field (64-66 chars hex)
+- validates required username field (3-30 chars, alphanumeric)
+- validates optional email format
+- creates user with all provided fields
+- returns success result with user data
+- returns ConflictError for duplicate pubkey
+- returns ConflictError for duplicate username
+- returns ConflictError for duplicate email
+- validates URL formats for avatarUrl, websiteUrl
+- validates GitHub/Twitter handles (alphanumeric, underscore)
+- validates bio length (max 500 chars)
+- handles null values for optional fields
+- returns ValidationError on invalid data
+- revalidates /users path
+
+#### updateProfileAction
+
+- validates user exists before update
+- checks current user matches profile being updated
+- updates profile fields (alias, bio, avatarUrl, etc.)
+- handles partial updates (only provided fields)
+- handles null values for optional fields
+- validates alias length (2-50 chars)
+- validates bio length (max 500 chars)
+- validates URL formats
+- returns NotFoundError for non-existent user
+- returns ForbiddenError when updating other user's profile
+- returns ValidationError on invalid data
+- revalidates user profile paths after update
+
+#### updateSocialLinksAction
+
+- validates user exists before update
+- checks current user matches profile being updated
+- updates social links (GitHub, Twitter, Discord, Telegram)
+- validates GitHub handle format
+- validates Twitter handle format
+- resets githubVerified to false when githubHandle changes
+- resets twitterVerified to false when twitterHandle changes
+- preserves verification status when handle unchanged
+- handles null values for handles
+- returns NotFoundError for non-existent user
+- returns ForbiddenError when updating other user's links
+- returns ValidationError on invalid data
+- revalidates user profile paths after update
+
+#### updateNotificationSettingsAction
+
+- validates user exists before update
+- checks current user matches profile being updated
+- updates notification settings (emailNotifications, pushNotifications)
+- handles boolean values correctly
+- returns NotFoundError for non-existent user
+- returns ForbiddenError when updating other user's settings
+- revalidates user profile paths after update
+
+#### deleteUserAction
+
+- validates user exists before delete
+- checks current user matches profile being deleted
+- prevents deletion with assigned bounties
+- prevents deletion with created workspaces
+- soft deletes user (sets deletedAt)
+- returns NotFoundError for non-existent user
+- returns ForbiddenError when deleting other user's account
+- returns ConflictError when active bounties exist
+- returns ConflictError when created workspaces exist
+- revalidates /users path
+
+#### verifyGithubAction
+
+- validates user exists
+- checks current user matches profile being verified
+- validates GitHub code parameter
+- TODO: implements OAuth verification flow
+- sets githubVerified to true on success
+- returns NotFoundError for non-existent user
+- returns ForbiddenError when verifying other user's GitHub
+- returns ValidationError on invalid verification code
+- revalidates user profile paths after verification
+
+#### verifyTwitterAction
+
+- validates user exists
+- checks current user matches profile being verified
+- validates Twitter code parameter
+- TODO: implements OAuth verification flow
+- sets twitterVerified to true on success
+- returns NotFoundError for non-existent user
+- returns ForbiddenError when verifying other user's Twitter
+- returns ValidationError on invalid verification code
+- revalidates user profile paths after verification
+
+### User Form Component Tests (src/components/forms/user/*.tsx)
+
+#### CreateUserForm
+
+- renders all input fields (pubkey, username, email, alias, bio)
+- validates required pubkey field (64-66 chars hex)
+- validates required username field (3-30 chars alphanumeric)
+- validates optional email format
+- validates alias length (2-50 chars)
+- validates bio length (max 500 chars)
+- displays pubkey as disabled/readonly input
+- shows validation errors inline
+- submits valid data to createUserAction
+- shows loading state during submission
+- displays success toast on successful creation
+- displays error toast on failure (duplicate username, etc.)
+- navigates to user profile page on success
+- calls onSuccess callback when provided
+- handles onCancel callback
+
+#### UpdateProfileForm
+
+- pre-populates fields with user profile data
+- handles null values for optional fields (alias, bio, avatarUrl, etc.)
+- validates alias length (2-50 chars)
+- validates bio length (max 500 chars)
+- validates avatarUrl and websiteUrl formats
+- validates location and skills as comma-separated lists
+- allows partial updates (only changed fields)
+- shows loading state during submission
+- displays success toast on update
+- displays error toast on failure
+- calls onSuccess callback when provided
+- handles onCancel callback
+
+#### SocialLinksForm
+
+- pre-populates fields with social links data
+- handles null values for optional handles
+- validates GitHub handle format (alphanumeric, underscore)
+- validates Twitter handle format (alphanumeric, underscore)
+- validates Discord tag format
+- validates Telegram handle format
+- displays verification badges for verified accounts
+- shows green checkmark badge when githubVerified is true
+- shows green checkmark badge when twitterVerified is true
+- shows "Verify" button for unverified GitHub account
+- shows "Verify" button for unverified Twitter account
+- calls verifyGithubAction on "Verify GitHub" click
+- calls verifyTwitterAction on "Verify Twitter" click
+- shows loading state during verification
+- displays success toast on verification success
+- displays info toast indicating OAuth placeholder
+- displays warning badge when handle changed (verification reset)
+- shows loading state during submission
+- displays success toast on update
+- displays error toast on failure
+- calls onSuccess callback when provided
+- handles onCancel callback
+
+#### DeleteAccountForm
+
+- renders account deletion confirmation UI
+- displays user email/pubkey for verification
+- requires explicit confirmation text input
+- validates confirmation text matches expected value
+- shows danger styling (red theme, warning icons)
+- displays warning message about permanent deletion
+- lists consequences of deletion (data loss, cannot undo)
+- disables submit button until confirmation entered
+- shows loading state during deletion
+- submits deletion to deleteUserAction
+- displays success toast on deletion
+- displays error toast on failure (active bounties, workspaces)
+- navigates to home page on successful deletion
+- calls onSuccess callback when provided
+- handles onCancel callback
+
+### User Integration Tests
+
+#### User Creation Flow
+
+- user creates account with pubkey and username
+- profile is created with default settings
+- user appears in user directory
+- user can navigate to profile page
+- validation prevents duplicate pubkey
+- validation prevents duplicate username
+
+#### Profile Update Flow
+
+- user updates profile information (alias, bio, avatar)
+- changes are reflected immediately on profile page
+- validation prevents invalid URLs
+- validation prevents overly long bio
+- cannot update another user's profile
+
+#### Social Links Management Flow
+
+- user adds GitHub handle without verification
+- user adds Twitter handle without verification
+- handles appear on profile page
+- user clicks "Verify GitHub" button
+- OAuth placeholder message is displayed
+- verification badge shown for verified accounts
+- changing handle resets verification status
+- verification badge removed when handle changed
+
+#### Notification Settings Flow
+
+- user updates email notification preference
+- user updates push notification preference
+- settings are persisted to database
+- cannot update another user's settings
+
+#### Account Deletion Flow
+
+- user initiates account deletion
+- confirmation dialog displays warnings
+- user must type confirmation text
+- deletion fails when user has active bounties
+- deletion fails when user has created workspaces
+- deletion succeeds when no dependencies exist
+- user is redirected to home page
+- account marked as deleted in database
+- cannot delete another user's account
