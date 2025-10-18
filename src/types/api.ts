@@ -27,6 +27,14 @@ export interface PaginationMeta {
   hasMore: boolean;
 }
 
+export interface PaginationResult {
+  page: number;
+  pageSize: number;
+  total: number;
+  totalPages: number;
+  hasMore: boolean;
+}
+
 export interface PaginationParams {
   page?: number;
   pageSize?: number;

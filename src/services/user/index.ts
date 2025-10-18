@@ -26,3 +26,5 @@ export const userService = {
     });
   },
 };
+
+export * from "./queries";
