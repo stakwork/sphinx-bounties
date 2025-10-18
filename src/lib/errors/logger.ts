@@ -40,6 +40,7 @@ export function logError(
   }
 
   if (process.env.NODE_ENV === 'production') {
+    console.error("[ERROR]", logData);
     // TODO: Send to error tracking service (Sentry, DataDog, etc.)
   }
 }
