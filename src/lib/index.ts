@@ -14,4 +14,3 @@ export * from "./errors/mapper";
 export * from "./errors/logger";
 
 export * from "./notifications/templates";
-export * from "./notifications/actions";
