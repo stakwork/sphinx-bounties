@@ -7,3 +7,4 @@ export * from "./form-amount-input";
 
 export * from "./bounty";
 export * from "./workspace";
+export * from "./user";
