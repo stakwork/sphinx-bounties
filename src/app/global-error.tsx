@@ -1,7 +1,6 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { ErrorCard } from "@/components/errors";
 
 export default function GlobalError({
   error,
@@ -13,18 +12,16 @@ export default function GlobalError({
   return (
     <html lang="en">
       <body>
-        <div className="flex items-center justify-center min-h-screen p-4">
-          <Alert variant="destructive" className="max-w-md">
-            <AlertTitle>Critical error</AlertTitle>
-            <AlertDescription className="mt-2">
-              <p className="text-sm mb-4">
-                {error.message || "A critical error occurred. Please refresh the page."}
-              </p>
-              <Button onClick={reset} variant="outline" size="sm">
-                Refresh
-              </Button>
-            </AlertDescription>
-          </Alert>
+        <div className="container mx-auto py-10">
+          <ErrorCard
+            title="Critical Error"
+            message={
+              error.message ||
+              "A critical error occurred. Please refresh the page."
+            }
+            code={error.digest}
+            onRetry={reset}
+          />
         </div>
       </body>
     </html>
