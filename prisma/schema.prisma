@@ -431,3 +431,15 @@ model WorkspaceActivity {
   @@index([workspaceId, timestamp(sort: Desc)])
   @@map("workspace_activities")
 }
+
+model AuthChallenge {
+  id        String   @id @default(cuid())
+  k1        String   @unique @db.VarChar(64)
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+  used      Boolean  @default(false)
+
+  @@index([k1])
+  @@index([expiresAt])
+  @@map("auth_challenges")
+}

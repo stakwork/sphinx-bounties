@@ -43,7 +43,6 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
 
-    // Validate query parameters
     const { data: queryData, error: validationError } = validateQuery(
       searchParams,
       bountiesQuerySchema
@@ -65,10 +64,8 @@ export async function GET(request: NextRequest) {
       search,
     } = queryData!;
 
-    // Get pagination values for Prisma
     const { skip, take } = getPaginationValues({ page, pageSize });
 
-    // Build where clause
     const where = {
       ...(status && { status }),
       ...(workspaceId && { workspaceId }),
@@ -83,10 +80,8 @@ export async function GET(request: NextRequest) {
       deletedAt: null, // Soft delete filter
     };
 
-    // Build orderBy clause
     const orderBy = sortBy ? { [sortBy]: sortOrder } : { createdAt: "desc" as const };
 
-    // Fetch bounties and total count in parallel
     const [bounties, totalCount] = await Promise.all([
       db.bounty.findMany({
         where,

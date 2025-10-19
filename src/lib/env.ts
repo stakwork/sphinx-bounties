@@ -6,8 +6,8 @@ export const env = createEnv({
     DATABASE_URL: z.string().url(),
     JWT_SECRET: z.string().min(32),
     JWT_EXPIRY_HOURS: z.coerce.number().default(168),
-    REDIS_URL: z.string().url().optional(),
-    SUPER_ADMINS: z.string().optional(),
+    REDIS_URL: z.string().url().optional().or(z.literal("")),
+    SUPER_ADMINS: z.string().optional().or(z.literal("")),
   },
   client: {
     NEXT_PUBLIC_APP_URL: z.string().url(),
