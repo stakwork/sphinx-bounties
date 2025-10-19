@@ -850,3 +850,586 @@
 - network errors handled gracefully
 - retry logic works as configured
 - failed mutations don't corrupt cache
+
+## Phase 10: Mutation Hooks & Optimistic Updates (TODO)
+
+### Bounty Mutation Hook Tests
+
+#### useCreateBounty
+
+- calls createBountyAction with form data
+- invalidates bounty list queries on success
+- invalidates workspace bounty queries on success
+- shows success toast with bounty title
+- shows error toast on failure
+- handles loading state correctly
+- onSuccess callback receives new bounty data
+- onError callback receives error details
+
+#### useUpdateBounty
+
+- calls updateBountyAction with bounty id and updates
+- invalidates specific bounty query on success
+- invalidates bounty list queries on success
+- invalidates workspace bounty queries if workspace changed
+- shows success toast
+- shows error toast on validation/permission failure
+- applies optimistic update before server response
+- rolls back optimistic update on error
+- handles concurrent updates correctly
+
+#### useAssignBounty
+
+- calls assignBountyAction with bounty id and assignee pubkey
+- invalidates bounty detail query on success
+- invalidates assignee's bounty list on success
+- invalidates workspace bounty count on success
+- shows success toast with assignee username
+- shows error toast on failure
+- applies optimistic update to bounty status
+- rolls back if assignment fails
+
+#### useSubmitProof
+
+- calls submitProofAction with bounty id and proof data
+- invalidates bounty proofs query on success
+- invalidates bounty detail to show new proof count
+- shows success toast
+- shows error toast on duplicate submission
+- validates proof URL format before submission
+- handles file upload if proof type is file-based
+
+#### useReviewProof
+
+- calls reviewProofAction with proof id and decision
+- invalidates proof detail query on success
+- invalidates bounty detail if status changed (approved)
+- invalidates bounty list if completed
+- shows success toast with decision (approved/rejected)
+- shows error toast on permission failure
+- applies optimistic update to proof status
+- updates bounty status optimistically if approved
+
+### Workspace Mutation Hook Tests
+
+#### useCreateWorkspace
+
+- calls createWorkspaceAction with form data
+- invalidates workspace list queries on success
+- invalidates user's owned workspace queries on success
+- shows success toast with workspace name
+- navigates to new workspace page on success
+- shows error toast on duplicate name
+- handles loading state correctly
+- onSuccess callback receives new workspace data
+
+#### useUpdateWorkspace
+
+- calls updateWorkspaceAction with workspace id and updates
+- invalidates specific workspace query on success
+- invalidates workspace list queries on success
+- shows success toast
+- shows error toast on permission failure
+- applies optimistic update before server response
+- rolls back optimistic update on error
+- revalidates cached workspace details
+
+#### useDeleteWorkspace
+
+- calls deleteWorkspaceAction with workspace id
+- removes workspace from all queries on success
+- invalidates workspace list queries
+- invalidates owner's workspace queries
+- shows success toast
+- shows error toast when active bounties exist
+- navigates away from deleted workspace page
+- confirms deletion before executing
+- cannot be undone after success
+
+#### useAddMember
+
+- calls addMemberAction with workspace id, user pubkey, and role
+- invalidates workspace members query on success
+- invalidates workspace detail to update member count
+- shows success toast with new member username
+- shows error toast on duplicate member
+- shows error toast if user not found
+- validates pubkey format before submission
+- sends optional welcome message
+
+#### useUpdateMemberRole
+
+- calls updateMemberRoleAction with membership id and new role
+- invalidates workspace members query on success
+- shows success toast with role change
+- shows error toast on permission failure
+- applies optimistic update to member role
+- rolls back if update fails
+- prevents changing owner's role
+- validates role is valid enum value
+
+#### useRemoveMember
+
+- calls removeMemberAction with membership id
+- invalidates workspace members query on success
+- invalidates workspace detail to update member count
+- shows success toast with removed member username
+- shows error toast on permission failure
+- removes member from cached list optimistically
+- rolls back if removal fails
+- prevents removing workspace owner
+- confirms removal before executing
+
+### User Mutation Hook Tests
+
+#### useCreateUser
+
+- calls createUserAction with form data
+- invalidates user list queries on success
+- invalidates username availability checks on success
+- shows success toast with username
+- navigates to user profile page on success
+- shows error toast on duplicate pubkey/username
+- validates pubkey format before submission
+- handles loading state correctly
+
+#### useUpdateProfile
+
+- calls updateProfileAction with user pubkey and updates
+- invalidates user detail query on success
+- invalidates user list queries on success
+- invalidates username queries if username changed
+- shows success toast
+- shows error toast on validation failure
+- applies optimistic update before server response
+- rolls back optimistic update on error
+- handles partial updates correctly
+
+#### useUpdateSocialLinks
+
+- calls updateSocialLinksAction with social handles
+- invalidates user detail query on success
+- invalidates verified user lists if verification affected
+- shows success toast
+- resets verification status if handle changed
+- shows warning toast when verification will be reset
+- validates handle formats before submission
+
+#### useUpdateNotificationSettings
+
+- calls updateNotificationSettingsAction with settings
+- invalidates user detail query on success
+- shows success toast
+- applies optimistic update to settings
+- rolls back if update fails
+- toggles work immediately in UI
+
+#### useDeleteUser
+
+- calls deleteUserAction with user pubkey
+- removes user from all queries on success
+- invalidates all user list queries
+- shows success toast
+- shows error toast when active bounties/workspaces exist
+- navigates to home page after deletion
+- confirms deletion before executing
+- requires confirmation text input
+- logs user out after successful deletion
+
+#### useVerifyGithub / useVerifyTwitter
+
+- calls verify action with OAuth code
+- invalidates user detail query on success
+- invalidates verified user lists on success
+- shows success toast with verification badge
+- shows error toast on invalid code
+- opens OAuth flow in popup window
+- handles OAuth callback correctly
+- updates verification badge immediately
+- validates OAuth state parameter
+
+### Optimistic Update Tests
+
+#### Optimistic Update Pattern
+
+- updates local cache before server response
+- shows changes immediately in UI
+- rolls back changes on server error
+- displays error toast on rollback
+- preserves user input during optimistic state
+- handles race conditions correctly
+- works with pagination correctly
+- maintains referential equality when possible
+
+#### useOptimisticUpdate Hook Tests
+
+- applies optimistic update to query data
+- reverts on mutation error
+- calls onError with original data
+- calls onSuccess with server data
+- handles undefined query data gracefully
+- works with array data (lists)
+- works with object data (details)
+- preserves optimistic state during loading
+
+#### Optimistic UI Patterns
+
+- bounty status changes show immediately
+- member role changes show immediately
+- like/favorite actions show immediately
+- proof submission shows in list immediately
+- form submissions disable during optimistic state
+- loading indicators show during server round-trip
+- error states revert and show clear message
+
+## Phase 11: Custom Hook Tests (TODO)
+
+### Form Hook Tests
+
+#### useFormWithToast
+
+- initializes form with Zod resolver
+- shows success toast on successful submit
+- shows error toast on failed submit with error message
+- shows error toast on validation failure
+- handles loading state during submission
+- resets form after successful submit (optional)
+- preserves form values on error
+- calls onSuccess callback with result data
+- calls onError callback with error details
+
+#### useFormErrors
+
+- sets field-level errors from server response
+- sets form-level errors from server response
+- clears errors when form field changes
+- clears all errors with clearErrors()
+- formats Zod validation errors correctly
+- formats API error responses correctly
+- maps error codes to user-friendly messages
+
+#### useServerAction
+
+- wraps server action with loading state
+- tracks isPending during action execution
+- returns result data on success
+- returns error on failure
+- can be reset to initial state
+- prevents multiple simultaneous executions
+- handles async action errors gracefully
+
+#### useAsyncAction
+
+- uses React useTransition for loading state
+- executes async action when called
+- returns result or error
+- does not block UI during execution
+- can be cancelled (if implemented)
+- provides isPending state
+- handles errors without crashing
+
+### Utility Hook Tests
+
+#### useDebounce
+
+- debounces value changes by specified delay
+- returns initial value immediately
+- updates value after delay expires
+- cancels previous timeout on new change
+- cleans up timeout on unmount
+- handles rapid changes correctly
+- works with primitive and object values
+
+#### useLocalStorage
+
+- reads value from localStorage on mount
+- writes value to localStorage on change
+- handles JSON serialization correctly
+- handles invalid JSON gracefully
+- syncs across tabs/windows (storage event)
+- returns default value when key doesn't exist
+- handles localStorage quota errors
+
+#### useMediaQuery
+
+- returns true when media query matches
+- returns false when media query doesn't match
+- updates on window resize
+- cleans up listener on unmount
+- works with standard media queries (min-width, etc.)
+- handles invalid media queries gracefully
+
+#### usePagination
+
+- manages page state
+- manages pageSize state
+- provides goToPage function
+- provides nextPage/prevPage functions
+- calculates total pages from total items
+- calculates hasMore from current page
+- prevents going to invalid pages
+- resets to page 1 when pageSize changes
+
+#### useFilters
+
+- manages filter state object
+- provides setFilter function
+- provides clearFilters function
+- provides clearFilter function (single)
+- serializes filters to URL query params
+- deserializes filters from URL query params
+- type-safe filter updates
+- handles complex filter types (arrays, objects)
+
+### Integration Hook Tests
+
+#### Form + Validation + Toast Integration
+
+- validates form on submit
+- shows inline errors for invalid fields
+- shows toast on submit success
+- shows toast on submit failure
+- clears errors when user corrects input
+- re-validates on blur after error
+- handles server-side validation errors
+
+#### Optimistic Update + Error Handling Integration
+
+- applies optimistic update immediately
+- shows success toast on server success
+- rolls back and shows error toast on failure
+- maintains UI consistency during rollback
+- handles network errors gracefully
+- retries failed mutations (if configured)
+
+## Phase 12: Component Testing (TODO)
+
+### UI Component Tests (React Testing Library)
+
+#### Button Component
+
+- renders with default variant
+- renders with all variant styles (default, destructive, outline, ghost, link)
+- renders with all sizes (default, sm, lg, icon)
+- handles click events
+- shows loading state with spinner
+- disables during loading
+- forwards ref correctly
+- spreads additional props
+- renders children correctly
+- applies custom className
+
+#### Card Component
+
+- renders Card with children
+- renders CardHeader with title
+- renders CardContent with content
+- renders CardFooter with actions
+- applies custom className to all parts
+- forwards ref correctly
+- composes subcomponents correctly
+
+#### Dialog Component
+
+- renders Dialog closed by default
+- opens Dialog when open=true
+- closes Dialog on overlay click
+- closes Dialog on close button click
+- calls onOpenChange with false on close
+- prevents closing when onOpenChange not provided
+- traps focus inside dialog
+- renders DialogTitle for accessibility
+- renders DialogDescription for context
+- prevents body scroll when open
+
+#### Form Components
+
+- FormField renders with label
+- FormField shows error message
+- FormField applies error styling when invalid
+- FormInput forwards ref correctly
+- FormTextarea resizes with content
+- FormSelect opens dropdown on click
+- FormSelect closes on option select
+- FormCheckbox toggles on click
+- FormDatePicker opens calendar
+- FormDatePicker updates date on select
+
+### Layout Component Tests
+
+#### Header Component
+
+- renders site logo/title
+- renders navigation links
+- renders user menu when authenticated
+- renders login button when not authenticated
+- highlights active navigation link
+- responsive menu for mobile
+- opens mobile menu on hamburger click
+- closes mobile menu on link click
+
+#### Footer Component
+
+- renders footer links
+- renders social media links
+- renders copyright notice
+- renders all footer sections
+
+#### Sidebar Component
+
+- renders navigation links
+- highlights active link
+- collapses on mobile
+- expands on toggle
+- persists state to localStorage
+
+### Page Component Tests
+
+#### BountyListPage
+
+- renders list of bounties
+- shows loading skeleton while fetching
+- shows empty state when no bounties
+- filters bounties by status
+- searches bounties by title
+- sorts bounties by amount/date
+- paginates results correctly
+- navigates to detail on bounty click
+- shows "Create Bounty" button if allowed
+
+#### BountyDetailPage
+
+- renders bounty details
+- shows workspace info
+- shows creator info
+- shows assignee info (if assigned)
+- shows proof submissions list
+- shows "Assign" button if open
+- shows "Submit Proof" button if assigned
+- shows "Review" button if in review
+- shows "Edit" button if creator
+- handles non-existent bounty (404)
+
+#### WorkspaceDetailPage
+
+- renders workspace details
+- shows owner info
+- shows member list
+- shows bounty count and list
+- shows "Add Member" button if admin
+- shows "Edit Workspace" button if admin
+- shows "Create Bounty" button if member
+- navigates to bounty on click
+- handles non-existent workspace (404)
+
+#### UserProfilePage
+
+- renders user profile info
+- shows avatar, username, alias, bio
+- shows social links
+- shows verification badges
+- shows stats (workspaces, bounties, proofs)
+- shows "Edit Profile" button if own profile
+- shows list of created bounties
+- shows list of assigned bounties
+- handles non-existent user (404)
+
+### Form Page Tests
+
+#### CreateBountyPage
+
+- renders form with all fields
+- validates required fields
+- submits valid data
+- redirects to bounty detail on success
+- shows error on validation failure
+- requires authentication
+- requires workspace membership
+
+#### EditBountyPage
+
+- pre-populates form with bounty data
+- validates updates
+- submits changes
+- redirects to bounty detail on success
+- requires authentication
+- requires creator/admin permission
+- shows 403 if not authorized
+
+#### CreateWorkspacePage
+
+- renders form with all fields
+- validates workspace name uniqueness
+- submits valid data
+- redirects to workspace detail on success
+- requires authentication
+- creates owner membership automatically
+
+### Error Boundary Tests
+
+- catches render errors in children
+- displays fallback UI on error
+- logs error details
+- provides reset button
+- resets error boundary on reset
+- does not catch errors in event handlers
+- works with async errors in useEffect
+
+### Authentication Flow Tests (TODO - Phase 14)
+
+- redirects to login when not authenticated
+- redirects to intended page after login
+- persists session across page refreshes
+- logs out on session expiration
+- clears sensitive data on logout
+- handles LNURL-auth flow correctly
+
+## Test Coverage Goals
+
+- **Unit Tests**: 80%+ code coverage
+- **Integration Tests**: Key user flows covered
+- **E2E Tests**: Critical paths automated
+- **Accessibility**: WCAG 2.1 AA compliance
+- **Performance**: Core Web Vitals pass
+
+## Test Infrastructure
+
+### Tools & Libraries
+
+- **Test Runner**: Vitest
+- **React Testing**: @testing-library/react
+- **E2E Testing**: Playwright
+- **Mocking**: vi.mock, MSW (Mock Service Worker)
+- **Coverage**: Vitest coverage (c8)
+
+### Test Organization
+
+```
+tests/
+├── unit/           # Unit tests (functions, hooks, components)
+├── integration/    # Integration tests (user flows)
+├── e2e/           # End-to-end tests (full scenarios)
+└── fixtures/      # Test data and mocks
+```
+
+### Running Tests
+
+```bash
+# All tests
+npm test
+
+# Unit tests only
+npm test -- tests/unit
+
+# Watch mode
+npm test -- --watch
+
+# Coverage report
+npm test -- --coverage
+
+# UI mode (interactive)
+npm test:ui
+
+# E2E tests
+npm run test:e2e
+```
