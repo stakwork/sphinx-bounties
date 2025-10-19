@@ -5,8 +5,8 @@ import {
   isPublicRoute,
   isAuthRoute,
   requiresAuth,
-  requiresWorkspaceAccess,
   requiresSuperAdmin,
+  extractWorkspaceId,
 } from "@/lib/auth/middleware-utils";
 import { AUTH_HEADER_NAME, WORKSPACE_HEADER_NAME } from "@/lib/auth/constants";
 
@@ -39,17 +39,13 @@ export async function middleware(request: NextRequest) {
     response.headers.set(AUTH_HEADER_NAME, session.pubkey);
   }
 
-  if (await requiresSuperAdmin(pathname, session)) {
+  if (requiresSuperAdmin(pathname, session)) {
     return NextResponse.redirect(new URL("/unauthorized", request.url));
   }
 
-  const workspaceCheck = await requiresWorkspaceAccess(pathname, session);
-  if (workspaceCheck.required && !workspaceCheck.allowed) {
-    return NextResponse.redirect(new URL("/unauthorized", request.url));
-  }
-
-  if (workspaceCheck.workspaceId) {
-    response.headers.set(WORKSPACE_HEADER_NAME, workspaceCheck.workspaceId);
+  const workspaceId = extractWorkspaceId(pathname);
+  if (workspaceId) {
+    response.headers.set(WORKSPACE_HEADER_NAME, workspaceId);
   }
 
   return response;
