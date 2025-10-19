@@ -5,8 +5,7 @@ import {
   WORKSPACE_ROUTES_PATTERN,
   ADMIN_ROUTES_PATTERN,
 } from "./constants";
-import { isSuperAdmin, getUserWorkspaceRole } from "./permissions";
-import { WorkspaceRole } from "@prisma/client";
+import { isSuperAdmin } from "./permissions";
 import type { Session } from "@/types/auth";
 
 export function isPublicRoute(pathname: string): boolean {
@@ -21,35 +20,17 @@ export function requiresAuth(pathname: string): boolean {
   return PROTECTED_ROUTES.some((route) => pathname.startsWith(route));
 }
 
-export async function requiresSuperAdmin(
-  pathname: string,
-  session: Session | null
-): Promise<boolean> {
+export function requiresSuperAdmin(pathname: string, session: Session | null): boolean {
   if (!ADMIN_ROUTES_PATTERN.test(pathname)) return false;
   if (!session) return true;
   return !isSuperAdmin(session.pubkey);
 }
 
-export async function requiresWorkspaceAccess(
-  pathname: string,
-  session: Session | null
-): Promise<{ required: boolean; allowed: boolean; workspaceId?: string }> {
+export function extractWorkspaceId(pathname: string): string | null {
   const match = pathname.match(/^\/workspaces\/([^\/]+)/);
-  if (!match) return { required: false, allowed: true };
+  return match ? match[1] : null;
+}
 
-  const workspaceId = match[1];
-  const isManagementRoute = WORKSPACE_ROUTES_PATTERN.test(pathname);
-
-  if (!isManagementRoute) {
-    return { required: false, allowed: true, workspaceId };
-  }
-
-  if (!session) {
-    return { required: true, allowed: false, workspaceId };
-  }
-
-  const role = await getUserWorkspaceRole(session.pubkey, workspaceId);
-  const allowed = role === WorkspaceRole.OWNER || role === WorkspaceRole.ADMIN;
-
-  return { required: true, allowed, workspaceId };
+export function isWorkspaceManagementRoute(pathname: string): boolean {
+  return WORKSPACE_ROUTES_PATTERN.test(pathname);
 }
