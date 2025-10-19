@@ -8,6 +8,8 @@ export default defineConfig({
     globals: true,
     environment: "jsdom",
     setupFiles: ["./src/test/setup.ts"],
+    watch: false,
+    reporters: ["default"],
   },
   resolve: {
     alias: {
