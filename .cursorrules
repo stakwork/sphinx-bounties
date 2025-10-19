@@ -1,0 +1,354 @@
+# Sphinx Bounties - AI Coding Rules
+
+## Core Principles
+- **NO CODE COMMENTS** - User strict preference, do not add comments to code unless necessary or explicitly requested
+- Use existing patterns, never invent new ones without explicit approval
+- TypeScript strict mode, no `any` types unless absolutely necessary
+- Edge-compatible code required (no Node.js APIs in middleware)
+- All API responses must use established utilities
+- All errors must be logged with proper context
+
+## Tech Stack
+- **Next.js 15.5.5** - App Router, React 19, Edge Runtime for middleware
+- **TypeScript 5.7** - Strict mode enabled
+- **Database** - PostgreSQL with Prisma ORM
+- **State Management** - React Query (@tanstack/react-query)
+- **Styling** - Tailwind CSS + shadcn/ui components
+- **Authentication** - JWT (jose library) + LNURL-auth (Bitcoin Lightning)
+- **Testing** - Vitest + React Testing Library + Playwright
+- **Notifications** - Sonner (toast notifications)
+
+## Authentication & Authorization
+
+### How It Works
+1. User scans LNURL QR code with Sphinx wallet
+2. Wallet signs challenge with Bitcoin private key
+3. Backend verifies signature with secp256k1
+4. JWT session created and stored in HTTP-only cookie
+5. Middleware validates JWT and injects user context headers
+
+### Session Management
+```typescript
+// Middleware injects these headers on authenticated requests:
+x-user-pubkey: string     // User's Bitcoin public key (unique ID)
+x-workspace-id: string    // Extracted from URL if present
+x-request-id: string      // Unique request tracking ID
+```
+
+### Permission System
+- **Super Admin** - Env var only, full platform access
+- **Workspace Roles** - OWNER, ADMIN, CONTRIBUTOR, VIEWER
+- **Middleware** - Only validates session existence (no DB queries)
+- **API Routes** - Handle permission checks using injected headers
+
+## API Route Patterns
+
+### Required Structure
+```typescript
+import { NextRequest } from "next/server";
+import { apiSuccess, apiError, apiCreated } from "@/lib/api";
+import { validateBody } from "@/lib/api";
+import { logError, logApiError } from "@/lib/errors/logger";
+import { ErrorCode } from "@/lib/error-constants";
+
+export async function POST(request: NextRequest) {
+  try {
+    const body = await validateBody(request, yourSchema);
+    
+    // Your logic here
+    
+    return apiSuccess({ data: result });
+  } catch (error) {
+    logApiError(error, "Route description", { context });
+    return apiError("Error message", ErrorCode.SPECIFIC_ERROR, 400);
+  }
+}
+```
+
+### ALWAYS Use These Utilities
+- `apiSuccess(data, meta?)` - 200 success response
+- `apiCreated(data, meta?)` - 201 created response
+- `apiError(message, code, status)` - Error response
+- `apiPaginated(data, pagination)` - Paginated list response
+- `validateBody(request, schema)` - Validate and parse request body
+- `validateQuery(request, schema)` - Validate and parse query params
+- `logError(error, context, metadata)` - Log errors
+- `logApiError(error, context, metadata)` - Log API errors
+- `ErrorCode.SPECIFIC_ERROR` - Use enums from error-constants.ts
+
+### NEVER Do This
+❌ `return NextResponse.json({ ... })` - Use apiSuccess/apiError instead
+❌ Skip validation - Always use validateBody/validateQuery
+❌ Skip error logging - Always use logError/logApiError
+❌ Make up error codes - Use ErrorCode enum
+❌ Add comments to code - User preference
+
+## Database Patterns
+
+### Prisma Best Practices
+```typescript
+import { db } from "@/lib/db";
+
+// Use transactions for multi-step operations
+const result = await db.$transaction(async (tx) => {
+  const user = await tx.user.create({ data: userData });
+  const workspace = await tx.workspace.create({ data: workspaceData });
+  return { user, workspace };
+});
+
+// Use proper error handling
+try {
+  await db.user.findUniqueOrThrow({ where: { id } });
+} catch (error) {
+  logError(error, "User lookup", { userId: id });
+  throw error;
+}
+```
+
+### NEVER Query Database In
+❌ Middleware (Edge runtime, no Prisma support)
+❌ Client components (use API routes instead)
+❌ Server actions without proper error handling
+
+## Component Patterns
+
+### Client Components
+```typescript
+"use client";
+
+import { useState } from "react";
+import { useAuth } from "@/hooks/use-auth";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+
+export function MyComponent() {
+  const { user, isAuthenticated } = useAuth();
+  
+  const handleAction = async () => {
+    try {
+      // API call logic
+      toast.success("Success message");
+    } catch (error) {
+      toast.error("Error message");
+    }
+  };
+  
+  return <Button onClick={handleAction}>Action</Button>;
+}
+```
+
+### Server Components
+```typescript
+import { db } from "@/lib/db";
+
+export default async function Page() {
+  const data = await db.model.findMany();
+  return <div>{/* Render data */}</div>;
+}
+```
+
+### ALWAYS Follow
+✅ "use client" directive for interactive components
+✅ Import hooks from "@/hooks" (centralized exports)
+✅ Use React Query for data fetching (useQuery, useMutation)
+✅ Use Sonner for toast notifications (not console.log)
+✅ Brand colors from Tailwind config (primary-*, secondary-*, etc.)
+✅ shadcn/ui components (Button, Dialog, Card, etc.)
+
+## Styling & Design
+
+### Brand Colors (Tailwind Classes)
+- **Primary** - `primary-50` to `primary-900` (Blue)
+- **Secondary** - `secondary-50` to `secondary-900` (Green)
+- **Tertiary** - `tertiary-50` to `tertiary-900` (Purple)
+- **Accent** - `accent-50` to `accent-900` (Red)
+- **Neutral** - `neutral-50` to `neutral-900` (Gray)
+
+### ALWAYS Use
+✅ Brand colors for all UI elements
+✅ Consistent spacing (space-y-4, gap-6, p-4, etc.)
+✅ Rounded corners (rounded-lg, rounded-xl)
+✅ Shadow effects (shadow-md, shadow-lg)
+✅ Smooth transitions (transition-all duration-200)
+✅ Responsive classes (sm:, md:, lg:)
+
+### Component Library
+✅ Install with: `npx shadcn@latest add <component>`
+✅ Available: button, dialog, card, form, input, select, etc.
+✅ Customize in `src/components/ui/`
+
+## Testing Standards
+
+### Test Structure
+```typescript
+import { describe, it, expect, beforeEach, vi } from "vitest";
+import { render, screen, waitFor } from "@testing-library/react";
+
+describe("Feature Name", () => {
+  beforeEach(() => {
+    // Setup
+  });
+  
+  it("should do something specific", async () => {
+    // Arrange
+    // Act
+    // Assert
+    expect(result).toBe(expected);
+  });
+});
+```
+
+### Focus Areas
+✅ **Utility functions** - Pure logic, easy to test
+✅ **Integration tests** - Database operations, full flows
+✅ **API route tests** - Request/response validation
+✅ **Hook tests** - React Query hooks with mock data
+⏭️ **Component tests** - Exist but not priority for new tests
+
+### Test Commands
+- `npm test` - Run all tests (watch mode)
+- `npm test -- --run` - Single run (CI mode)
+- `npm test -- <file>` - Run specific test file
+
+## File Structure Conventions
+
+### Directory Organization
+```
+src/
+├── app/                    # Next.js App Router
+│   ├── api/               # API routes
+│   ├── (auth)/            # Route groups
+│   └── [dynamic]/         # Dynamic routes
+├── components/
+│   ├── ui/                # shadcn components
+│   ├── auth/              # Auth-related components
+│   ├── common/            # Shared components
+│   └── layout/            # Layout components
+├── hooks/                 # Custom React hooks
+├── lib/                   # Utilities and configs
+├── services/              # Business logic (use Query functions)
+├── validations/           # Zod schemas
+├── types/                 # TypeScript types
+└── test/                  # Test setup and utilities
+```
+
+### File Naming
+- **Components** - PascalCase: `UserMenu.tsx`, `BountyCard.tsx`
+- **Hooks** - kebab-case: `use-auth.ts`, `use-permissions.ts`
+- **Utils** - kebab-case: `api-error.ts`, `format-date.ts`
+- **Types** - kebab-case: `user.types.ts`, `bounty.types.ts`
+- **Tests** - Same as source: `use-auth.test.ts`, `UserMenu.test.tsx`
+
+### Import Order
+1. React/Next.js imports
+2. External library imports
+3. Internal absolute imports (@/...)
+4. Relative imports (../)
+5. Type imports (import type)
+
+## Common Mistakes to Avoid
+
+### ❌ DO NOT Add Code Comments
+User  preference - code should be self-documenting through clear naming and structure.
+
+### ❌ NEVER Use Database in Middleware
+Edge runtime doesn't support Prisma. Middleware should only validate JWT sessions.
+
+### ❌ NEVER Create New API Response Patterns
+Always use apiSuccess, apiError, apiCreated, apiPaginated - never NextResponse.json directly.
+
+### ❌ NEVER Skip Error Logging
+Every catch block needs logError or logApiError with proper context.
+
+### ❌ NEVER Skip Validation
+Every API route must validate request body/query with Zod schemas.
+
+### ❌ DO NOT Use Plain Colors
+Use brand colors (primary-600) not Tailwind defaults (blue-600).
+
+### ❌ NEVER Make Up Validation Schemas
+Reuse existing schemas from src/validations/ or extend them properly.
+
+### ❌ NEVER Use any Type
+Use proper TypeScript types, create new types if needed.
+
+### ❌ NEVER Ignore TypeScript Errors
+Fix them properly, don't use @ts-ignore or any workarounds.
+
+### ❌ NEVER Use console.log
+Use proper logging (logError) or toast notifications (sonner).
+
+## Environment Variables
+
+### Required Variables
+```bash
+DATABASE_URL="postgresql://user:pass@host:port/db"
+NEXT_PUBLIC_APP_URL="http://localhost:3000"
+JWT_SECRET="your-secret-key"
+JWT_EXPIRY_HOURS="168"
+SUPER_ADMINS=""  # CSV of pubkeys
+REDIS_URL=""     # Optional
+```
+
+### Usage
+```typescript
+import { env } from "@/lib/env";
+
+const secret = env.JWT_SECRET;  // Type-safe, validated
+```
+
+## Quick Commands
+
+### Development
+```bash
+npm run dev          # Start dev server (localhost:3000)
+npm run build        # Production build
+npm run start        # Start production server
+npm run lint         # ESLint check
+npm test             # Run tests (watch mode)
+npm test -- --run    # Run tests once (CI mode)
+```
+
+### Database
+```bash
+npx prisma generate        # Generate Prisma client
+npx prisma db push         # Push schema changes
+npx prisma migrate dev     # Create migration
+npx prisma studio          # Open Prisma Studio
+```
+
+### Debugging
+```bash
+npm run build              # Check for build errors
+npm run lint               # Check for lint errors
+npm test -- --run          # Check for test failures
+```
+
+## Getting Help
+
+### Documentation Locations
+- **Architecture** - See `.ai/architecture.md`
+- **Patterns** - See `.ai/patterns.md`
+- **Common Mistakes** - See `.ai/common-mistakes.md`
+- **Conventions** - See `.ai/conventions.md`
+- **Contributing** - See `CONTRIBUTING.md`
+
+### When Unsure
+1. Search existing code for similar patterns
+2. Check `.ai/patterns.md` for examples
+3. Look at recent commits for context
+4. Ask for clarification before creating new patterns
+
+## Summary Checklist
+
+Before submitting code, verify:
+- ✅ No comments added to code
+- ✅ Used existing API utilities (apiSuccess, apiError, etc.)
+- ✅ Error logging present in all catch blocks
+- ✅ Validation present in all API routes
+- ✅ Brand colors used (not default Tailwind colors)
+- ✅ TypeScript errors fixed (no any, no @ts-ignore)
+- ✅ Tests passing (npm test -- --run)
+- ✅ Imports properly organized
+- ✅ File naming follows conventions
+- ✅ No database queries in middleware or client components
