@@ -46,10 +46,9 @@ describe("bountyQueries", () => {
     ];
 
     it("returns all bounties with default pagination", async () => {
-      vi.mocked(db.bounty.findMany) // @ts-expect-error - Mock data
-        .mockResolvedValue(mockBounties as any);
-      vi.mocked(db.bounty.count) // @ts-expect-error - Mock data
-        .mockResolvedValue(2);
+      // @ts-expect-error - Mock data doesn't need all fields
+      vi.mocked(db.bounty.findMany).mockResolvedValue(mockBounties);
+      vi.mocked(db.bounty.count).mockResolvedValue(2);
 
       const result = await bountyQueries.getAll();
 
@@ -71,10 +70,9 @@ describe("bountyQueries", () => {
     });
 
     it("applies custom pagination", async () => {
-      vi.mocked(db.bounty.findMany) // @ts-expect-error - Mock data
-        .mockResolvedValue([mockBounties[0]] as any);
-      vi.mocked(db.bounty.count) // @ts-expect-error - Mock data
-        .mockResolvedValue(50);
+      // @ts-expect-error - Mock data doesn't need all fields
+      vi.mocked(db.bounty.findMany).mockResolvedValue([mockBounties[0]]);
+      vi.mocked(db.bounty.count).mockResolvedValue(50);
 
       const result = await bountyQueries.getAll(undefined, { page: 2, pageSize: 10 });
 
@@ -96,8 +94,7 @@ describe("bountyQueries", () => {
     it("filters by status", async () => {
       vi.mocked(db.bounty.findMany) // @ts-expect-error - Mock data
         .mockResolvedValue([mockBounties[0]]);
-      vi.mocked(db.bounty.count) // @ts-expect-error - Mock data
-        .mockResolvedValue(1);
+      vi.mocked(db.bounty.count).mockResolvedValue(1);
 
       await bountyQueries.getAll({ status: BountyStatus.OPEN });
 
@@ -113,8 +110,7 @@ describe("bountyQueries", () => {
     it("filters by workspaceId", async () => {
       vi.mocked(db.bounty.findMany) // @ts-expect-error - Mock data
         .mockResolvedValue([mockBounties[0]]);
-      vi.mocked(db.bounty.count) // @ts-expect-error - Mock data
-        .mockResolvedValue(1);
+      vi.mocked(db.bounty.count).mockResolvedValue(1);
 
       await bountyQueries.getAll({ workspaceId: "ws1" });
 
@@ -130,8 +126,7 @@ describe("bountyQueries", () => {
     it("filters by assigneePubkey", async () => {
       vi.mocked(db.bounty.findMany) // @ts-expect-error - Mock data
         .mockResolvedValue([mockBounties[1]]);
-      vi.mocked(db.bounty.count) // @ts-expect-error - Mock data
-        .mockResolvedValue(1);
+      vi.mocked(db.bounty.count).mockResolvedValue(1);
 
       await bountyQueries.getAll({ assigneePubkey: "pub2" });
 
@@ -147,8 +142,7 @@ describe("bountyQueries", () => {
     it("filters by creatorPubkey", async () => {
       vi.mocked(db.bounty.findMany) // @ts-expect-error - Mock data
         .mockResolvedValue(mockBounties);
-      vi.mocked(db.bounty.count) // @ts-expect-error - Mock data
-        .mockResolvedValue(2);
+      vi.mocked(db.bounty.count).mockResolvedValue(2);
 
       await bountyQueries.getAll({ creatorPubkey: "pub1" });
 
@@ -164,8 +158,7 @@ describe("bountyQueries", () => {
     it("filters by search query", async () => {
       vi.mocked(db.bounty.findMany) // @ts-expect-error - Mock data
         .mockResolvedValue([mockBounties[0]]);
-      vi.mocked(db.bounty.count) // @ts-expect-error - Mock data
-        .mockResolvedValue(1);
+      vi.mocked(db.bounty.count).mockResolvedValue(1);
 
       await bountyQueries.getAll({ search: "feature" });
 
@@ -184,8 +177,7 @@ describe("bountyQueries", () => {
     it("filters by tags", async () => {
       vi.mocked(db.bounty.findMany) // @ts-expect-error - Mock data
         .mockResolvedValue([mockBounties[0]]);
-      vi.mocked(db.bounty.count) // @ts-expect-error - Mock data
-        .mockResolvedValue(1);
+      vi.mocked(db.bounty.count).mockResolvedValue(1);
 
       await bountyQueries.getAll({ tags: ["javascript", "react"] });
 
@@ -201,8 +193,7 @@ describe("bountyQueries", () => {
     it("filters by programming languages", async () => {
       vi.mocked(db.bounty.findMany) // @ts-expect-error - Mock data
         .mockResolvedValue([mockBounties[0]]);
-      vi.mocked(db.bounty.count) // @ts-expect-error - Mock data
-        .mockResolvedValue(1);
+      vi.mocked(db.bounty.count).mockResolvedValue(1);
 
       await bountyQueries.getAll({ programmingLanguages: ["JAVASCRIPT", "TYPESCRIPT"] });
 
@@ -218,8 +209,7 @@ describe("bountyQueries", () => {
     it("applies custom sorting", async () => {
       vi.mocked(db.bounty.findMany) // @ts-expect-error - Mock data
         .mockResolvedValue(mockBounties);
-      vi.mocked(db.bounty.count) // @ts-expect-error - Mock data
-        .mockResolvedValue(2);
+      vi.mocked(db.bounty.count).mockResolvedValue(2);
 
       await bountyQueries.getAll(undefined, undefined, { sortBy: "amount", sortOrder: "asc" });
 
@@ -233,8 +223,7 @@ describe("bountyQueries", () => {
     it("combines multiple filters", async () => {
       vi.mocked(db.bounty.findMany) // @ts-expect-error - Mock data
         .mockResolvedValue([mockBounties[0]]);
-      vi.mocked(db.bounty.count) // @ts-expect-error - Mock data
-        .mockResolvedValue(1);
+      vi.mocked(db.bounty.count).mockResolvedValue(1);
 
       await bountyQueries.getAll({
         status: BountyStatus.OPEN,
@@ -257,8 +246,7 @@ describe("bountyQueries", () => {
     it("calculates pagination correctly for last page", async () => {
       vi.mocked(db.bounty.findMany) // @ts-expect-error - Mock data
         .mockResolvedValue([mockBounties[0]]);
-      vi.mocked(db.bounty.count) // @ts-expect-error - Mock data
-        .mockResolvedValue(25);
+      vi.mocked(db.bounty.count).mockResolvedValue(25);
 
       const result = await bountyQueries.getAll(undefined, { page: 3, pageSize: 10 });
 
@@ -298,8 +286,7 @@ describe("bountyQueries", () => {
     });
 
     it("returns null for non-existent bounty", async () => {
-      vi.mocked(db.bounty.findUnique) // @ts-expect-error - Mock data
-        .mockResolvedValue(null);
+      vi.mocked(db.bounty.findUnique).mockResolvedValue(null);
 
       const result = await bountyQueries.getById("non-existent");
 
@@ -307,8 +294,7 @@ describe("bountyQueries", () => {
     });
 
     it("excludes deleted bounties", async () => {
-      vi.mocked(db.bounty.findUnique) // @ts-expect-error - Mock data
-        .mockResolvedValue(null);
+      vi.mocked(db.bounty.findUnique).mockResolvedValue(null);
 
       await bountyQueries.getById("deleted-bounty");
 
@@ -330,8 +316,7 @@ describe("bountyQueries", () => {
       ];
       vi.mocked(db.bounty.findMany) // @ts-expect-error - Mock data
         .mockResolvedValue(mockBounties);
-      vi.mocked(db.bounty.count) // @ts-expect-error - Mock data
-        .mockResolvedValue(2);
+      vi.mocked(db.bounty.count).mockResolvedValue(2);
 
       await bountyQueries.getByWorkspaceId("ws1");
 
@@ -350,8 +335,7 @@ describe("bountyQueries", () => {
       const mockBounties = [{ id: "bounty1", assigneePubkey: "pub1" }];
       vi.mocked(db.bounty.findMany) // @ts-expect-error - Mock data
         .mockResolvedValue(mockBounties);
-      vi.mocked(db.bounty.count) // @ts-expect-error - Mock data
-        .mockResolvedValue(1);
+      vi.mocked(db.bounty.count).mockResolvedValue(1);
 
       await bountyQueries.getByAssigneePubkey("pub1");
 
@@ -370,8 +354,7 @@ describe("bountyQueries", () => {
       const mockBounties = [{ id: "bounty1", creatorPubkey: "pub1" }];
       vi.mocked(db.bounty.findMany) // @ts-expect-error - Mock data
         .mockResolvedValue(mockBounties);
-      vi.mocked(db.bounty.count) // @ts-expect-error - Mock data
-        .mockResolvedValue(1);
+      vi.mocked(db.bounty.count).mockResolvedValue(1);
 
       await bountyQueries.getByCreatorPubkey("pub1");
 
