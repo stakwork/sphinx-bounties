@@ -10,6 +10,13 @@ export default defineConfig({
     setupFiles: ["./src/test/setup.ts"],
     watch: false,
     reporters: ["default"],
+    exclude: [
+      "**/node_modules/**",
+      "**/dist/**",
+      "**/.{idea,git,cache,output,temp}/**",
+      "**/{karma,rollup,webpack,vite,vitest,jest,ava,babel,nyc,cypress,tsup,build,eslint,prettier}.config.*",
+      "**/e2e/**",
+    ],
   },
   resolve: {
     alias: {

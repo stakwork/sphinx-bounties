@@ -65,6 +65,8 @@ jobs:
         run: npm ci
 
       - name: Build project
+        env:
+          SKIP_ENV_VALIDATION: 1
         run: npm run build
 
   test:
