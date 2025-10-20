@@ -20,4 +20,5 @@ export const env = createEnv({
     SUPER_ADMINS: process.env.SUPER_ADMINS,
     NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
   },
+  skipValidation: !!process.env.SKIP_ENV_VALIDATION,
 });

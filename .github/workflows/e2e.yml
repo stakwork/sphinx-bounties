@@ -28,6 +28,8 @@ jobs:
         run: npx playwright install --with-deps
 
       - name: Run Playwright tests
+        env:
+          SKIP_ENV_VALIDATION: 1
         run: npm run test:e2e
 
       - name: Upload test results
