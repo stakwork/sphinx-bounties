@@ -72,6 +72,20 @@ jobs:
   test:
     name: Unit Tests
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: sphinx_bounties
+          POSTGRES_PASSWORD: bounties_password
+          POSTGRES_DB: sphinx_bounties
+        ports:
+          - 5433:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -85,7 +99,14 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Run Prisma migrations
+        env:
+          DATABASE_URL: postgresql://sphinx_bounties:bounties_password@localhost:5433/sphinx_bounties
+        run: npx prisma migrate deploy
+
       - name: Run tests
+        env:
+          DATABASE_URL: postgresql://sphinx_bounties:bounties_password@localhost:5433/sphinx_bounties
         run: npm test -- --run
 
       - name: Upload coverage
