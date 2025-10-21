@@ -6,6 +6,11 @@ import { db } from "@/lib/db";
 import { updateWorkspaceSchema } from "@/validations/workspace.schema";
 import { AUTH_HEADER_NAME } from "@/lib/auth/constants";
 import { WorkspaceRole, WorkspaceActivityAction, Prisma } from "@prisma/client";
+import type {
+  WorkspaceDetailsResponse,
+  UpdateWorkspaceResponse,
+  DeleteWorkspaceResponse,
+} from "@/types/workspace";
 
 type RouteContext = {
   params: Promise<{ id: string }>;
@@ -43,6 +48,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
               select: {
                 pubkey: true,
                 username: true,
+                alias: true,
                 avatarUrl: true,
               },
             },
@@ -70,29 +76,50 @@ export async function GET(request: NextRequest, context: RouteContext) {
 
     const userMember = workspace.members.find((m) => m.userPubkey === pubkey);
 
-    return apiSuccess({
+    const response: { workspace: WorkspaceDetailsResponse } = {
       workspace: {
-        ...workspace,
+        id: workspace.id,
+        name: workspace.name,
+        description: workspace.description,
+        mission: workspace.mission,
+        avatarUrl: workspace.avatarUrl,
+        websiteUrl: workspace.websiteUrl,
+        githubUrl: workspace.githubUrl,
+        ownerPubkey: workspace.ownerPubkey,
+        createdAt: workspace.createdAt.toISOString(),
+        updatedAt: workspace.updatedAt.toISOString(),
+        role: userMember?.role || WorkspaceRole.VIEWER,
+        memberCount: workspace.members.length,
+        bountyCount: workspace._count.bounties,
+        activityCount: workspace._count.activities,
         budget: workspace.budget
           ? {
-              ...workspace.budget,
+              id: workspace.budget.id,
+              workspaceId: workspace.budget.workspaceId,
               totalBudget: workspace.budget.totalBudget.toString(),
               availableBudget: workspace.budget.availableBudget.toString(),
               reservedBudget: workspace.budget.reservedBudget.toString(),
               paidBudget: workspace.budget.paidBudget.toString(),
+              updatedAt: workspace.budget.updatedAt.toISOString(),
             }
           : null,
         members: workspace.members.map((m) => ({
-          ...m,
-          user: m.user,
+          id: m.id,
+          workspaceId: m.workspaceId,
+          userPubkey: m.userPubkey,
+          role: m.role,
+          joinedAt: m.joinedAt.toISOString(),
+          user: {
+            pubkey: m.user.pubkey,
+            username: m.user.username,
+            alias: m.user.alias,
+            avatarUrl: m.user.avatarUrl,
+          },
         })),
-        role: userMember?.role,
-        memberCount: workspace.members.length,
-        bountyCount: workspace._count.bounties,
-        activityCount: workspace._count.activities,
-        _count: undefined,
       },
-    });
+    };
+
+    return apiSuccess(response);
   } catch (error) {
     logApiError(error as Error, {
       url: `/api/workspaces/[id]`,
@@ -191,23 +218,35 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       },
     });
 
-    return apiSuccess({
+    const response: UpdateWorkspaceResponse = {
       workspace: {
-        ...workspace,
+        id: workspace.id,
+        name: workspace.name,
+        description: workspace.description,
+        mission: workspace.mission,
+        avatarUrl: workspace.avatarUrl,
+        websiteUrl: workspace.websiteUrl,
+        githubUrl: workspace.githubUrl,
+        ownerPubkey: workspace.ownerPubkey,
+        createdAt: workspace.createdAt.toISOString(),
+        updatedAt: workspace.updatedAt.toISOString(),
+        role: workspace.members[0].role,
+        joinedAt: workspace.members[0].joinedAt.toISOString(),
         budget: workspace.budget
           ? {
-              ...workspace.budget,
+              id: workspace.budget.id,
+              workspaceId: workspace.budget.workspaceId,
               totalBudget: workspace.budget.totalBudget.toString(),
               availableBudget: workspace.budget.availableBudget.toString(),
               reservedBudget: workspace.budget.reservedBudget.toString(),
               paidBudget: workspace.budget.paidBudget.toString(),
+              updatedAt: workspace.budget.updatedAt.toISOString(),
             }
           : null,
-        role: workspace.members[0].role,
-        joinedAt: workspace.members[0].joinedAt,
-        members: undefined,
       },
-    });
+    };
+
+    return apiSuccess(response);
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       if (error.code === "P2002") {
@@ -295,7 +334,11 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
       },
     });
 
-    return apiSuccess({ message: "Workspace deleted successfully" });
+    const response: DeleteWorkspaceResponse = {
+      message: "Workspace deleted successfully",
+    };
+
+    return apiSuccess(response);
   } catch (error) {
     logApiError(error as Error, {
       url: `/api/workspaces/[id]`,
