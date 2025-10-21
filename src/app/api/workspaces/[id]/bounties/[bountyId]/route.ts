@@ -429,18 +429,33 @@ export async function PATCH(
 
       // Adjust workspace budget if amount changed
       if (budgetAdjustment !== null && budgetAdjustment !== BigInt(0)) {
-        await tx.workspaceBudget.update({
-          where: { workspaceId },
-          data: {
-            availableBudget: {
-              decrement: budgetAdjustment > BigInt(0) ? budgetAdjustment : BigInt(0),
-              increment: budgetAdjustment < BigInt(0) ? -budgetAdjustment : BigInt(0),
+        if (budgetAdjustment > BigInt(0)) {
+          // Increasing amount: decrease available, increase reserved
+          await tx.workspaceBudget.update({
+            where: { workspaceId },
+            data: {
+              availableBudget: {
+                decrement: budgetAdjustment,
+              },
+              reservedBudget: {
+                increment: budgetAdjustment,
+              },
             },
-            reservedBudget: {
-              increment: budgetAdjustment,
+          });
+        } else {
+          // Decreasing amount: increase available, decrease reserved
+          await tx.workspaceBudget.update({
+            where: { workspaceId },
+            data: {
+              availableBudget: {
+                increment: -budgetAdjustment,
+              },
+              reservedBudget: {
+                decrement: -budgetAdjustment,
+              },
             },
-          },
-        });
+          });
+        }
       }
 
       // Log the update activity

@@ -126,9 +126,33 @@ export const createTestBounty = async (options: {
 };
 
 /**
- * Clean up test data for a user (removes all associated data)
+ * Clean up test data for a single user
  */
 export const cleanupTestUser = async (pubkey: string) => {
+  // Delete bounty-related data first (foreign key constraints)
+  await db.bountyActivity.deleteMany({
+    where: {
+      bounty: {
+        workspace: { ownerPubkey: pubkey },
+      },
+    },
+  });
+
+  await db.bountyProof.deleteMany({
+    where: {
+      bounty: {
+        workspace: { ownerPubkey: pubkey },
+      },
+    },
+  });
+
+  await db.bounty.deleteMany({
+    where: {
+      workspace: { ownerPubkey: pubkey },
+    },
+  });
+
+  // Then workspace-related data
   await db.workspaceMember.deleteMany({
     where: { userPubkey: pubkey },
   });
@@ -147,6 +171,7 @@ export const cleanupTestUser = async (pubkey: string) => {
     where: { ownerPubkey: pubkey },
   });
 
+  // Finally the user
   await db.user.deleteMany({
     where: { pubkey },
   });
