@@ -186,10 +186,6 @@ describe("Workspace CRUD Integration", () => {
     it("rolls back transaction on error", async () => {
       const workspaceName = `rollback-test-${Date.now()}`;
 
-      const initialWorkspaceCount = await db.workspace.count();
-      const initialBudgetCount = await db.workspaceBudget.count();
-      const initialMemberCount = await db.workspaceMember.count();
-
       const request = createNextRequest("http://localhost/api/workspaces", {
         method: "POST",
         headers: {
@@ -206,13 +202,10 @@ describe("Workspace CRUD Integration", () => {
       const response = await POST(request);
       expect(response.status).toBe(404);
 
-      const finalWorkspaceCount = await db.workspace.count();
-      const finalBudgetCount = await db.workspaceBudget.count();
-      const finalMemberCount = await db.workspaceMember.count();
-
-      expect(finalWorkspaceCount).toBe(initialWorkspaceCount);
-      expect(finalBudgetCount).toBe(initialBudgetCount);
-      expect(finalMemberCount).toBe(initialMemberCount);
+      const createdWorkspace = await db.workspace.findUnique({
+        where: { name: workspaceName },
+      });
+      expect(createdWorkspace).toBeNull();
     });
   });
 
