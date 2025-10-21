@@ -1,8 +1,9 @@
 import type { NextRequest } from "next/server";
-import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { apiSuccess, apiError, validateBody } from "@/lib/api";
+import { logApiError } from "@/lib/errors/logger";
+import { ErrorCode } from "@/types/error";
 import { updateProfileSchema } from "@/validations/user.schema";
-import { ERROR_MESSAGES } from "@/lib/error-constants";
 import type { UserProfileResponse, UpdateUserResponse } from "@/types/user";
 import { BountyStatus } from "@prisma/client";
 
