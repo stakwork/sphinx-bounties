@@ -149,3 +149,67 @@ export interface CompleteBountyResponse {
 export interface CancelBountyResponse {
   message: string;
 }
+
+// Proof types
+export interface BountyProof {
+  id: string;
+  bountyId: string;
+  proofUrl: string;
+  description: string;
+  status: "PENDING" | "ACCEPTED" | "REJECTED" | "CHANGES_REQUESTED";
+  reviewNotes: string | null;
+  createdAt: string;
+  updatedAt: string;
+  reviewedAt: string | null;
+  submitter: {
+    pubkey: string;
+    username: string;
+    alias: string | null;
+    avatarUrl: string | null;
+  };
+  reviewer: {
+    pubkey: string;
+    username: string;
+    alias: string | null;
+  } | null;
+}
+
+export interface SubmitProofResponse {
+  message: string;
+  proof: {
+    id: string;
+    bountyId: string;
+    proofUrl: string;
+    description: string;
+    status: string;
+    createdAt: string;
+  };
+}
+
+export interface ListProofsResponse {
+  proofs: BountyProof[];
+  pagination: {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  };
+}
+
+export interface ReviewProofResponse {
+  message: string;
+  proof: {
+    id: string;
+    status: string;
+    reviewNotes: string | null;
+    reviewedAt: string;
+    reviewedBy: {
+      pubkey: string;
+      username: string;
+    };
+  };
+}
+
+export interface DeleteProofResponse {
+  message: string;
+}
