@@ -1,8 +1,10 @@
 import type { NextRequest } from "next/server";
-import { NextResponse } from "next/server";
+import { apiSuccess, apiError } from "@/lib/api";
+import { logApiError } from "@/lib/errors/logger";
+import { ErrorCode } from "@/types/error";
+import { ERROR_MESSAGES } from "@/lib/error-constants";
 import { db } from "@/lib/db";
 import { updateBountySchema } from "@/validations/bounty.schema";
-import { ERROR_MESSAGES } from "@/lib/error-constants";
 import { BountyStatus, BountyActivityAction, WorkspaceRole } from "@prisma/client";
 import type { BountyDetailsResponse, UpdateBountyResponse } from "@/types/bounty";
 
@@ -90,16 +92,12 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     });
 
     if (!bounty) {
-      return NextResponse.json(
+      return apiError(
         {
-          success: false,
-          error: {
-            code: "NOT_FOUND",
-            message: "Bounty not found",
-          },
-          meta: { timestamp: new Date().toISOString() },
+          code: ErrorCode.NOT_FOUND,
+          message: "Bounty not found",
         },
-        { status: 404 }
+        404
       );
     }
 
@@ -108,16 +106,12 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       const isWorkspaceMember = bounty.workspace.members && bounty.workspace.members.length > 0;
 
       if (!isCreator && !isWorkspaceMember) {
-        return NextResponse.json(
+        return apiError(
           {
-            success: false,
-            error: {
-              code: "FORBIDDEN",
-              message: "Draft bounties are only visible to creator and workspace members",
-            },
-            meta: { timestamp: new Date().toISOString() },
+            code: ErrorCode.FORBIDDEN,
+            message: "Draft bounties are only visible to creator and workspace members",
           },
-          { status: 403 }
+          403
         );
       }
     }
@@ -160,26 +154,18 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       _count: bounty._count,
     };
 
-    return NextResponse.json(
-      {
-        success: true,
-        data: response,
-        meta: { timestamp: new Date().toISOString() },
-      },
-      { status: 200 }
-    );
+    return apiSuccess(response);
   } catch (error) {
-    console.error("Error fetching bounty:", error);
-    return NextResponse.json(
+    logApiError(error as Error, {
+      url: `/api/bounties/[id]`,
+      method: "GET",
+    });
+    return apiError(
       {
-        success: false,
-        error: {
-          code: "INTERNAL_ERROR",
-          message: ERROR_MESSAGES.INTERNAL_ERROR,
-        },
-        meta: { timestamp: new Date().toISOString() },
+        code: ErrorCode.INTERNAL_SERVER_ERROR,
+        message: "Failed to fetch bounty",
       },
-      { status: 500 }
+      500
     );
   }
 }
@@ -190,16 +176,12 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     const userPubkey = request.headers.get("x-user-pubkey");
 
     if (!userPubkey) {
-      return NextResponse.json(
+      return apiError(
         {
-          success: false,
-          error: {
-            code: "UNAUTHORIZED",
-            message: ERROR_MESSAGES.UNAUTHORIZED,
-          },
-          meta: { timestamp: new Date().toISOString() },
+          code: ErrorCode.UNAUTHORIZED,
+          message: ERROR_MESSAGES.UNAUTHORIZED,
         },
-        { status: 401 }
+        401
       );
     }
 
@@ -207,17 +189,13 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     const validationResult = updateBountySchema.safeParse({ ...body, id: bountyId });
 
     if (!validationResult.success) {
-      return NextResponse.json(
+      return apiError(
         {
-          success: false,
-          error: {
-            code: "VALIDATION_ERROR",
-            message: "Invalid bounty update data",
-            details: validationResult.error.issues,
-          },
-          meta: { timestamp: new Date().toISOString() },
+          code: ErrorCode.VALIDATION_ERROR,
+          message: "Invalid bounty update data",
+          details: { issues: validationResult.error.issues },
         },
-        { status: 400 }
+        400
       );
     }
 
@@ -238,16 +216,12 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     });
 
     if (!bounty) {
-      return NextResponse.json(
+      return apiError(
         {
-          success: false,
-          error: {
-            code: "NOT_FOUND",
-            message: "Bounty not found",
-          },
-          meta: { timestamp: new Date().toISOString() },
+          code: ErrorCode.NOT_FOUND,
+          message: "Bounty not found",
         },
-        { status: 404 }
+        404
       );
     }
 
@@ -259,16 +233,12 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
         workspaceMember.role === WorkspaceRole.OWNER);
 
     if (!isCreator && !isAdmin) {
-      return NextResponse.json(
+      return apiError(
         {
-          success: false,
-          error: {
-            code: "FORBIDDEN",
-            message: "Only the creator or workspace admin can update this bounty",
-          },
-          meta: { timestamp: new Date().toISOString() },
+          code: ErrorCode.FORBIDDEN,
+          message: "Only the creator or workspace admin can update this bounty",
         },
-        { status: 403 }
+        403
       );
     }
 
@@ -295,16 +265,12 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
 
       const allowedTransitions = validTransitions[bounty.status];
       if (!allowedTransitions.includes(status)) {
-        return NextResponse.json(
+        return apiError(
           {
-            success: false,
-            error: {
-              code: "INVALID_STATUS_TRANSITION",
-              message: `Cannot transition from ${bounty.status} to ${status}`,
-            },
-            meta: { timestamp: new Date().toISOString() },
+            code: ErrorCode.VALIDATION_ERROR,
+            message: `Cannot transition from ${bounty.status} to ${status}`,
           },
-          { status: 400 }
+          400
         );
       }
     }
@@ -352,26 +318,18 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
       },
     };
 
-    return NextResponse.json(
-      {
-        success: true,
-        data: response,
-        meta: { timestamp: new Date().toISOString() },
-      },
-      { status: 200 }
-    );
+    return apiSuccess(response);
   } catch (error) {
-    console.error("Error updating bounty:", error);
-    return NextResponse.json(
+    logApiError(error as Error, {
+      url: `/api/bounties/[id]`,
+      method: "PATCH",
+    });
+    return apiError(
       {
-        success: false,
-        error: {
-          code: "INTERNAL_ERROR",
-          message: ERROR_MESSAGES.INTERNAL_ERROR,
-        },
-        meta: { timestamp: new Date().toISOString() },
+        code: ErrorCode.INTERNAL_SERVER_ERROR,
+        message: "Failed to update bounty",
       },
-      { status: 500 }
+      500
     );
   }
 }
@@ -385,16 +343,12 @@ export async function DELETE(
     const userPubkey = request.headers.get("x-user-pubkey");
 
     if (!userPubkey) {
-      return NextResponse.json(
+      return apiError(
         {
-          success: false,
-          error: {
-            code: "UNAUTHORIZED",
-            message: ERROR_MESSAGES.UNAUTHORIZED,
-          },
-          meta: { timestamp: new Date().toISOString() },
+          code: ErrorCode.UNAUTHORIZED,
+          message: ERROR_MESSAGES.UNAUTHORIZED,
         },
-        { status: 401 }
+        401
       );
     }
 
@@ -415,16 +369,12 @@ export async function DELETE(
     });
 
     if (!bounty) {
-      return NextResponse.json(
+      return apiError(
         {
-          success: false,
-          error: {
-            code: "NOT_FOUND",
-            message: "Bounty not found",
-          },
-          meta: { timestamp: new Date().toISOString() },
+          code: ErrorCode.NOT_FOUND,
+          message: "Bounty not found",
         },
-        { status: 404 }
+        404
       );
     }
 
@@ -433,16 +383,12 @@ export async function DELETE(
     const isOwner = workspaceMember && workspaceMember.role === WorkspaceRole.OWNER;
 
     if (!isCreator && !isOwner) {
-      return NextResponse.json(
+      return apiError(
         {
-          success: false,
-          error: {
-            code: "FORBIDDEN",
-            message: "Only the creator or workspace owner can delete this bounty",
-          },
-          meta: { timestamp: new Date().toISOString() },
+          code: ErrorCode.FORBIDDEN,
+          message: "Only the creator or workspace owner can delete this bounty",
         },
-        { status: 403 }
+        403
       );
     }
 
@@ -451,16 +397,12 @@ export async function DELETE(
       bounty.status !== BountyStatus.OPEN &&
       bounty.status !== BountyStatus.CANCELLED
     ) {
-      return NextResponse.json(
+      return apiError(
         {
-          success: false,
-          error: {
-            code: "INVALID_STATUS",
-            message: "Cannot delete bounty that is assigned or in progress",
-          },
-          meta: { timestamp: new Date().toISOString() },
+          code: ErrorCode.VALIDATION_ERROR,
+          message: "Cannot delete bounty that is assigned or in progress",
         },
-        { status: 400 }
+        400
       );
     }
 
@@ -469,26 +411,18 @@ export async function DELETE(
       data: { deletedAt: new Date() },
     });
 
-    return NextResponse.json(
-      {
-        success: true,
-        data: { message: "Bounty deleted successfully" },
-        meta: { timestamp: new Date().toISOString() },
-      },
-      { status: 200 }
-    );
+    return apiSuccess({ message: "Bounty deleted successfully" });
   } catch (error) {
-    console.error("Error deleting bounty:", error);
-    return NextResponse.json(
+    logApiError(error as Error, {
+      url: `/api/bounties/[id]`,
+      method: "DELETE",
+    });
+    return apiError(
       {
-        success: false,
-        error: {
-          code: "INTERNAL_ERROR",
-          message: ERROR_MESSAGES.INTERNAL_ERROR,
-        },
-        meta: { timestamp: new Date().toISOString() },
+        code: ErrorCode.INTERNAL_SERVER_ERROR,
+        message: "Failed to delete bounty",
       },
-      { status: 500 }
+      500
     );
   }
 }

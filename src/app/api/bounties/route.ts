@@ -1,15 +1,16 @@
 import type { NextRequest } from "next/server";
-import { NextResponse } from "next/server";
 import { z } from "zod";
 import {
   apiPaginated,
   apiError,
+  apiCreated,
   validateQuery,
   paginationSchema,
   sortSchema,
   getPaginationValues,
 } from "@/lib/api";
 import { ErrorCode } from "@/types/error";
+import { logApiError } from "@/lib/errors/logger";
 import { db } from "@/lib/db";
 import { BountyStatus, BountyActivityAction, WorkspaceRole } from "@prisma/client";
 import { createBountySchema } from "@/validations/bounty.schema";
@@ -141,52 +142,42 @@ export async function POST(request: NextRequest) {
     const userPubkey = request.headers.get("x-user-pubkey");
 
     if (!userPubkey) {
-      return NextResponse.json(
+      return apiError(
         {
-          success: false,
-          error: {
-            code: "UNAUTHORIZED",
-            message: ERROR_MESSAGES.UNAUTHORIZED,
-          },
-          meta: { timestamp: new Date().toISOString() },
+          code: ErrorCode.UNAUTHORIZED,
+          message: ERROR_MESSAGES.UNAUTHORIZED,
         },
-        { status: 401 }
+        401
       );
     }
 
     const body = await request.json();
-    const validationResult = createBountySchema.safeParse(body);
-
-    if (!validationResult.success) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: {
-            code: "VALIDATION_ERROR",
-            message: "Invalid bounty data",
-            details: validationResult.error.issues,
-          },
-          meta: { timestamp: new Date().toISOString() },
-        },
-        { status: 400 }
-      );
-    }
-
-    const { workspaceId } = body;
+    const { workspaceId, ...bountyFields } = body;
 
     if (!workspaceId) {
-      return NextResponse.json(
+      return apiError(
         {
-          success: false,
-          error: {
-            code: "VALIDATION_ERROR",
-            message: "workspaceId is required",
-          },
-          meta: { timestamp: new Date().toISOString() },
+          code: ErrorCode.VALIDATION_ERROR,
+          message: "workspaceId is required",
         },
-        { status: 400 }
+        400
       );
     }
+
+    const validationResult = createBountySchema.safeParse(bountyFields);
+
+    if (!validationResult.success) {
+      return apiError(
+        {
+          code: ErrorCode.VALIDATION_ERROR,
+          message: "Invalid bounty data",
+          details: { issues: validationResult.error.issues },
+        },
+        400
+      );
+    }
+
+    const bountyData = validationResult.data;
 
     const workspace = await db.workspace.findUnique({
       where: {
@@ -201,30 +192,22 @@ export async function POST(request: NextRequest) {
     });
 
     if (!workspace) {
-      return NextResponse.json(
+      return apiError(
         {
-          success: false,
-          error: {
-            code: "NOT_FOUND",
-            message: "Workspace not found",
-          },
-          meta: { timestamp: new Date().toISOString() },
+          code: ErrorCode.NOT_FOUND,
+          message: "Workspace not found",
         },
-        { status: 404 }
+        404
       );
     }
 
     if (workspace.members.length === 0) {
-      return NextResponse.json(
+      return apiError(
         {
-          success: false,
-          error: {
-            code: "FORBIDDEN",
-            message: "You must be a workspace member to create bounties",
-          },
-          meta: { timestamp: new Date().toISOString() },
+          code: ErrorCode.FORBIDDEN,
+          message: "You must be a workspace member to create bounties",
         },
-        { status: 403 }
+        403
       );
     }
 
@@ -234,20 +217,14 @@ export async function POST(request: NextRequest) {
       member.role !== WorkspaceRole.ADMIN &&
       member.role !== WorkspaceRole.CONTRIBUTOR
     ) {
-      return NextResponse.json(
+      return apiError(
         {
-          success: false,
-          error: {
-            code: "FORBIDDEN",
-            message: "Insufficient permissions to create bounties",
-          },
-          meta: { timestamp: new Date().toISOString() },
+          code: ErrorCode.FORBIDDEN,
+          message: "Insufficient permissions to create bounties",
         },
-        { status: 403 }
+        403
       );
     }
-
-    const bountyData = validationResult.data;
 
     const bounty = await db.$transaction(async (tx) => {
       const newBounty = await tx.bounty.create({
@@ -305,26 +282,18 @@ export async function POST(request: NextRequest) {
       creator: bounty.creator,
     };
 
-    return NextResponse.json(
-      {
-        success: true,
-        data: response,
-        meta: { timestamp: new Date().toISOString() },
-      },
-      { status: 201 }
-    );
+    return apiCreated(response);
   } catch (error) {
-    console.error("Error creating bounty:", error);
-    return NextResponse.json(
+    logApiError(error as Error, {
+      url: `/api/bounties`,
+      method: "POST",
+    });
+    return apiError(
       {
-        success: false,
-        error: {
-          code: "INTERNAL_ERROR",
-          message: ERROR_MESSAGES.INTERNAL_ERROR,
-        },
-        meta: { timestamp: new Date().toISOString() },
+        code: ErrorCode.INTERNAL_SERVER_ERROR,
+        message: "Failed to create bounty",
       },
-      { status: 500 }
+      500
     );
   }
 }

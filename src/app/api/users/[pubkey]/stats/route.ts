@@ -1,7 +1,8 @@
 import type { NextRequest } from "next/server";
-import { NextResponse } from "next/server";
+import { apiSuccess, apiError } from "@/lib/api";
+import { logApiError } from "@/lib/errors/logger";
+import { ErrorCode } from "@/types/error";
 import { db } from "@/lib/db";
-import { ERROR_MESSAGES } from "@/lib/error-constants";
 import type { UserStatsResponse } from "@/types/user";
 import { BountyStatus } from "@prisma/client";
 
@@ -9,9 +10,8 @@ export async function GET(
   _request: NextRequest,
   { params }: { params: Promise<{ pubkey: string }> }
 ) {
+  const { pubkey } = await params;
   try {
-    const { pubkey } = await params;
-
     const user = await db.user.findUnique({
       where: {
         pubkey,
@@ -23,16 +23,12 @@ export async function GET(
     });
 
     if (!user) {
-      return NextResponse.json(
+      return apiError(
         {
-          success: false,
-          error: {
-            code: "NOT_FOUND",
-            message: "User not found",
-          },
-          meta: { timestamp: new Date().toISOString() },
+          code: ErrorCode.NOT_FOUND,
+          message: "User not found",
         },
-        { status: 404 }
+        404
       );
     }
 
@@ -150,26 +146,18 @@ export async function GET(
       },
     };
 
-    return NextResponse.json(
-      {
-        success: true,
-        data: response,
-        meta: { timestamp: new Date().toISOString() },
-      },
-      { status: 200 }
-    );
+    return apiSuccess(response);
   } catch (error) {
-    console.error("Error fetching user stats:", error);
-    return NextResponse.json(
+    logApiError(error as Error, {
+      url: `/api/users/${pubkey}/stats`,
+      method: "GET",
+    });
+    return apiError(
       {
-        success: false,
-        error: {
-          code: "INTERNAL_ERROR",
-          message: ERROR_MESSAGES.INTERNAL_ERROR,
-        },
-        meta: { timestamp: new Date().toISOString() },
+        code: ErrorCode.INTERNAL_SERVER_ERROR,
+        message: "Failed to fetch user stats",
       },
-      { status: 500 }
+      500
     );
   }
 }
