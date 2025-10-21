@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { apiSuccess, apiError, validateBody } from "@/lib/api";
 import { logApiError } from "@/lib/errors/logger";
 import { ErrorCode } from "@/types/error";
+import { ERROR_MESSAGES } from "@/lib/error-constants";
 import { updateProfileSchema } from "@/validations/user.schema";
 import type { UserProfileResponse, UpdateUserResponse } from "@/types/user";
 import { BountyStatus } from "@prisma/client";
@@ -11,9 +12,8 @@ export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ pubkey: string }> }
 ) {
+  const { pubkey } = await params;
   try {
-    const { pubkey } = await params;
-
     const user = await db.user.findUnique({
       where: {
         pubkey,
@@ -60,16 +60,12 @@ export async function GET(
     });
 
     if (!user) {
-      return NextResponse.json(
+      return apiError(
         {
-          success: false,
-          error: {
-            code: "NOT_FOUND",
-            message: "User not found",
-          },
-          meta: { timestamp: new Date().toISOString() },
+          code: ErrorCode.NOT_FOUND,
+          message: "User not found",
         },
-        { status: 404 }
+        404
       );
     }
 
@@ -124,26 +120,18 @@ export async function GET(
       },
     };
 
-    return NextResponse.json(
-      {
-        success: true,
-        data: response,
-        meta: { timestamp: new Date().toISOString() },
-      },
-      { status: 200 }
-    );
+    return apiSuccess(response);
   } catch (error) {
-    console.error("Error fetching user profile:", error);
-    return NextResponse.json(
+    logApiError(error as Error, {
+      url: `/api/users/${pubkey}`,
+      method: "GET",
+    });
+    return apiError(
       {
-        success: false,
-        error: {
-          code: "INTERNAL_ERROR",
-          message: ERROR_MESSAGES.INTERNAL_ERROR,
-        },
-        meta: { timestamp: new Date().toISOString() },
+        code: ErrorCode.INTERNAL_SERVER_ERROR,
+        message: ERROR_MESSAGES.INTERNAL_ERROR,
       },
-      { status: 500 }
+      500
     );
   }
 }
@@ -152,55 +140,34 @@ export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ pubkey: string }> }
 ) {
+  const { pubkey } = await params;
   try {
-    const { pubkey } = await params;
     const userPubkey = request.headers.get("x-user-pubkey");
 
     if (!userPubkey) {
-      return NextResponse.json(
+      return apiError(
         {
-          success: false,
-          error: {
-            code: "UNAUTHORIZED",
-            message: ERROR_MESSAGES.UNAUTHORIZED,
-          },
-          meta: { timestamp: new Date().toISOString() },
+          code: ErrorCode.UNAUTHORIZED,
+          message: ERROR_MESSAGES.UNAUTHORIZED,
         },
-        { status: 401 }
+        401
       );
     }
 
     if (userPubkey !== pubkey) {
-      return NextResponse.json(
+      return apiError(
         {
-          success: false,
-          error: {
-            code: "FORBIDDEN",
-            message: "You can only update your own profile",
-          },
-          meta: { timestamp: new Date().toISOString() },
+          code: ErrorCode.FORBIDDEN,
+          message: "You can only update your own profile",
         },
-        { status: 403 }
+        403
       );
     }
 
-    const body = await request.json();
-    const validationResult = updateProfileSchema.safeParse(body);
+    const validation = await validateBody(request, updateProfileSchema);
+    if (validation.error) return validation.error;
 
-    if (!validationResult.success) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: {
-            code: "VALIDATION_ERROR",
-            message: "Invalid profile data",
-            details: validationResult.error.issues,
-          },
-          meta: { timestamp: new Date().toISOString() },
-        },
-        { status: 400 }
-      );
-    }
+    const updateData = validation.data!;
 
     const user = await db.user.findUnique({
       where: {
@@ -210,20 +177,14 @@ export async function PATCH(
     });
 
     if (!user) {
-      return NextResponse.json(
+      return apiError(
         {
-          success: false,
-          error: {
-            code: "NOT_FOUND",
-            message: "User not found",
-          },
-          meta: { timestamp: new Date().toISOString() },
+          code: ErrorCode.NOT_FOUND,
+          message: "User not found",
         },
-        { status: 404 }
+        404
       );
     }
-
-    const updateData = validationResult.data;
 
     if (updateData.username && updateData.username !== user.username) {
       const existingUser = await db.user.findUnique({
@@ -231,16 +192,12 @@ export async function PATCH(
       });
 
       if (existingUser) {
-        return NextResponse.json(
+        return apiError(
           {
-            success: false,
-            error: {
-              code: "USERNAME_TAKEN",
-              message: "Username is already taken",
-            },
-            meta: { timestamp: new Date().toISOString() },
+            code: ErrorCode.CONFLICT,
+            message: "Username is already taken",
           },
-          { status: 400 }
+          409
         );
       }
     }
@@ -275,26 +232,18 @@ export async function PATCH(
       user: updatedUser,
     };
 
-    return NextResponse.json(
-      {
-        success: true,
-        data: response,
-        meta: { timestamp: new Date().toISOString() },
-      },
-      { status: 200 }
-    );
+    return apiSuccess(response);
   } catch (error) {
-    console.error("Error updating user profile:", error);
-    return NextResponse.json(
+    logApiError(error as Error, {
+      url: `/api/users/${pubkey}`,
+      method: "PATCH",
+    });
+    return apiError(
       {
-        success: false,
-        error: {
-          code: "INTERNAL_ERROR",
-          message: ERROR_MESSAGES.INTERNAL_ERROR,
-        },
-        meta: { timestamp: new Date().toISOString() },
+        code: ErrorCode.INTERNAL_SERVER_ERROR,
+        message: ERROR_MESSAGES.INTERNAL_ERROR,
       },
-      { status: 500 }
+      500
     );
   }
 }

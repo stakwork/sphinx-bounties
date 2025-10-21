@@ -1,9 +1,9 @@
 import type { NextRequest } from "next/server";
-import { NextResponse } from "next/server";
 import { z } from "zod";
+import { validateQuery, apiPaginated, apiError } from "@/lib/api";
+import { logApiError } from "@/lib/errors/logger";
+import { ErrorCode } from "@/types/error";
 import { db } from "@/lib/db";
-import { ERROR_MESSAGES } from "@/lib/error-constants";
-import type { UserBountiesResponse } from "@/types/user";
 import { BountyStatus } from "@prisma/client";
 
 const querySchema = z.object({
@@ -16,32 +16,17 @@ export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ pubkey: string }> }
 ) {
+  const { pubkey } = await params;
   try {
-    const { pubkey } = await params;
     const { searchParams } = new URL(request.url);
 
-    const queryResult = querySchema.safeParse({
-      page: searchParams.get("page"),
-      limit: searchParams.get("limit"),
-      status: searchParams.get("status"),
-    });
+    const validation = validateQuery(searchParams, querySchema);
 
-    if (!queryResult.success) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: {
-            code: "VALIDATION_ERROR",
-            message: "Invalid query parameters",
-            details: queryResult.error.issues,
-          },
-          meta: { timestamp: new Date().toISOString() },
-        },
-        { status: 400 }
-      );
+    if (validation.error) {
+      return validation.error;
     }
 
-    const { page, limit, status } = queryResult.data;
+    const { page, limit, status } = validation.data!;
     const skip = (page - 1) * limit;
 
     const user = await db.user.findUnique({
@@ -53,16 +38,12 @@ export async function GET(
     });
 
     if (!user) {
-      return NextResponse.json(
+      return apiError(
         {
-          success: false,
-          error: {
-            code: "NOT_FOUND",
-            message: "User not found",
-          },
-          meta: { timestamp: new Date().toISOString() },
+          code: ErrorCode.NOT_FOUND,
+          message: "User not found",
         },
-        { status: 404 }
+        404
       );
     }
 
@@ -107,48 +88,36 @@ export async function GET(
       db.bounty.count({ where }),
     ]);
 
-    const response: UserBountiesResponse = {
-      bounties: bounties.map((bounty) => ({
-        id: bounty.id,
-        title: bounty.title,
-        description: bounty.description,
-        amount: bounty.amount.toString(),
-        status: bounty.status,
-        tags: bounty.tags,
-        codingLanguages: bounty.codingLanguages,
-        createdAt: bounty.createdAt.toISOString(),
-        completedAt: bounty.completedAt?.toISOString() || null,
-        workspace: bounty.workspace,
-        assignee: bounty.assignee,
-      })),
-      pagination: {
-        total,
-        page,
-        limit,
-        totalPages: Math.ceil(total / limit),
-      },
-    };
+    const mappedBounties = bounties.map((bounty) => ({
+      id: bounty.id,
+      title: bounty.title,
+      description: bounty.description,
+      amount: bounty.amount.toString(),
+      status: bounty.status,
+      tags: bounty.tags,
+      codingLanguages: bounty.codingLanguages,
+      createdAt: bounty.createdAt.toISOString(),
+      completedAt: bounty.completedAt?.toISOString() || null,
+      workspace: bounty.workspace,
+      assignee: bounty.assignee,
+    }));
 
-    return NextResponse.json(
-      {
-        success: true,
-        data: response,
-        meta: { timestamp: new Date().toISOString() },
-      },
-      { status: 200 }
-    );
+    return apiPaginated(mappedBounties, {
+      page,
+      pageSize: limit,
+      totalCount: total,
+    });
   } catch (error) {
-    console.error("Error fetching created bounties:", error);
-    return NextResponse.json(
+    logApiError(error as Error, {
+      url: `/api/users/${pubkey}/bounties/created`,
+      method: "GET",
+    });
+    return apiError(
       {
-        success: false,
-        error: {
-          code: "INTERNAL_ERROR",
-          message: ERROR_MESSAGES.INTERNAL_ERROR,
-        },
-        meta: { timestamp: new Date().toISOString() },
+        code: ErrorCode.INTERNAL_SERVER_ERROR,
+        message: "Failed to fetch created bounties",
       },
-      { status: 500 }
+      500
     );
   }
 }

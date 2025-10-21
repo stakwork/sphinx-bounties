@@ -1,7 +1,8 @@
 import type { NextRequest } from "next/server";
-import { NextResponse } from "next/server";
+import { apiSuccess, apiError } from "@/lib/api";
+import { logApiError } from "@/lib/errors/logger";
+import { ErrorCode } from "@/types/error";
 import { db } from "@/lib/db";
-import { ERROR_MESSAGES } from "@/lib/error-constants";
 import { BountyStatus, BountyActivityAction, WorkspaceRole } from "@prisma/client";
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -10,16 +11,12 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     const userPubkey = request.headers.get("x-user-pubkey");
 
     if (!userPubkey) {
-      return NextResponse.json(
+      return apiError(
         {
-          success: false,
-          error: {
-            code: "UNAUTHORIZED",
-            message: ERROR_MESSAGES.UNAUTHORIZED,
-          },
-          meta: { timestamp: new Date().toISOString() },
+          code: ErrorCode.UNAUTHORIZED,
+          message: "Authentication required",
         },
-        { status: 401 }
+        401
       );
     }
 
@@ -27,16 +24,12 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     const { assigneePubkey } = body;
 
     if (!assigneePubkey || typeof assigneePubkey !== "string") {
-      return NextResponse.json(
+      return apiError(
         {
-          success: false,
-          error: {
-            code: "VALIDATION_ERROR",
-            message: "assigneePubkey is required",
-          },
-          meta: { timestamp: new Date().toISOString() },
+          code: ErrorCode.VALIDATION_ERROR,
+          message: "assigneePubkey is required",
         },
-        { status: 400 }
+        400
       );
     }
 
@@ -58,16 +51,12 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     });
 
     if (!bounty) {
-      return NextResponse.json(
+      return apiError(
         {
-          success: false,
-          error: {
-            code: "NOT_FOUND",
-            message: "Bounty not found",
-          },
-          meta: { timestamp: new Date().toISOString() },
+          code: ErrorCode.NOT_FOUND,
+          message: "Bounty not found",
         },
-        { status: 404 }
+        404
       );
     }
 
@@ -78,44 +67,32 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         workspaceMember.role === WorkspaceRole.OWNER);
 
     if (!isAdmin) {
-      return NextResponse.json(
+      return apiError(
         {
-          success: false,
-          error: {
-            code: "FORBIDDEN",
-            message: "Only workspace admins can assign bounties",
-          },
-          meta: { timestamp: new Date().toISOString() },
+          code: ErrorCode.FORBIDDEN,
+          message: "Only workspace admins can assign bounties",
         },
-        { status: 403 }
+        403
       );
     }
 
     if (bounty.status !== BountyStatus.OPEN) {
-      return NextResponse.json(
+      return apiError(
         {
-          success: false,
-          error: {
-            code: "INVALID_STATUS",
-            message: "Can only assign bounties with OPEN status",
-          },
-          meta: { timestamp: new Date().toISOString() },
+          code: ErrorCode.VALIDATION_ERROR,
+          message: "Can only assign bounties with OPEN status",
         },
-        { status: 400 }
+        400
       );
     }
 
     if (bounty.assigneePubkey) {
-      return NextResponse.json(
+      return apiError(
         {
-          success: false,
-          error: {
-            code: "ALREADY_ASSIGNED",
-            message: "Bounty is already assigned",
-          },
-          meta: { timestamp: new Date().toISOString() },
+          code: ErrorCode.CONFLICT,
+          message: "Bounty is already assigned",
         },
-        { status: 400 }
+        400
       );
     }
 
@@ -133,62 +110,46 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     });
 
     if (!assignee) {
-      return NextResponse.json(
+      return apiError(
         {
-          success: false,
-          error: {
-            code: "NOT_FOUND",
-            message: "Assignee not found",
-          },
-          meta: { timestamp: new Date().toISOString() },
+          code: ErrorCode.NOT_FOUND,
+          message: "Assignee not found",
         },
-        { status: 404 }
+        404
       );
     }
 
     if (assignee.memberships.length === 0) {
-      return NextResponse.json(
+      return apiError(
         {
-          success: false,
-          error: {
-            code: "FORBIDDEN",
-            message: "Assignee must be a workspace member",
-          },
-          meta: { timestamp: new Date().toISOString() },
+          code: ErrorCode.FORBIDDEN,
+          message: "Assignee must be a workspace member",
         },
-        { status: 403 }
+        403
       );
     }
 
     if (!bounty.workspace.budget) {
-      return NextResponse.json(
+      return apiError(
         {
-          success: false,
-          error: {
-            code: "NO_BUDGET",
-            message: "Workspace has no budget configured",
-          },
-          meta: { timestamp: new Date().toISOString() },
+          code: ErrorCode.VALIDATION_ERROR,
+          message: "Workspace has no budget configured",
         },
-        { status: 400 }
+        400
       );
     }
 
     if (bounty.workspace.budget.availableBudget < bounty.amount) {
-      return NextResponse.json(
+      return apiError(
         {
-          success: false,
-          error: {
-            code: "INSUFFICIENT_BUDGET",
-            message: "Insufficient available budget to assign bounty",
-            details: {
-              required: bounty.amount.toString(),
-              available: bounty.workspace.budget.availableBudget.toString(),
-            },
+          code: ErrorCode.VALIDATION_ERROR,
+          message: "Insufficient available budget to assign bounty",
+          details: {
+            required: bounty.amount.toString(),
+            available: bounty.workspace.budget.availableBudget.toString(),
           },
-          meta: { timestamp: new Date().toISOString() },
         },
-        { status: 400 }
+        400
       );
     }
 
@@ -223,32 +184,24 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       });
     });
 
-    return NextResponse.json(
-      {
-        success: true,
-        data: {
-          message: "Bounty assigned successfully",
-          assignee: {
-            pubkey: assignee.pubkey,
-            username: assignee.username,
-          },
-        },
-        meta: { timestamp: new Date().toISOString() },
+    return apiSuccess({
+      message: "Bounty assigned successfully",
+      assignee: {
+        pubkey: assignee.pubkey,
+        username: assignee.username,
       },
-      { status: 200 }
-    );
+    });
   } catch (error) {
-    console.error("Error assigning bounty:", error);
-    return NextResponse.json(
+    logApiError(error as Error, {
+      url: `/api/bounties/[id]/assign`,
+      method: "POST",
+    });
+    return apiError(
       {
-        success: false,
-        error: {
-          code: "INTERNAL_ERROR",
-          message: ERROR_MESSAGES.INTERNAL_ERROR,
-        },
-        meta: { timestamp: new Date().toISOString() },
+        code: ErrorCode.INTERNAL_SERVER_ERROR,
+        message: "Failed to assign bounty",
       },
-      { status: 500 }
+      500
     );
   }
 }
@@ -262,16 +215,12 @@ export async function DELETE(
     const userPubkey = request.headers.get("x-user-pubkey");
 
     if (!userPubkey) {
-      return NextResponse.json(
+      return apiError(
         {
-          success: false,
-          error: {
-            code: "UNAUTHORIZED",
-            message: ERROR_MESSAGES.UNAUTHORIZED,
-          },
-          meta: { timestamp: new Date().toISOString() },
+          code: ErrorCode.UNAUTHORIZED,
+          message: "Authentication required",
         },
-        { status: 401 }
+        401
       );
     }
 
@@ -298,16 +247,12 @@ export async function DELETE(
     });
 
     if (!bounty) {
-      return NextResponse.json(
+      return apiError(
         {
-          success: false,
-          error: {
-            code: "NOT_FOUND",
-            message: "Bounty not found",
-          },
-          meta: { timestamp: new Date().toISOString() },
+          code: ErrorCode.NOT_FOUND,
+          message: "Bounty not found",
         },
-        { status: 404 }
+        404
       );
     }
 
@@ -318,44 +263,32 @@ export async function DELETE(
         workspaceMember.role === WorkspaceRole.OWNER);
 
     if (!isAdmin) {
-      return NextResponse.json(
+      return apiError(
         {
-          success: false,
-          error: {
-            code: "FORBIDDEN",
-            message: "Only workspace admins can unassign bounties",
-          },
-          meta: { timestamp: new Date().toISOString() },
+          code: ErrorCode.FORBIDDEN,
+          message: "Only workspace admins can unassign bounties",
         },
-        { status: 403 }
+        403
       );
     }
 
     if (!bounty.assigneePubkey) {
-      return NextResponse.json(
+      return apiError(
         {
-          success: false,
-          error: {
-            code: "NOT_ASSIGNED",
-            message: "Bounty is not assigned",
-          },
-          meta: { timestamp: new Date().toISOString() },
+          code: ErrorCode.VALIDATION_ERROR,
+          message: "Bounty is not assigned",
         },
-        { status: 400 }
+        400
       );
     }
 
     if (bounty.status !== BountyStatus.ASSIGNED && bounty.status !== BountyStatus.IN_REVIEW) {
-      return NextResponse.json(
+      return apiError(
         {
-          success: false,
-          error: {
-            code: "INVALID_STATUS",
-            message: "Can only unassign bounties with ASSIGNED or IN_REVIEW status",
-          },
-          meta: { timestamp: new Date().toISOString() },
+          code: ErrorCode.VALIDATION_ERROR,
+          message: "Can only unassign bounties with ASSIGNED or IN_REVIEW status",
         },
-        { status: 400 }
+        400
       );
     }
 
@@ -390,28 +323,20 @@ export async function DELETE(
       });
     });
 
-    return NextResponse.json(
-      {
-        success: true,
-        data: {
-          message: "Bounty unassigned successfully",
-        },
-        meta: { timestamp: new Date().toISOString() },
-      },
-      { status: 200 }
-    );
+    return apiSuccess({
+      message: "Bounty unassigned successfully",
+    });
   } catch (error) {
-    console.error("Error unassigning bounty:", error);
-    return NextResponse.json(
+    logApiError(error as Error, {
+      url: `/api/bounties/[id]/assign`,
+      method: "DELETE",
+    });
+    return apiError(
       {
-        success: false,
-        error: {
-          code: "INTERNAL_ERROR",
-          message: ERROR_MESSAGES.INTERNAL_ERROR,
-        },
-        meta: { timestamp: new Date().toISOString() },
+        code: ErrorCode.INTERNAL_SERVER_ERROR,
+        message: "Failed to unassign bounty",
       },
-      { status: 500 }
+      500
     );
   }
 }
