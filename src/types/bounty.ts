@@ -126,7 +126,20 @@ export interface UnclaimBountyResponse {
 
 export interface UpdateBountyResponse {
   message: string;
-  bounty: CreateBountyResponse;
+  bounty: {
+    id: string;
+    title: string;
+    description: string;
+    deliverables: string;
+    amount: string;
+    status: string;
+    tags: string[];
+    codingLanguages: string[];
+    estimatedHours: number | null;
+    estimatedCompletionDate: string | null;
+    githubIssueUrl: string | null;
+    loomVideoUrl: string | null;
+  };
 }
 
 export interface CompleteBountyResponse {
