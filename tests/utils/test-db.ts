@@ -3,7 +3,7 @@
  */
 
 import { db } from "@/lib/db";
-import { WorkspaceRole } from "@prisma/client";
+import { WorkspaceRole, BountyStatus, type ProgrammingLanguage } from "@prisma/client";
 
 /**
  * Generate a unique test pubkey
@@ -88,6 +88,39 @@ export const addWorkspaceMember = async (options: {
       workspaceId: options.workspaceId,
       userPubkey: options.userPubkey,
       role: options.role || WorkspaceRole.CONTRIBUTOR,
+    },
+  });
+};
+
+/**
+ * Create a test bounty
+ */
+export const createTestBounty = async (options: {
+  workspaceId: string;
+  creatorPubkey: string;
+  title?: string;
+  description?: string;
+  deliverables?: string;
+  amount?: number;
+  status?: BountyStatus;
+  tags?: string[];
+  codingLanguages?: ProgrammingLanguage[];
+  assigneePubkey?: string;
+}) => {
+  const timestamp = Date.now();
+  return db.bounty.create({
+    data: {
+      workspaceId: options.workspaceId,
+      creatorPubkey: options.creatorPubkey,
+      title: options.title || `Test Bounty ${timestamp}`,
+      description:
+        options.description || "Test bounty description that is long enough to pass validation",
+      deliverables: options.deliverables || "Test deliverables description for bounty completion",
+      amount: BigInt(options.amount || 50000),
+      status: options.status || BountyStatus.DRAFT,
+      tags: options.tags || [],
+      codingLanguages: options.codingLanguages || [],
+      assigneePubkey: options.assigneePubkey,
     },
   });
 };
