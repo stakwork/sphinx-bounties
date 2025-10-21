@@ -116,13 +116,14 @@ export async function PATCH(
     }
 
     // Validate bounty can be claimed
-    if (bounty.status !== BountyStatus.OPEN) {
+    // Check if already assigned first (more specific error)
+    if (bounty.assigneePubkey) {
       return NextResponse.json(
         {
           success: false,
           error: {
-            code: "INVALID_STATE",
-            message: `Cannot claim bounty with status: ${bounty.status}. Only OPEN bounties can be claimed.`,
+            code: "BOUNTY_ALREADY_ASSIGNED",
+            message: "Bounty is already assigned to another user",
           },
           meta: { timestamp: new Date().toISOString() },
         },
@@ -130,13 +131,13 @@ export async function PATCH(
       );
     }
 
-    if (bounty.assigneePubkey) {
+    if (bounty.status !== BountyStatus.OPEN) {
       return NextResponse.json(
         {
           success: false,
           error: {
-            code: "INVALID_STATE",
-            message: "Bounty is already assigned to another user",
+            code: "INVALID_STATUS",
+            message: `Cannot claim bounty with status: ${bounty.status}. Only OPEN bounties can be claimed.`,
           },
           meta: { timestamp: new Date().toISOString() },
         },
