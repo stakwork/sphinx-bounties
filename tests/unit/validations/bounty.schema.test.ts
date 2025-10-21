@@ -14,6 +14,7 @@ describe("Bounty Validation Schemas", () => {
     const validData = {
       title: "Build a feature",
       description: "This is a detailed description of the bounty requirements",
+      deliverables: "Clear acceptance criteria and deliverables for this bounty",
       amount: 10000,
       workspaceId: "clx1234567890abcdef",
     };
@@ -77,20 +78,20 @@ describe("Bounty Validation Schemas", () => {
       expect(result.success).toBe(false);
     });
 
-    it("validates optional deadline in future", () => {
+    it("accepts future estimatedCompletionDate", () => {
       const futureDate = new Date(Date.now() + 86400000);
       const result = createBountySchema.safeParse({
         ...validData,
-        deadline: futureDate,
+        estimatedCompletionDate: futureDate,
       });
       expect(result.success).toBe(true);
     });
 
-    it("rejects past deadline", () => {
+    it("rejects past estimatedCompletionDate", () => {
       const pastDate = new Date(Date.now() - 86400000);
       const result = createBountySchema.safeParse({
         ...validData,
-        deadline: pastDate,
+        estimatedCompletionDate: pastDate,
       });
       expect(result.success).toBe(false);
     });
