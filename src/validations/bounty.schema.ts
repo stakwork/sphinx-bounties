@@ -189,6 +189,44 @@ export const reviewProofSchema = z.object({
     .optional(),
 });
 
+export const processPaymentSchema = z.object({
+  bountyId: z.string().cuid("Invalid bounty ID"),
+
+  lightningInvoice: z
+    .string()
+    .min(1, "Lightning invoice is required")
+    .regex(/^ln[a-z0-9]+$/i, "Must be a valid Lightning invoice")
+    .optional(),
+
+  memo: z.string().max(500, "Memo must not exceed 500 characters").trim().optional(),
+});
+
+export const updatePaymentStatusSchema = z.object({
+  bountyId: z.string().cuid("Invalid bounty ID"),
+
+  status: z.enum(["COMPLETED", "FAILED"], {
+    message: "Status must be either COMPLETED or FAILED",
+  }),
+
+  errorMessage: z
+    .string()
+    .max(500, "Error message must not exceed 500 characters")
+    .trim()
+    .optional(),
+
+  paymentHash: z
+    .string()
+    .length(64, "Payment hash must be 64 characters")
+    .regex(/^[a-f0-9]+$/i, "Payment hash must be hexadecimal")
+    .optional(),
+
+  preimage: z
+    .string()
+    .length(64, "Preimage must be 64 characters")
+    .regex(/^[a-f0-9]+$/i, "Preimage must be hexadecimal")
+    .optional(),
+});
+
 export type CreateBountyInput = z.infer<typeof createBountySchema>;
 export type UpdateBountyInput = z.infer<typeof updateBountySchema>;
 export type ClaimBountyInput = z.infer<typeof claimBountySchema>;
@@ -197,3 +235,5 @@ export type CompleteBountyInput = z.infer<typeof completeBountySchema>;
 export type CancelBountyInput = z.infer<typeof cancelBountySchema>;
 export type SubmitProofInput = z.infer<typeof submitProofSchema>;
 export type ReviewProofInput = z.infer<typeof reviewProofSchema>;
+export type ProcessPaymentInput = z.infer<typeof processPaymentSchema>;
+export type UpdatePaymentStatusInput = z.infer<typeof updatePaymentStatusSchema>;

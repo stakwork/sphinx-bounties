@@ -213,3 +213,64 @@ export interface ReviewProofResponse {
 export interface DeleteProofResponse {
   message: string;
 }
+
+// Payment types
+export interface BountyTransaction {
+  id: string;
+  bountyId: string;
+  workspaceId: string;
+  type: "PAYMENT";
+  amount: string;
+  status: "PENDING" | "COMPLETED" | "FAILED" | "EXPIRED";
+  lightningInvoice: string | null;
+  paymentHash: string | null;
+  preimage: string | null;
+  memo: string | null;
+  errorMessage: string | null;
+  createdAt: string;
+  completedAt: string | null;
+  fromUser: {
+    pubkey: string;
+    username: string;
+  } | null;
+  toUser: {
+    pubkey: string;
+    username: string;
+    alias: string | null;
+  } | null;
+}
+
+export interface ProcessPaymentResponse {
+  message: string;
+  transaction: {
+    id: string;
+    amount: string;
+    status: string;
+    paymentHash: string | null;
+    createdAt: string;
+  };
+}
+
+export interface GetPaymentResponse {
+  transaction: BountyTransaction | null;
+  bounty: {
+    id: string;
+    title: string;
+    amount: string;
+    status: string;
+    assignee: {
+      pubkey: string;
+      username: string;
+    } | null;
+  };
+}
+
+export interface UpdatePaymentStatusResponse {
+  message: string;
+  transaction: {
+    id: string;
+    status: string;
+    completedAt: string | null;
+    errorMessage: string | null;
+  };
+}
