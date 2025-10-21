@@ -2,19 +2,12 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { z } from "zod";
 import { db } from "@/lib/db";
-import {
-  BountyStatus,
-  BountyActivityAction,
-  WorkspaceRole,
-  type ProgrammingLanguage,
-} from "@prisma/client";
+import { BountyStatus, BountyActivityAction, WorkspaceRole } from "@prisma/client";
 import type { ApiResponse } from "@/types/api";
+import type { CreateBountyResponse, ListBountiesResponse } from "@/types/bounty";
 import { createBountySchema } from "@/validations/bounty.schema";
 import type { Prisma } from "@prisma/client";
 
-/**
- * Schema for listing bounties with filters
- */
 const listBountiesSchema = z.object({
   page: z.coerce.number().int().positive().default(1),
   limit: z.coerce.number().int().positive().max(100).default(20),
@@ -32,59 +25,6 @@ const listBountiesSchema = z.object({
 });
 
 type ListBountiesQuery = z.infer<typeof listBountiesSchema>;
-
-interface BountyListItem {
-  id: string;
-  title: string;
-  description: string;
-  amount: string;
-  status: BountyStatus;
-  tags: string[];
-  codingLanguages: ProgrammingLanguage[];
-  estimatedCompletionDate: string | null;
-  githubIssueUrl: string | null;
-  createdAt: string;
-  updatedAt: string;
-  creator: {
-    pubkey: string;
-    username: string;
-  };
-  assignee: {
-    pubkey: string;
-    username: string;
-  } | null;
-  _count: {
-    proofs: number;
-  };
-}
-
-interface CreateBountyResponse {
-  id: string;
-  title: string;
-  description: string;
-  deliverables: string;
-  amount: string;
-  status: BountyStatus;
-  tags: string[];
-  codingLanguages: ProgrammingLanguage[];
-  estimatedCompletionDate: string | null;
-  githubIssueUrl: string | null;
-  createdAt: string;
-  creator: {
-    pubkey: string;
-    username: string;
-  };
-}
-
-interface ListBountiesResponse {
-  bounties: BountyListItem[];
-  pagination: {
-    total: number;
-    page: number;
-    limit: number;
-    totalPages: number;
-  };
-}
 
 /**
  * POST /api/workspaces/[id]/bounties
