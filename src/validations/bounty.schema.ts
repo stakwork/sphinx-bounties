@@ -143,6 +143,25 @@ export const claimBountySchema = z.object({
 
 export const unclaimBountySchema = z.object({
   bountyId: z.string().cuid("Invalid bounty ID"),
+  reason: z
+    .string()
+    .min(10, "Reason must be at least 10 characters")
+    .max(500, "Reason must not exceed 500 characters")
+    .trim()
+    .optional(),
+});
+
+export const completeBountySchema = z.object({
+  bountyId: z.string().cuid("Invalid bounty ID"),
+});
+
+export const cancelBountySchema = z.object({
+  bountyId: z.string().cuid("Invalid bounty ID"),
+  reason: z
+    .string()
+    .min(10, "Reason must be at least 10 characters")
+    .max(500, "Reason must not exceed 500 characters")
+    .trim(),
 });
 
 export const submitProofSchema = z.object({
@@ -174,5 +193,7 @@ export type CreateBountyInput = z.infer<typeof createBountySchema>;
 export type UpdateBountyInput = z.infer<typeof updateBountySchema>;
 export type ClaimBountyInput = z.infer<typeof claimBountySchema>;
 export type UnclaimBountyInput = z.infer<typeof unclaimBountySchema>;
+export type CompleteBountyInput = z.infer<typeof completeBountySchema>;
+export type CancelBountyInput = z.infer<typeof cancelBountySchema>;
 export type SubmitProofInput = z.infer<typeof submitProofSchema>;
 export type ReviewProofInput = z.infer<typeof reviewProofSchema>;
