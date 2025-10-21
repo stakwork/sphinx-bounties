@@ -2,67 +2,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { db } from "@/lib/db";
 import type { ApiResponse } from "@/types/api";
-import type { BountyStatus, ProgrammingLanguage, BountyActivityAction } from "@prisma/client";
-
-interface BountyDetailsResponse {
-  id: string;
-  title: string;
-  description: string;
-  deliverables: string;
-  amount: string;
-  status: BountyStatus;
-  tags: string[];
-  codingLanguages: ProgrammingLanguage[];
-  estimatedHours: number | null;
-  estimatedCompletionDate: string | null;
-  githubIssueUrl: string | null;
-  loomVideoUrl: string | null;
-  createdAt: string;
-  updatedAt: string;
-  assignedAt: string | null;
-  completedAt: string | null;
-  paidAt: string | null;
-  creator: {
-    pubkey: string;
-    username: string;
-    alias: string | null;
-    avatarUrl: string | null;
-  };
-  assignee: {
-    pubkey: string;
-    username: string;
-    alias: string | null;
-    avatarUrl: string | null;
-  } | null;
-  workspace: {
-    id: string;
-    name: string;
-  };
-  proofs: Array<{
-    id: string;
-    description: string;
-    proofUrl: string;
-    status: string;
-    createdAt: string;
-    submitter: {
-      pubkey: string;
-      username: string;
-    };
-  }>;
-  activities: Array<{
-    id: string;
-    action: BountyActivityAction;
-    timestamp: string;
-    user: {
-      pubkey: string;
-      username: string;
-    };
-  }>;
-  _count: {
-    proofs: number;
-    activities: number;
-  };
-}
+import type { BountyDetailsResponse } from "@/types/bounty";
 
 /**
  * GET /api/workspaces/[id]/bounties/[bountyId]
@@ -143,6 +83,7 @@ export async function GET(
           select: {
             id: true,
             name: true,
+            avatarUrl: true,
           },
         },
         proofs: {
@@ -156,6 +97,7 @@ export async function GET(
               select: {
                 pubkey: true,
                 username: true,
+                alias: true,
               },
             },
           },
@@ -172,6 +114,7 @@ export async function GET(
               select: {
                 pubkey: true,
                 username: true,
+                alias: true,
               },
             },
           },
