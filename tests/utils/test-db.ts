@@ -21,13 +21,13 @@ export const createTestUser = async (options?: {
   alias?: string;
 }) => {
   const pubkey = options?.pubkey || generateTestPubkey();
-  const timestamp = Date.now();
+  const timestamp = Date.now().toString().slice(-8);
 
   const user = await db.user.upsert({
     where: { pubkey },
     create: {
       pubkey,
-      username: options?.username || `testuser_${timestamp}`,
+      username: options?.username || `user${timestamp}`,
       alias: options?.alias || "Test User",
     },
     update: {},
