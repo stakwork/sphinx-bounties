@@ -6,6 +6,7 @@ import { db } from "@/lib/db";
 import { AUTH_HEADER_NAME } from "@/lib/auth/constants";
 import { WorkspaceRole, WorkspaceActivityAction } from "@prisma/client";
 import { z } from "zod";
+import type { ListMembersResponse, AddMemberResponse } from "@/types/workspace";
 
 type RouteContext = {
   params: Promise<{ id: string }>;
@@ -70,7 +71,23 @@ export async function GET(request: NextRequest, context: RouteContext) {
       orderBy: [{ role: "asc" }, { joinedAt: "asc" }],
     });
 
-    return apiSuccess({ members });
+    const response: ListMembersResponse = {
+      members: members.map((m) => ({
+        id: m.id,
+        workspaceId: m.workspaceId,
+        userPubkey: m.userPubkey,
+        role: m.role,
+        joinedAt: m.joinedAt.toISOString(),
+        user: {
+          pubkey: m.user.pubkey,
+          username: m.user.username,
+          alias: m.user.alias,
+          avatarUrl: m.user.avatarUrl,
+        },
+      })),
+    };
+
+    return apiSuccess(response);
   } catch (error) {
     logApiError(error as Error, {
       url: `/api/workspaces/[id]/members`,
@@ -202,7 +219,23 @@ export async function POST(request: NextRequest, context: RouteContext) {
       },
     });
 
-    return apiCreated({ member: newMember });
+    const response: AddMemberResponse = {
+      member: {
+        id: newMember.id,
+        workspaceId: newMember.workspaceId,
+        userPubkey: newMember.userPubkey,
+        role: newMember.role,
+        joinedAt: newMember.joinedAt.toISOString(),
+        user: {
+          pubkey: newMember.user.pubkey,
+          username: newMember.user.username,
+          alias: newMember.user.alias,
+          avatarUrl: newMember.user.avatarUrl,
+        },
+      },
+    };
+
+    return apiCreated(response);
   } catch (error) {
     logApiError(error as Error, {
       url: `/api/workspaces/[id]/members`,

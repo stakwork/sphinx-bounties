@@ -6,6 +6,7 @@ import { db } from "@/lib/db";
 import { createWorkspaceSchema } from "@/validations/workspace.schema";
 import { AUTH_HEADER_NAME } from "@/lib/auth/constants";
 import { WorkspaceRole, WorkspaceActivityAction, Prisma } from "@prisma/client";
+import type { WorkspaceListItem, CreateWorkspaceResponse } from "@/types/workspace";
 
 export async function GET(request: NextRequest) {
   try {
@@ -76,23 +77,32 @@ export async function GET(request: NextRequest) {
       db.workspace.count({ where }),
     ]);
 
-    const data = workspaces.map((ws) => ({
-      ...ws,
+    const data: WorkspaceListItem[] = workspaces.map((ws) => ({
+      id: ws.id,
+      name: ws.name,
+      description: ws.description,
+      mission: ws.mission,
+      avatarUrl: ws.avatarUrl,
+      websiteUrl: ws.websiteUrl,
+      githubUrl: ws.githubUrl,
+      ownerPubkey: ws.ownerPubkey,
+      createdAt: ws.createdAt.toISOString(),
+      updatedAt: ws.updatedAt.toISOString(),
       role: ws.members[0].role,
-      joinedAt: ws.members[0].joinedAt,
+      joinedAt: ws.members[0].joinedAt.toISOString(),
       memberCount: ws._count.members,
       bountyCount: ws._count.bounties,
       budget: ws.budget
         ? {
-            ...ws.budget,
+            id: ws.budget.id,
+            workspaceId: ws.budget.workspaceId,
             totalBudget: ws.budget.totalBudget.toString(),
             availableBudget: ws.budget.availableBudget.toString(),
             reservedBudget: ws.budget.reservedBudget.toString(),
             paidBudget: ws.budget.paidBudget.toString(),
+            updatedAt: ws.budget.updatedAt.toISOString(),
           }
         : null,
-      members: undefined,
-      _count: undefined,
     }));
 
     return apiPaginated(data, {
@@ -191,25 +201,37 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    return apiCreated({
+    const response: CreateWorkspaceResponse = {
       workspace: {
-        ...workspace,
+        id: workspace.id,
+        name: workspace.name,
+        description: workspace.description,
+        mission: workspace.mission,
+        avatarUrl: workspace.avatarUrl,
+        websiteUrl: workspace.websiteUrl,
+        githubUrl: workspace.githubUrl,
+        ownerPubkey: workspace.ownerPubkey,
+        createdAt: workspace.createdAt.toISOString(),
+        updatedAt: workspace.updatedAt.toISOString(),
+        role: workspace.members[0].role,
+        joinedAt: workspace.members[0].joinedAt.toISOString(),
+        memberCount: 1,
+        bountyCount: 0,
         budget: workspace.budget
           ? {
-              ...workspace.budget,
+              id: workspace.budget.id,
+              workspaceId: workspace.budget.workspaceId,
               totalBudget: workspace.budget.totalBudget.toString(),
               availableBudget: workspace.budget.availableBudget.toString(),
               reservedBudget: workspace.budget.reservedBudget.toString(),
               paidBudget: workspace.budget.paidBudget.toString(),
+              updatedAt: workspace.budget.updatedAt.toISOString(),
             }
           : null,
-        role: workspace.members[0].role,
-        joinedAt: workspace.members[0].joinedAt,
-        memberCount: 1,
-        bountyCount: 0,
-        members: undefined,
       },
-    });
+    };
+
+    return apiCreated(response);
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       if (error.code === "P2002") {

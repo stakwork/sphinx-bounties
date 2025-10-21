@@ -6,6 +6,7 @@ import { db } from "@/lib/db";
 import { AUTH_HEADER_NAME } from "@/lib/auth/constants";
 import { WorkspaceRole, WorkspaceActivityAction } from "@prisma/client";
 import { z } from "zod";
+import type { UpdateMemberResponse, RemoveMemberResponse } from "@/types/workspace";
 
 type RouteContext = {
   params: Promise<{ id: string; pubkey: string }>;
@@ -154,7 +155,23 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       },
     });
 
-    return apiSuccess({ member: updatedMember });
+    const response: UpdateMemberResponse = {
+      member: {
+        id: updatedMember.id,
+        workspaceId: updatedMember.workspaceId,
+        userPubkey: updatedMember.userPubkey,
+        role: updatedMember.role,
+        joinedAt: updatedMember.joinedAt.toISOString(),
+        user: {
+          pubkey: updatedMember.user.pubkey,
+          username: updatedMember.user.username,
+          alias: updatedMember.user.alias,
+          avatarUrl: updatedMember.user.avatarUrl,
+        },
+      },
+    };
+
+    return apiSuccess(response);
   } catch (error) {
     logApiError(error as Error, {
       url: `/api/workspaces/[id]/members/[pubkey]`,
@@ -277,7 +294,11 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
       },
     });
 
-    return apiSuccess({ message: "Member removed successfully" });
+    const response: RemoveMemberResponse = {
+      message: "Member removed successfully",
+    };
+
+    return apiSuccess(response);
   } catch (error) {
     logApiError(error as Error, {
       url: `/api/workspaces/[id]/members/[pubkey]`,
