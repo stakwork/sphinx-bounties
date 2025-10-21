@@ -12,10 +12,10 @@ import { createNextRequest } from "../utils/test-api";
 import { WorkspaceRole } from "@prisma/client";
 
 describe("Workspace Details Integration", () => {
-  const ownerPubkey = generateTestPubkey("owner");
-  const adminPubkey = generateTestPubkey("admin");
-  const memberPubkey = generateTestPubkey("member");
-  const outsiderPubkey = generateTestPubkey("outsider");
+  const ownerPubkey = generateTestPubkey("a0a0");
+  const adminPubkey = generateTestPubkey("b1b1");
+  const memberPubkey = generateTestPubkey("c2c2");
+  const outsiderPubkey = generateTestPubkey("d3d3");
   let workspaceId: string;
 
   beforeAll(async () => {

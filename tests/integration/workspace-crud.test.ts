@@ -12,8 +12,8 @@ import {
 } from "../utils";
 
 describe("Workspace CRUD Integration", () => {
-  const testPubkey = generateTestPubkey("user1");
-  const testPubkey2 = generateTestPubkey("user2");
+  const testPubkey = generateTestPubkey("e4e4");
+  const testPubkey2 = generateTestPubkey("f5f5");
 
   beforeAll(async () => {
     await connectTestDb();

@@ -9,7 +9,8 @@ import { WorkspaceRole } from "@prisma/client";
  * Generate a unique test pubkey
  */
 export const generateTestPubkey = (prefix = "test"): string => {
-  return `02${prefix}${Date.now()}${"0".repeat(40)}`.slice(0, 66);
+  const base = `02${prefix}${Date.now()}`;
+  return base + "0".repeat(66 - base.length);
 };
 
 /**
@@ -21,13 +22,15 @@ export const createTestUser = async (options?: {
   alias?: string;
 }) => {
   const pubkey = options?.pubkey || generateTestPubkey();
-  const timestamp = Date.now().toString().slice(-8);
+  // Use characters 2-16 which contain the prefix and timestamp (most unique part)
+  // Skip the "02" prefix and use the next 14 chars before the zero padding
+  const uniqueId = pubkey.slice(2, 16);
 
   const user = await db.user.upsert({
     where: { pubkey },
     create: {
       pubkey,
-      username: options?.username || `user${timestamp}`,
+      username: options?.username || `user${uniqueId}`,
       alias: options?.alias || "Test User",
     },
     update: {},
