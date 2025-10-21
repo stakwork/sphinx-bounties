@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { BountyStatus } from "@prisma/client";
+import { BountyStatus, ProgrammingLanguage } from "@prisma/client";
 import { LIMITS } from "@/constants";
 
 export const createBountySchema = z.object({
@@ -18,15 +18,27 @@ export const createBountySchema = z.object({
     )
     .trim(),
 
+  deliverables: z
+    .string()
+    .min(10, "Deliverables must be at least 10 characters")
+    .max(
+      LIMITS.MAX_DESCRIPTION_LENGTH,
+      `Deliverables must not exceed ${LIMITS.MAX_DESCRIPTION_LENGTH} characters`
+    )
+    .trim(),
+
   amount: z
     .number()
     .int("Amount must be a whole number")
     .min(LIMITS.MIN_BOUNTY_AMOUNT, `Minimum bounty amount is ${LIMITS.MIN_BOUNTY_AMOUNT} sats`)
     .max(LIMITS.MAX_BOUNTY_AMOUNT, `Maximum bounty amount is ${LIMITS.MAX_BOUNTY_AMOUNT} sats`),
 
-  workspaceId: z.string().cuid("Invalid workspace ID"),
+  estimatedHours: z.number().int().positive().optional(),
 
-  deadline: z.date().min(new Date(), "Deadline must be in the future").optional(),
+  estimatedCompletionDate: z
+    .date()
+    .min(new Date(), "Estimated completion date must be in the future")
+    .optional(),
 
   githubIssueUrl: z
     .string()
@@ -38,13 +50,15 @@ export const createBountySchema = z.object({
     .optional()
     .or(z.literal("")),
 
+  loomVideoUrl: z.string().url("Must be a valid URL").optional().or(z.literal("")),
+
   tags: z
     .array(z.string().min(2).max(30))
     .max(LIMITS.MAX_TAGS, `Maximum ${LIMITS.MAX_TAGS} tags allowed`)
     .optional()
     .default([]),
 
-  programmingLanguages: z.array(z.string()).optional().default([]),
+  codingLanguages: z.array(z.nativeEnum(ProgrammingLanguage)).optional().default([]),
 
   status: z.nativeEnum(BountyStatus).default(BountyStatus.DRAFT),
 });
@@ -69,6 +83,16 @@ export const updateBountySchema = z.object({
     .trim()
     .optional(),
 
+  deliverables: z
+    .string()
+    .min(10, "Deliverables must be at least 10 characters")
+    .max(
+      LIMITS.MAX_DESCRIPTION_LENGTH,
+      `Deliverables must not exceed ${LIMITS.MAX_DESCRIPTION_LENGTH} characters`
+    )
+    .trim()
+    .optional(),
+
   amount: z
     .number()
     .int("Amount must be a whole number")
@@ -76,7 +100,13 @@ export const updateBountySchema = z.object({
     .max(LIMITS.MAX_BOUNTY_AMOUNT, `Maximum bounty amount is ${LIMITS.MAX_BOUNTY_AMOUNT} sats`)
     .optional(),
 
-  deadline: z.date().min(new Date(), "Deadline must be in the future").optional().nullable(),
+  estimatedHours: z.number().int().positive().optional().nullable(),
+
+  estimatedCompletionDate: z
+    .date()
+    .min(new Date(), "Estimated completion date must be in the future")
+    .optional()
+    .nullable(),
 
   githubIssueUrl: z
     .string()
@@ -89,12 +119,14 @@ export const updateBountySchema = z.object({
     .nullable()
     .or(z.literal("")),
 
+  loomVideoUrl: z.string().url("Must be a valid URL").optional().nullable().or(z.literal("")),
+
   tags: z
     .array(z.string().min(2).max(30))
     .max(LIMITS.MAX_TAGS, `Maximum ${LIMITS.MAX_TAGS} tags allowed`)
     .optional(),
 
-  programmingLanguages: z.array(z.string()).optional(),
+  codingLanguages: z.array(z.nativeEnum(ProgrammingLanguage)).optional(),
 
   status: z.nativeEnum(BountyStatus).optional(),
 });
