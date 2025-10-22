@@ -107,7 +107,7 @@ export async function PATCH(
     if (bounty.status !== BountyStatus.IN_REVIEW) {
       return apiError(
         {
-          code: ErrorCode.VALIDATION_ERROR,
+          code: ErrorCode.INVALID_STATUS,
           message: "Bounty must be in IN_REVIEW status to be completed",
         },
         400
@@ -117,7 +117,7 @@ export async function PATCH(
     if (bounty.proofs.length === 0) {
       return apiError(
         {
-          code: ErrorCode.VALIDATION_ERROR,
+          code: ErrorCode.NO_ACCEPTED_PROOF,
           message: "Bounty must have at least one accepted proof before completion",
         },
         400
