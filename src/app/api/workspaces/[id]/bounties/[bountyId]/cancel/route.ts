@@ -6,6 +6,48 @@ import { apiSuccess, apiError, validateBody } from "@/lib/api";
 import { logApiError } from "@/lib/errors/logger";
 import { ErrorCode } from "@/types/error";
 
+/**
+ * @swagger
+ * /api/workspaces/{id}/bounties/{bountyId}/cancel:
+ *   patch:
+ *     tags: [Bounty Actions]
+ *     summary: Cancel bounty
+ *     description: Cancel a bounty and refund if applicable
+ *     security:
+ *       - NostrAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *       - in: path
+ *         name: bountyId
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               reason:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Bounty cancelled successfully
+ *       400:
+ *         description: Invalid status or already completed
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Admin/owner access required
+ *       404:
+ *         description: Workspace or bounty not found
+ */
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string; bountyId: string }> }

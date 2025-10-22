@@ -13,6 +13,82 @@ const querySchema = z.object({
   limit: z.coerce.number().int().positive().max(100).default(20),
 });
 
+/**
+ * @swagger
+ * /api/bounties/{id}/proofs:
+ *   get:
+ *     tags: [Proofs]
+ *     summary: List proofs
+ *     description: Get paginated list of proof submissions for a bounty
+ *     security:
+ *       - NostrAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 20
+ *           maximum: 100
+ *     responses:
+ *       200:
+ *         description: Paginated list of proofs
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Not a workspace member
+ *       404:
+ *         description: Bounty not found
+ *   post:
+ *     tags: [Proofs]
+ *     summary: Submit proof
+ *     description: Submit proof of work for an assigned bounty (assignee only)
+ *     security:
+ *       - NostrAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - proofUrl
+ *               - description
+ *             properties:
+ *               proofUrl:
+ *                 type: string
+ *                 format: uri
+ *               description:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: Proof submitted successfully
+ *       400:
+ *         description: Invalid status or validation error
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Only assignee can submit proof
+ *       404:
+ *         description: Bounty not found
+ */
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id: bountyId } = await params;
   try {

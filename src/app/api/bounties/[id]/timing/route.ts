@@ -4,6 +4,71 @@ import { ErrorCode } from "@/types/error";
 import { apiError, apiSuccess } from "@/lib/api";
 import { logApiError } from "@/lib/errors/logger";
 
+/**
+ * @swagger
+ * /api/bounties/{id}/timing:
+ *   get:
+ *     tags: [Timing]
+ *     summary: Get bounty timing data
+ *     description: Retrieve work start and close timestamps for a bounty
+ *     security:
+ *       - NostrAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *     responses:
+ *       200:
+ *         description: Timing data retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 bountyId:
+ *                   type: string
+ *                 workStartedAt:
+ *                   type: string
+ *                   format: date-time
+ *                   nullable: true
+ *                 workClosedAt:
+ *                   type: string
+ *                   format: date-time
+ *                   nullable: true
+ *                 isActive:
+ *                   type: boolean
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Not a workspace member
+ *       404:
+ *         description: Bounty not found
+ *   delete:
+ *     tags: [Timing]
+ *     summary: Delete timing data
+ *     description: Clear work start and close timestamps (assignee only)
+ *     security:
+ *       - NostrAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *     responses:
+ *       200:
+ *         description: Timing data deleted successfully
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Only assignee can delete timing data
+ *       404:
+ *         description: Bounty not found
+ */
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id: bountyId } = await params;
   try {

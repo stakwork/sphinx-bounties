@@ -16,6 +16,80 @@ const updateRoleSchema = z.object({
   role: z.nativeEnum(WorkspaceRole),
 });
 
+/**
+ * @swagger
+ * /api/workspaces/{id}/members/{pubkey}:
+ *   patch:
+ *     tags: [Workspaces]
+ *     summary: Update member role
+ *     description: Update a workspace member's role (admin/owner only)
+ *     security:
+ *       - NostrAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *       - in: path
+ *         name: pubkey
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - role
+ *             properties:
+ *               role:
+ *                 type: string
+ *                 enum: [OWNER, ADMIN, CONTRIBUTOR, VIEWER]
+ *     responses:
+ *       200:
+ *         description: Member role updated successfully
+ *       400:
+ *         description: Invalid role or cannot modify owner
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Insufficient permissions
+ *       404:
+ *         description: Workspace or member not found
+ *   delete:
+ *     tags: [Workspaces]
+ *     summary: Remove member from workspace
+ *     description: Remove a member from workspace (admin/owner only)
+ *     security:
+ *       - NostrAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *       - in: path
+ *         name: pubkey
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Member removed successfully
+ *       400:
+ *         description: Cannot remove workspace owner
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Insufficient permissions
+ *       404:
+ *         description: Workspace or member not found
+ */
 export async function PATCH(request: NextRequest, context: RouteContext) {
   try {
     const pubkey = request.headers.get(AUTH_HEADER_NAME);

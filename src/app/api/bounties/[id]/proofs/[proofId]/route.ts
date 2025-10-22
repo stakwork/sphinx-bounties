@@ -7,6 +7,81 @@ import type { ReviewProofResponse, DeleteProofResponse } from "@/types/bounty";
 import { apiSuccess, apiError } from "@/lib/api";
 import { logApiError } from "@/lib/errors/logger";
 
+/**
+ * @swagger
+ * /api/bounties/{id}/proofs/{proofId}:
+ *   patch:
+ *     tags: [Proofs]
+ *     summary: Review proof
+ *     description: Approve or reject proof submission (admin/owner only)
+ *     security:
+ *       - NostrAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *       - in: path
+ *         name: proofId
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - approved
+ *             properties:
+ *               approved:
+ *                 type: boolean
+ *               feedback:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Proof reviewed successfully
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Admin/owner access required
+ *       404:
+ *         description: Proof not found
+ *   delete:
+ *     tags: [Proofs]
+ *     summary: Delete proof
+ *     description: Delete a proof submission (submitter or admin/owner)
+ *     security:
+ *       - NostrAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *       - in: path
+ *         name: proofId
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *     responses:
+ *       200:
+ *         description: Proof deleted successfully
+ *       400:
+ *         description: Cannot delete accepted proof
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Insufficient permissions
+ *       404:
+ *         description: Proof not found
+ */
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string; proofId: string }> }

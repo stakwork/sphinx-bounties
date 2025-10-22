@@ -4,6 +4,42 @@ import { db } from "@/lib/db";
 import type { TransactionType } from "@prisma/client";
 import type { ApiResponse } from "@/types/api";
 
+/**
+ * @swagger
+ * /api/workspaces/{id}/transactions:
+ *   get:
+ *     tags: [Workspaces]
+ *     summary: List workspace transactions
+ *     description: Get paginated transaction history for a workspace
+ *     security:
+ *       - NostrAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *       - in: query
+ *         name: perPage
+ *         schema:
+ *           type: integer
+ *           default: 20
+ *           maximum: 100
+ *     responses:
+ *       200:
+ *         description: Paginated list of transactions
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: Workspace not found
+ */
+
 interface Transaction {
   id: string;
   type: TransactionType;

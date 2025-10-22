@@ -8,6 +8,86 @@ import { AUTH_HEADER_NAME } from "@/lib/auth/constants";
 import { WorkspaceRole, WorkspaceActivityAction, Prisma } from "@prisma/client";
 import type { WorkspaceListItem, CreateWorkspaceResponse } from "@/types/workspace";
 
+/**
+ * @swagger
+ * /api/workspaces:
+ *   get:
+ *     tags: [Workspaces]
+ *     summary: List workspaces
+ *     description: Get paginated list of workspaces the user is a member of
+ *     security:
+ *       - NostrAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *       - in: query
+ *         name: pageSize
+ *         schema:
+ *           type: integer
+ *           default: 20
+ *           maximum: 100
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: owned
+ *         schema:
+ *           type: boolean
+ *         description: Filter for owned workspaces only
+ *       - in: query
+ *         name: role
+ *         schema:
+ *           type: string
+ *           enum: [OWNER, ADMIN, CONTRIBUTOR, VIEWER]
+ *       - in: query
+ *         name: sortBy
+ *         schema:
+ *           type: string
+ *           default: createdAt
+ *       - in: query
+ *         name: sortOrder
+ *         schema:
+ *           type: string
+ *           enum: [asc, desc]
+ *           default: desc
+ *     responses:
+ *       200:
+ *         description: Paginated list of workspaces
+ *       401:
+ *         description: Unauthorized
+ *   post:
+ *     tags: [Workspaces]
+ *     summary: Create workspace
+ *     description: Create a new workspace
+ *     security:
+ *       - NostrAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - name
+ *             properties:
+ *               name:
+ *                 type: string
+ *               description:
+ *                 type: string
+ *               avatarUrl:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: Workspace created successfully
+ *       400:
+ *         description: Validation error
+ *       401:
+ *         description: Unauthorized
+ */
 export async function GET(request: NextRequest) {
   try {
     const pubkey = request.headers.get(AUTH_HEADER_NAME);
