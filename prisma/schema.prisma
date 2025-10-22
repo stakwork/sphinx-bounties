@@ -231,6 +231,8 @@ model Bounty {
   assignedAt              DateTime?
   completedAt             DateTime?
   paidAt                  DateTime?
+  workStartedAt           DateTime?
+  workClosedAt            DateTime?
   deletedAt               DateTime?
 
   workspace    Workspace        @relation("WorkspaceBounties", fields: [workspaceId], references: [id], onDelete: Restrict)
