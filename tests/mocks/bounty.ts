@@ -26,6 +26,8 @@ export const mockBounty = (overrides?: Partial<Bounty>): Bounty => {
     assignedAt: overrides?.assignedAt || null,
     completedAt: overrides?.completedAt || null,
     paidAt: overrides?.paidAt || null,
+    workStartedAt: overrides?.workStartedAt || null,
+    workClosedAt: overrides?.workClosedAt || null,
     deletedAt: overrides?.deletedAt || null,
   };
 };
