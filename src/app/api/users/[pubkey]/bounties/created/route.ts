@@ -12,6 +12,41 @@ const querySchema = z.object({
   status: z.nativeEnum(BountyStatus).optional(),
 });
 
+/**
+ * @swagger
+ * /api/users/{pubkey}/bounties/created:
+ *   get:
+ *     tags: [Users]
+ *     summary: List user's created bounties
+ *     description: Get paginated list of bounties created by a user
+ *     parameters:
+ *       - in: path
+ *         name: pubkey
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 20
+ *           maximum: 100
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *           enum: [DRAFT, OPEN, ASSIGNED, IN_REVIEW, PAID, COMPLETED, CANCELLED]
+ *     responses:
+ *       200:
+ *         description: Paginated list of created bounties
+ *       404:
+ *         description: User not found
+ */
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ pubkey: string }> }

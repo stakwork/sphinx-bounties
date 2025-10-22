@@ -12,6 +12,69 @@ import {
 } from "@prisma/client";
 import type { ProcessPaymentResponse, GetPaymentResponse } from "@/types/bounty";
 
+/**
+ * @swagger
+ * /api/bounties/{id}/payment:
+ *   get:
+ *     tags: [Payments]
+ *     summary: Get payment details
+ *     description: Retrieve payment transaction for a bounty
+ *     security:
+ *       - NostrAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *     responses:
+ *       200:
+ *         description: Payment details retrieved
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Not a workspace member
+ *       404:
+ *         description: Bounty not found
+ *   post:
+ *     tags: [Payments]
+ *     summary: Process payment
+ *     description: Initiate Lightning payment for completed bounty (admin/owner only)
+ *     security:
+ *       - NostrAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - lightningInvoice
+ *             properties:
+ *               lightningInvoice:
+ *                 type: string
+ *               memo:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: Payment initiated successfully
+ *       400:
+ *         description: Invalid status, already paid, or insufficient budget
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Admin/owner access required
+ *       404:
+ *         description: Bounty not found
+ */
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id: bountyId } = await params;

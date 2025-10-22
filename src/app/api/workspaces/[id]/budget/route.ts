@@ -11,6 +11,67 @@ import {
 import type { ApiResponse } from "@/types/api";
 
 /**
+ * @swagger
+ * /api/workspaces/{id}/budget:
+ *   get:
+ *     tags: [Workspaces]
+ *     summary: Get workspace budget
+ *     description: Retrieve current workspace budget and transaction summary
+ *     security:
+ *       - NostrAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *     responses:
+ *       200:
+ *         description: Budget information retrieved
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: Workspace not found
+ *   post:
+ *     tags: [Workspaces]
+ *     summary: Deposit funds to budget
+ *     description: Add funds to workspace budget (admin/owner only)
+ *     security:
+ *       - NostrAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - amount
+ *             properties:
+ *               amount:
+ *                 type: number
+ *                 minimum: 1
+ *               memo:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: Funds deposited successfully
+ *       400:
+ *         description: Invalid amount
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Insufficient permissions
+ */
+
+/**
  * Schema for depositing funds to workspace budget
  */
 const depositSchema = z.object({

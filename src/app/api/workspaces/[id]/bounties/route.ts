@@ -8,6 +8,118 @@ import { logApiError } from "@/lib/errors/logger";
 import { ErrorCode } from "@/types/error";
 import { createBountySchema } from "@/validations/bounty.schema";
 
+/**
+ * @swagger
+ * /api/workspaces/{id}/bounties:
+ *   get:
+ *     tags: [Bounties]
+ *     summary: List workspace bounties
+ *     description: Get paginated list of bounties for a workspace with filtering
+ *     security:
+ *       - NostrAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 20
+ *           maximum: 100
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *           enum: [DRAFT, OPEN, ASSIGNED, IN_REVIEW, PAID, COMPLETED, CANCELLED]
+ *       - in: query
+ *         name: assigneePubkey
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: tags
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: sortBy
+ *         schema:
+ *           type: string
+ *           enum: [createdAt, amount, estimatedCompletionDate, updatedAt]
+ *           default: createdAt
+ *       - in: query
+ *         name: sortOrder
+ *         schema:
+ *           type: string
+ *           enum: [asc, desc]
+ *           default: desc
+ *     responses:
+ *       200:
+ *         description: Paginated list of bounties
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: Workspace not found
+ *   post:
+ *     tags: [Bounties]
+ *     summary: Create workspace bounty
+ *     description: Create a new bounty in a workspace
+ *     security:
+ *       - NostrAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - title
+ *               - amount
+ *             properties:
+ *               title:
+ *                 type: string
+ *               description:
+ *                 type: string
+ *               amount:
+ *                 type: number
+ *               estimatedHours:
+ *                 type: number
+ *               estimatedCompletionDate:
+ *                 type: string
+ *                 format: date-time
+ *               tags:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *     responses:
+ *       201:
+ *         description: Bounty created successfully
+ *       400:
+ *         description: Validation error
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Insufficient permissions
+ */
+
 const listBountiesSchema = z.object({
   page: z.coerce.number().int().positive().default(1),
   limit: z.coerce.number().int().positive().max(100).default(20),

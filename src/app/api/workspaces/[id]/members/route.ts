@@ -20,6 +20,69 @@ const addMemberSchema = z.object({
   role: z.nativeEnum(WorkspaceRole).default(WorkspaceRole.CONTRIBUTOR),
 });
 
+/**
+ * @swagger
+ * /api/workspaces/{id}/members:
+ *   get:
+ *     tags: [Workspaces]
+ *     summary: List workspace members
+ *     description: Get list of all members in a workspace
+ *     security:
+ *       - NostrAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *     responses:
+ *       200:
+ *         description: List of workspace members
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: Workspace not found
+ *   post:
+ *     tags: [Workspaces]
+ *     summary: Add member to workspace
+ *     description: Add a new member to workspace (admin/owner only)
+ *     security:
+ *       - NostrAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - userPubkey
+ *             properties:
+ *               userPubkey:
+ *                 type: string
+ *               role:
+ *                 type: string
+ *                 enum: [OWNER, ADMIN, CONTRIBUTOR, VIEWER]
+ *                 default: CONTRIBUTOR
+ *     responses:
+ *       201:
+ *         description: Member added successfully
+ *       400:
+ *         description: Validation error or member already exists
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Insufficient permissions
+ *       404:
+ *         description: Workspace or user not found
+ */
 export async function GET(request: NextRequest, context: RouteContext) {
   try {
     const pubkey = request.headers.get(AUTH_HEADER_NAME);

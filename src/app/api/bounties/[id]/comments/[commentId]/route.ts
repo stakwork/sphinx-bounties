@@ -6,6 +6,77 @@ import { apiError, apiSuccess, validateBody } from "@/lib/api";
 import { logApiError } from "@/lib/errors/logger";
 import { WorkspaceRole } from "@prisma/client";
 
+/**
+ * @swagger
+ * /api/bounties/{id}/comments/{commentId}:
+ *   patch:
+ *     tags: [Comments]
+ *     summary: Update comment
+ *     description: Edit a comment (author only)
+ *     security:
+ *       - NostrAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *       - in: path
+ *         name: commentId
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - content
+ *             properties:
+ *               content:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Comment updated successfully
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Can only edit your own comments
+ *       404:
+ *         description: Comment not found
+ *   delete:
+ *     tags: [Comments]
+ *     summary: Delete comment
+ *     description: Soft delete a comment (author or workspace admin)
+ *     security:
+ *       - NostrAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *       - in: path
+ *         name: commentId
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *     responses:
+ *       200:
+ *         description: Comment deleted successfully
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Insufficient permissions
+ *       404:
+ *         description: Comment not found
+ */
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string; commentId: string }> }

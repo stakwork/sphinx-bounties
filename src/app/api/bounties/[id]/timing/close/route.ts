@@ -4,6 +4,52 @@ import { ErrorCode } from "@/types/error";
 import { apiError, apiSuccess } from "@/lib/api";
 import { logApiError } from "@/lib/errors/logger";
 
+/**
+ * @swagger
+ * /api/bounties/{id}/timing/close:
+ *   put:
+ *     tags: [Timing]
+ *     summary: Close work timer
+ *     description: Stop timing work on a bounty and calculate duration (assignee only)
+ *     security:
+ *       - NostrAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *     responses:
+ *       200:
+ *         description: Timing closed successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 bountyId:
+ *                   type: string
+ *                 workStartedAt:
+ *                   type: string
+ *                   format: date-time
+ *                 workClosedAt:
+ *                   type: string
+ *                   format: date-time
+ *                 durationSeconds:
+ *                   type: integer
+ *                   nullable: true
+ *       400:
+ *         description: Timing not started or already closed
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Only assignee can close timing
+ *       404:
+ *         description: Bounty not found
+ */
 export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id: bountyId } = await params;
   try {

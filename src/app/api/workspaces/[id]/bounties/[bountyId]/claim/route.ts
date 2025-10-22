@@ -5,6 +5,40 @@ import { claimBountySchema } from "@/validations/bounty.schema";
 import type { ApiResponse } from "@/types/api";
 import { ERROR_MESSAGES } from "@/lib/error-constants";
 
+/**
+ * @swagger
+ * /api/workspaces/{id}/bounties/{bountyId}/claim:
+ *   patch:
+ *     tags: [Bounty Actions]
+ *     summary: Claim bounty
+ *     description: Claim an open bounty (workspace member only)
+ *     security:
+ *       - NostrAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *       - in: path
+ *         name: bountyId
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *     responses:
+ *       200:
+ *         description: Bounty claimed successfully
+ *       400:
+ *         description: Invalid status or already assigned
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Must be workspace member
+ *       404:
+ *         description: Workspace or bounty not found
+ */
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string; bountyId: string }> }

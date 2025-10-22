@@ -5,6 +5,40 @@ import { unclaimBountySchema } from "@/validations/bounty.schema";
 import type { ApiResponse } from "@/types/api";
 import { ERROR_MESSAGES } from "@/lib/error-constants";
 
+/**
+ * @swagger
+ * /api/workspaces/{id}/bounties/{bountyId}/unclaim:
+ *   patch:
+ *     tags: [Bounty Actions]
+ *     summary: Unclaim bounty
+ *     description: Release a claimed bounty back to open status
+ *     security:
+ *       - NostrAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *       - in: path
+ *         name: bountyId
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *     responses:
+ *       200:
+ *         description: Bounty unclaimed successfully
+ *       400:
+ *         description: Invalid status or not assigned
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Must be assignee or admin
+ *       404:
+ *         description: Workspace or bounty not found
+ */
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string; bountyId: string }> }

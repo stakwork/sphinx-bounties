@@ -11,6 +11,61 @@ const querySchema = z.object({
   limit: z.coerce.number().int().positive().max(100).default(20),
 });
 
+/**
+ * @swagger
+ * /api/leaderboard:
+ *   get:
+ *     tags: [Leaderboard]
+ *     summary: Get top contributors
+ *     description: Retrieve leaderboard of users ranked by total earnings from completed bounties
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 20
+ *           maximum: 100
+ *     responses:
+ *       200:
+ *         description: Paginated leaderboard data
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       pubkey:
+ *                         type: string
+ *                       username:
+ *                         type: string
+ *                       alias:
+ *                         type: string
+ *                         nullable: true
+ *                       avatarUrl:
+ *                         type: string
+ *                         nullable: true
+ *                       totalEarned:
+ *                         type: string
+ *                       bountiesCompleted:
+ *                         type: integer
+ *                       lastCompletedAt:
+ *                         type: string
+ *                         format: date-time
+ *                         nullable: true
+ *                 pagination:
+ *                   $ref: '#/components/schemas/PaginationMeta'
+ */
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);

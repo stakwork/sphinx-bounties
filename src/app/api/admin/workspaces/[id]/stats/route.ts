@@ -5,6 +5,89 @@ import { BountyStatus, WorkspaceRole } from "@prisma/client";
 import { apiError, apiSuccess } from "@/lib/api";
 import { logApiError } from "@/lib/errors/logger";
 
+/**
+ * @swagger
+ * /api/admin/workspaces/{id}/stats:
+ *   get:
+ *     tags: [Admin]
+ *     summary: Get workspace statistics
+ *     description: Retrieve comprehensive statistics for a workspace (admin/owner only)
+ *     security:
+ *       - NostrAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *     responses:
+ *       200:
+ *         description: Workspace statistics
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 workspace:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                     name:
+ *                       type: string
+ *                 stats:
+ *                   type: object
+ *                   properties:
+ *                     bounties:
+ *                       type: object
+ *                       properties:
+ *                         total:
+ *                           type: integer
+ *                         open:
+ *                           type: integer
+ *                         assigned:
+ *                           type: integer
+ *                         completed:
+ *                           type: integer
+ *                     budget:
+ *                       type: object
+ *                       properties:
+ *                         total:
+ *                           type: string
+ *                         available:
+ *                           type: string
+ *                         reserved:
+ *                           type: string
+ *                         paid:
+ *                           type: string
+ *                         allocated:
+ *                           type: string
+ *                     members:
+ *                       type: object
+ *                       properties:
+ *                         total:
+ *                           type: integer
+ *                     activities:
+ *                       type: object
+ *                       properties:
+ *                         total:
+ *                           type: integer
+ *                     metrics:
+ *                       type: object
+ *                       properties:
+ *                         averageCompletionTime:
+ *                           type: number
+ *                           nullable: true
+ *                         completionRate:
+ *                           type: number
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Admin/owner access required
+ *       404:
+ *         description: Workspace not found
+ */
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id: workspaceId } = await params;
   try {

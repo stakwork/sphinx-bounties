@@ -14,6 +14,63 @@ const listNotificationsSchema = z.object({
   type: z.nativeEnum(NotificationType).optional(),
 });
 
+/**
+ * @swagger
+ * /api/notifications:
+ *   get:
+ *     tags: [Notifications]
+ *     summary: List notifications
+ *     description: Get paginated list of user notifications
+ *     security:
+ *       - NostrAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 20
+ *           maximum: 100
+ *       - in: query
+ *         name: unreadOnly
+ *         schema:
+ *           type: boolean
+ *         description: Filter for unread notifications only
+ *       - in: query
+ *         name: type
+ *         schema:
+ *           type: string
+ *         description: Filter by notification type
+ *     responses:
+ *       200:
+ *         description: Paginated list of notifications
+ *       401:
+ *         description: Unauthorized
+ *   patch:
+ *     tags: [Notifications]
+ *     summary: Mark all as read
+ *     description: Mark all user notifications as read
+ *     security:
+ *       - NostrAuth: []
+ *     responses:
+ *       200:
+ *         description: All notifications marked as read
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 count:
+ *                   type: integer
+ *       401:
+ *         description: Unauthorized
+ */
 export async function GET(request: NextRequest) {
   try {
     const userPubkey = request.headers.get("x-user-pubkey");

@@ -16,6 +16,45 @@ const querySchema = z.object({
     .transform((val) => val === "true"),
 });
 
+/**
+ * @swagger
+ * /api/users/{pubkey}/bounties/assigned:
+ *   get:
+ *     tags: [Users]
+ *     summary: List user's assigned bounties
+ *     description: Get paginated list of bounties assigned to a user
+ *     parameters:
+ *       - in: path
+ *         name: pubkey
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 20
+ *           maximum: 100
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *           enum: [DRAFT, OPEN, ASSIGNED, IN_REVIEW, PAID, COMPLETED, CANCELLED]
+ *       - in: query
+ *         name: active
+ *         schema:
+ *           type: boolean
+ *     responses:
+ *       200:
+ *         description: Paginated list of assigned bounties
+ *       404:
+ *         description: User not found
+ */
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ pubkey: string }> }

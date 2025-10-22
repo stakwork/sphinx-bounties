@@ -11,6 +11,52 @@ import {
 } from "@prisma/client";
 import type { UpdatePaymentStatusResponse } from "@/types/bounty";
 
+/**
+ * @swagger
+ * /api/bounties/{id}/payment/status:
+ *   patch:
+ *     tags: [Payments]
+ *     summary: Update payment status
+ *     description: Update Lightning payment status (admin/owner only)
+ *     security:
+ *       - NostrAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - status
+ *             properties:
+ *               status:
+ *                 type: string
+ *                 enum: [COMPLETED, FAILED]
+ *               paymentHash:
+ *                 type: string
+ *               preimage:
+ *                 type: string
+ *               errorMessage:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Payment status updated
+ *       400:
+ *         description: Invalid status or no pending transaction
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Admin/owner access required
+ *       404:
+ *         description: Bounty or transaction not found
+ */
 export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id: bountyId } = await params;

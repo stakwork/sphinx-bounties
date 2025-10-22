@@ -15,6 +15,53 @@ const listUsersSchema = z.object({
   sortOrder: z.enum(["asc", "desc"]).default("desc"),
 });
 
+/**
+ * @swagger
+ * /api/users:
+ *   get:
+ *     tags: [Users]
+ *     summary: List users
+ *     description: Get paginated list of users with filtering and search
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 20
+ *           maximum: 100
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *         description: Search by username, alias, or description
+ *       - in: query
+ *         name: verified
+ *         schema:
+ *           type: boolean
+ *         description: Filter by GitHub or Twitter verification status
+ *       - in: query
+ *         name: sortBy
+ *         schema:
+ *           type: string
+ *           enum: [createdAt, username, lastLogin]
+ *           default: createdAt
+ *       - in: query
+ *         name: sortOrder
+ *         schema:
+ *           type: string
+ *           enum: [asc, desc]
+ *           default: desc
+ *     responses:
+ *       200:
+ *         description: Paginated list of users with stats
+ *       400:
+ *         description: Validation error
+ */
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);

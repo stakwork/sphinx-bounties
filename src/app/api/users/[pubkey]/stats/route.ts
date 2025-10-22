@@ -6,6 +6,66 @@ import { db } from "@/lib/db";
 import type { UserStatsResponse } from "@/types/user";
 import { BountyStatus } from "@prisma/client";
 
+/**
+ * @swagger
+ * /api/users/{pubkey}/stats:
+ *   get:
+ *     tags: [Users]
+ *     summary: Get user statistics
+ *     description: Retrieve detailed statistics for a user
+ *     parameters:
+ *       - in: path
+ *         name: pubkey
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: User statistics
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 earnings:
+ *                   type: object
+ *                   properties:
+ *                     total:
+ *                       type: string
+ *                     bountiesCompleted:
+ *                       type: integer
+ *                 bounties:
+ *                   type: object
+ *                   properties:
+ *                     created:
+ *                       type: integer
+ *                     assigned:
+ *                       type: integer
+ *                     active:
+ *                       type: integer
+ *                 workspaces:
+ *                   type: object
+ *                   properties:
+ *                     total:
+ *                       type: integer
+ *                 topLanguages:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       language:
+ *                         type: string
+ *                       count:
+ *                         type: integer
+ *                 performance:
+ *                   type: object
+ *                   properties:
+ *                     averageCompletionTime:
+ *                       type: number
+ *                       nullable: true
+ *       404:
+ *         description: User not found
+ */
 export async function GET(
   _request: NextRequest,
   { params }: { params: Promise<{ pubkey: string }> }

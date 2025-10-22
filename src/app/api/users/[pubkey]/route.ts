@@ -8,6 +8,86 @@ import { updateProfileSchema } from "@/validations/user.schema";
 import type { UserProfileResponse, UpdateUserResponse } from "@/types/user";
 import { BountyStatus } from "@prisma/client";
 
+/**
+ * @swagger
+ * /api/users/{pubkey}:
+ *   get:
+ *     tags: [Users]
+ *     summary: Get user profile
+ *     description: Retrieve detailed user profile information
+ *     parameters:
+ *       - in: path
+ *         name: pubkey
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: User profile with stats
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 pubkey:
+ *                   type: string
+ *                 username:
+ *                   type: string
+ *                 alias:
+ *                   type: string
+ *                   nullable: true
+ *                 description:
+ *                   type: string
+ *                   nullable: true
+ *                 avatarUrl:
+ *                   type: string
+ *                   nullable: true
+ *                 stats:
+ *                   type: object
+ *       404:
+ *         description: User not found
+ *   patch:
+ *     tags: [Users]
+ *     summary: Update user profile
+ *     description: Update authenticated user's profile information
+ *     security:
+ *       - NostrAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: pubkey
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               username:
+ *                 type: string
+ *               alias:
+ *                 type: string
+ *               description:
+ *                 type: string
+ *               avatarUrl:
+ *                 type: string
+ *               contactKey:
+ *                 type: string
+ *               routeHint:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Profile updated successfully
+ *       400:
+ *         description: Validation error
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Can only update own profile
+ *       404:
+ *         description: User not found
+ */
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ pubkey: string }> }

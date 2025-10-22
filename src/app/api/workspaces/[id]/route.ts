@@ -16,6 +16,86 @@ type RouteContext = {
   params: Promise<{ id: string }>;
 };
 
+/**
+ * @swagger
+ * /api/workspaces/{id}:
+ *   get:
+ *     tags: [Workspaces]
+ *     summary: Get workspace details
+ *     description: Retrieve detailed workspace information including members and budget
+ *     security:
+ *       - NostrAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *     responses:
+ *       200:
+ *         description: Workspace details retrieved successfully
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: Workspace not found or not a member
+ *   patch:
+ *     tags: [Workspaces]
+ *     summary: Update workspace
+ *     description: Update workspace information (admin/owner only)
+ *     security:
+ *       - NostrAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *               description:
+ *                 type: string
+ *               avatarUrl:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Workspace updated successfully
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Insufficient permissions
+ *       404:
+ *         description: Workspace not found
+ *   delete:
+ *     tags: [Workspaces]
+ *     summary: Delete workspace
+ *     description: Soft delete a workspace (owner only)
+ *     security:
+ *       - NostrAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *     responses:
+ *       200:
+ *         description: Workspace deleted successfully
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Owner access required
+ *       404:
+ *         description: Workspace not found
+ */
 export async function GET(request: NextRequest, context: RouteContext) {
   try {
     const pubkey = request.headers.get(AUTH_HEADER_NAME);

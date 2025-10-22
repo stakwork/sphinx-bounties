@@ -4,6 +4,54 @@ import { apiError, apiSuccess } from "@/lib/api";
 import { logApiError } from "@/lib/errors/logger";
 import { ErrorCode } from "@/types/error";
 
+/**
+ * @swagger
+ * /api/notifications/{id}:
+ *   patch:
+ *     tags: [Notifications]
+ *     summary: Mark notification as read
+ *     description: Mark a single notification as read
+ *     security:
+ *       - NostrAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *     responses:
+ *       200:
+ *         description: Notification marked as read
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Can only mark own notifications as read
+ *       404:
+ *         description: Notification not found
+ *   delete:
+ *     tags: [Notifications]
+ *     summary: Delete notification
+ *     description: Delete a notification
+ *     security:
+ *       - NostrAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *     responses:
+ *       200:
+ *         description: Notification deleted
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Can only delete own notifications
+ *       404:
+ *         description: Notification not found
+ */
 export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id: notificationId } = await params;
   try {
