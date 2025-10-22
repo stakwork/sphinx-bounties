@@ -151,6 +151,7 @@ model User {
   submittedProofs     BountyProof[]       @relation("ProofSubmitter")
   reviewedProofs      BountyProof[]       @relation("ProofReviewer")
   bountyActivities    BountyActivity[]    @relation("BountyActivityUser")
+  bountyComments      BountyComment[]     @relation("BountyCommentAuthor")
   transactionsFrom    Transaction[]       @relation("TransactionFromUser")
   transactionsTo      Transaction[]       @relation("TransactionToUser")
   createdCodes        ConnectionCode[]    @relation("ConnectionCodeCreator")
@@ -235,8 +236,9 @@ model Bounty {
   workspace    Workspace        @relation("WorkspaceBounties", fields: [workspaceId], references: [id], onDelete: Restrict)
   creator      User             @relation("BountyCreator", fields: [creatorPubkey], references: [pubkey], onDelete: Restrict)
   assignee     User?            @relation("BountyAssignee", fields: [assigneePubkey], references: [pubkey], onDelete: Restrict)
-  proofs       BountyProof[]    @relation("BountyProofs")
-  activities   BountyActivity[] @relation("BountyActivities")
+  proofs        BountyProof[]        @relation("BountyProofs")
+  activities    BountyActivity[]     @relation("BountyActivities")
+  comments      BountyComment[]      @relation("BountyComments")
   transactions Transaction[]    @relation("BountyTransactions")
 
   @@index([workspaceId])
@@ -286,6 +288,25 @@ model BountyActivity {
   @@index([bountyId])
   @@index([bountyId, timestamp(sort: Desc)])
   @@map("bounty_activities")
+}
+
+model BountyComment {
+  id           String    @id @default(cuid())
+  bountyId     String
+  authorPubkey String    @db.VarChar(66)
+  content      String    @db.Text
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  deletedAt    DateTime?
+
+  bounty Bounty @relation("BountyComments", fields: [bountyId], references: [id], onDelete: Cascade)
+  author User   @relation("BountyCommentAuthor", fields: [authorPubkey], references: [pubkey], onDelete: Restrict)
+
+  @@index([bountyId])
+  @@index([authorPubkey])
+  @@index([bountyId, createdAt(sort: Desc)])
+  @@index([deletedAt])
+  @@map("bounty_comments")
 }
 
 model WorkspaceBudget {

@@ -227,6 +227,24 @@ export const updatePaymentStatusSchema = z.object({
     .optional(),
 });
 
+export const createCommentSchema = z.object({
+  bountyId: z.string().cuid("Invalid bounty ID"),
+  content: z
+    .string()
+    .min(1, "Comment cannot be empty")
+    .max(2000, "Comment must not exceed 2000 characters")
+    .trim(),
+});
+
+export const updateCommentSchema = z.object({
+  commentId: z.string().cuid("Invalid comment ID"),
+  content: z
+    .string()
+    .min(1, "Comment cannot be empty")
+    .max(2000, "Comment must not exceed 2000 characters")
+    .trim(),
+});
+
 export type CreateBountyInput = z.infer<typeof createBountySchema>;
 export type UpdateBountyInput = z.infer<typeof updateBountySchema>;
 export type ClaimBountyInput = z.infer<typeof claimBountySchema>;
@@ -237,3 +255,5 @@ export type SubmitProofInput = z.infer<typeof submitProofSchema>;
 export type ReviewProofInput = z.infer<typeof reviewProofSchema>;
 export type ProcessPaymentInput = z.infer<typeof processPaymentSchema>;
 export type UpdatePaymentStatusInput = z.infer<typeof updatePaymentStatusSchema>;
+export type CreateCommentInput = z.infer<typeof createCommentSchema>;
+export type UpdateCommentInput = z.infer<typeof updateCommentSchema>;
