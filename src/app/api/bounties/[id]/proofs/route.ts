@@ -1,36 +1,33 @@
 import type { NextRequest } from "next/server";
-import { NextResponse } from "next/server";
+import { z } from "zod";
 import { db } from "@/lib/db";
 import { submitProofSchema } from "@/validations/bounty.schema";
-import { ERROR_MESSAGES } from "@/lib/error-constants";
+import { ErrorCode } from "@/types/error";
 import { BountyStatus, ProofStatus, BountyActivityAction } from "@prisma/client";
-import type { SubmitProofResponse, ListProofsResponse } from "@/types/bounty";
+import type { SubmitProofResponse } from "@/types/bounty";
+import { apiError, apiCreated, apiPaginated, validateQuery } from "@/lib/api";
+import { logApiError } from "@/lib/errors/logger";
 
-/**
- * @route GET /api/bounties/[id]/proofs
- * @desc List all proofs for a bounty
- * @access Workspace members
- */
+const querySchema = z.object({
+  page: z.coerce.number().int().positive().default(1),
+  limit: z.coerce.number().int().positive().max(100).default(20),
+});
+
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id: bountyId } = await params;
   try {
-    const { id: bountyId } = await params;
     const userPubkey = request.headers.get("x-user-pubkey");
 
     if (!userPubkey) {
-      return NextResponse.json(
+      return apiError(
         {
-          success: false,
-          error: {
-            code: "UNAUTHORIZED",
-            message: ERROR_MESSAGES.UNAUTHORIZED,
-          },
-          meta: { timestamp: new Date().toISOString() },
+          code: ErrorCode.UNAUTHORIZED,
+          message: "Authentication required",
         },
-        { status: 401 }
+        401
       );
     }
 
-    // Get bounty with workspace to check membership
     const bounty = await db.bounty.findUnique({
       where: {
         id: bountyId,
@@ -48,42 +45,35 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     });
 
     if (!bounty) {
-      return NextResponse.json(
+      return apiError(
         {
-          success: false,
-          error: {
-            code: "NOT_FOUND",
-            message: "Bounty not found",
-          },
-          meta: { timestamp: new Date().toISOString() },
+          code: ErrorCode.NOT_FOUND,
+          message: "Bounty not found",
         },
-        { status: 404 }
+        404
       );
     }
 
-    // Check if user is a workspace member
     if (bounty.workspace.members.length === 0) {
-      return NextResponse.json(
+      return apiError(
         {
-          success: false,
-          error: {
-            code: "FORBIDDEN",
-            message: "You must be a workspace member to view proofs",
-          },
-          meta: { timestamp: new Date().toISOString() },
+          code: ErrorCode.FORBIDDEN,
+          message: "You must be a workspace member to view proofs",
         },
-        { status: 403 }
+        403
       );
     }
 
-    // Get pagination params
-    const url = new URL(request.url);
-    const searchParams = url.searchParams;
-    const page = parseInt(searchParams.get("page") || "1");
-    const limit = Math.min(parseInt(searchParams.get("limit") || "20"), 100);
+    const { searchParams } = new URL(request.url);
+    const validation = validateQuery(searchParams, querySchema);
+
+    if (validation.error) {
+      return validation.error;
+    }
+
+    const { page, limit } = validation.data!;
     const skip = (page - 1) * limit;
 
-    // Get proofs
     const [proofs, total] = await Promise.all([
       db.bountyProof.findMany({
         where: { bountyId },
@@ -113,8 +103,8 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       }),
     ]);
 
-    const response: ListProofsResponse = {
-      proofs: proofs.map((proof) => ({
+    return apiPaginated(
+      proofs.map((proof) => ({
         id: proof.id,
         bountyId: proof.bountyId,
         proofUrl: proof.proofUrl,
@@ -127,83 +117,57 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
         submitter: proof.submitter,
         reviewer: proof.reviewer,
       })),
-      pagination: {
-        total,
-        page,
-        limit,
-        totalPages: Math.ceil(total / limit),
-      },
-    };
-
-    return NextResponse.json(
       {
-        success: true,
-        data: response,
-        meta: { timestamp: new Date().toISOString() },
-      },
-      { status: 200 }
+        page,
+        pageSize: limit,
+        totalCount: total,
+      }
     );
   } catch (error) {
-    console.error("Error listing proofs:", error);
-    return NextResponse.json(
+    logApiError(error as Error, {
+      url: `/api/bounties/${bountyId}/proofs`,
+      method: "GET",
+    });
+    return apiError(
       {
-        success: false,
-        error: {
-          code: "INTERNAL_ERROR",
-          message: ERROR_MESSAGES.INTERNAL_ERROR,
-        },
-        meta: { timestamp: new Date().toISOString() },
+        code: ErrorCode.INTERNAL_SERVER_ERROR,
+        message: "Failed to fetch proofs",
       },
-      { status: 500 }
+      500
     );
   }
 }
 
-/**
- * @route POST /api/bounties/[id]/proofs
- * @desc Submit proof of work for a bounty
- * @access Assignee only
- */
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id: bountyId } = await params;
   try {
-    const { id: bountyId } = await params;
     const userPubkey = request.headers.get("x-user-pubkey");
 
     if (!userPubkey) {
-      return NextResponse.json(
+      return apiError(
         {
-          success: false,
-          error: {
-            code: "UNAUTHORIZED",
-            message: ERROR_MESSAGES.UNAUTHORIZED,
-          },
-          meta: { timestamp: new Date().toISOString() },
+          code: ErrorCode.UNAUTHORIZED,
+          message: "Authentication required",
         },
-        { status: 401 }
+        401
       );
     }
 
     const body = await request.json();
+    const validation = submitProofSchema.safeParse({ ...body, bountyId });
 
-    // Validate request body
-    const validationResult = submitProofSchema.safeParse({ ...body, bountyId });
-
-    if (!validationResult.success) {
-      return NextResponse.json(
+    if (!validation.success) {
+      return apiError(
         {
-          success: false,
-          error: {
-            code: "VALIDATION_ERROR",
-            message: "Invalid proof submission data",
-            details: validationResult.error.issues,
-          },
-          meta: { timestamp: new Date().toISOString() },
+          code: ErrorCode.VALIDATION_ERROR,
+          message: "Invalid proof submission data",
         },
-        { status: 400 }
+        400
       );
     }
 
-    // Get bounty with workspace
+    const { proofUrl, description } = validation.data;
+
     const bounty = await db.bounty.findUnique({
       where: {
         id: bountyId,
@@ -221,54 +185,36 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     });
 
     if (!bounty) {
-      return NextResponse.json(
+      return apiError(
         {
-          success: false,
-          error: {
-            code: "NOT_FOUND",
-            message: "Bounty not found",
-          },
-          meta: { timestamp: new Date().toISOString() },
+          code: ErrorCode.NOT_FOUND,
+          message: "Bounty not found",
         },
-        { status: 404 }
+        404
       );
     }
 
-    // Only assignee can submit proof
     if (bounty.assigneePubkey !== userPubkey) {
-      return NextResponse.json(
+      return apiError(
         {
-          success: false,
-          error: {
-            code: "FORBIDDEN",
-            message: "Only the assigned user can submit proof for this bounty",
-          },
-          meta: { timestamp: new Date().toISOString() },
+          code: ErrorCode.FORBIDDEN,
+          message: "Only the assigned user can submit proof for this bounty",
         },
-        { status: 403 }
+        403
       );
     }
 
-    // Check bounty status - must be ASSIGNED or IN_REVIEW
     if (bounty.status !== BountyStatus.ASSIGNED && bounty.status !== BountyStatus.IN_REVIEW) {
-      return NextResponse.json(
+      return apiError(
         {
-          success: false,
-          error: {
-            code: "INVALID_STATUS",
-            message: `Cannot submit proof for bounty with status: ${bounty.status}`,
-          },
-          meta: { timestamp: new Date().toISOString() },
+          code: ErrorCode.VALIDATION_ERROR,
+          message: `Cannot submit proof for bounty with status: ${bounty.status}`,
         },
-        { status: 400 }
+        400
       );
     }
 
-    const { proofUrl, description } = validationResult.data;
-
-    // Create proof and update bounty status in a transaction
     const proof = await db.$transaction(async (tx) => {
-      // Create the proof
       const newProof = await tx.bountyProof.create({
         data: {
           bountyId,
@@ -287,7 +233,6 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         },
       });
 
-      // Update bounty status to IN_REVIEW if it's ASSIGNED
       if (bounty.status === BountyStatus.ASSIGNED) {
         await tx.bounty.update({
           where: { id: bountyId },
@@ -295,7 +240,6 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         });
       }
 
-      // Log activity
       await tx.bountyActivity.create({
         data: {
           bountyId,
@@ -323,26 +267,18 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       },
     };
 
-    return NextResponse.json(
-      {
-        success: true,
-        data: response,
-        meta: { timestamp: new Date().toISOString() },
-      },
-      { status: 201 }
-    );
+    return apiCreated(response);
   } catch (error) {
-    console.error("Error submitting proof:", error);
-    return NextResponse.json(
+    logApiError(error as Error, {
+      url: `/api/bounties/${bountyId}/proofs`,
+      method: "POST",
+    });
+    return apiError(
       {
-        success: false,
-        error: {
-          code: "INTERNAL_ERROR",
-          message: ERROR_MESSAGES.INTERNAL_ERROR,
-        },
-        meta: { timestamp: new Date().toISOString() },
+        code: ErrorCode.INTERNAL_SERVER_ERROR,
+        message: "Failed to submit proof",
       },
-      { status: 500 }
+      500
     );
   }
 }

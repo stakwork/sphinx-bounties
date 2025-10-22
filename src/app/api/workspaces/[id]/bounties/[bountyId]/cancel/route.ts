@@ -1,39 +1,29 @@
-import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { db } from "@/lib/db";
-import type { ApiResponse } from "@/types/api";
-import type { CancelBountyResponse } from "@/types/bounty";
 import { cancelBountySchema } from "@/validations/bounty.schema";
 import { BountyStatus, BountyActivityAction } from "@prisma/client";
+import { apiSuccess, apiError, validateBody } from "@/lib/api";
+import { logApiError } from "@/lib/errors/logger";
+import { ErrorCode } from "@/types/error";
 
-/**
- * PATCH /api/workspaces/[id]/bounties/[bountyId]/cancel
- * Cancel a bounty
- * @permission Requires OWNER/ADMIN role or bounty creator
- */
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string; bountyId: string }> }
-): Promise<NextResponse<ApiResponse<CancelBountyResponse>>> {
+) {
+  const { id: workspaceId, bountyId } = await params;
   try {
-    const { id: workspaceId, bountyId } = await params;
-    const user = await request.headers.get("x-user-pubkey");
+    const user = request.headers.get("x-user-pubkey");
 
     if (!user) {
-      return NextResponse.json(
+      return apiError(
         {
-          success: false,
-          error: {
-            code: "UNAUTHORIZED",
-            message: "Authentication required",
-          },
-          meta: { timestamp: new Date().toISOString() },
+          code: ErrorCode.UNAUTHORIZED,
+          message: "Authentication required",
         },
-        { status: 401 }
+        401
       );
     }
 
-    // Verify workspace membership
     const member = await db.workspaceMember.findUnique({
       where: {
         workspaceId_userPubkey: {
@@ -47,39 +37,33 @@ export async function PATCH(
     });
 
     if (!member) {
-      return NextResponse.json(
+      return apiError(
         {
-          success: false,
-          error: {
-            code: "FORBIDDEN",
-            message: "Access denied to this workspace",
-          },
-          meta: { timestamp: new Date().toISOString() },
+          code: ErrorCode.FORBIDDEN,
+          message: "Access denied to this workspace",
         },
-        { status: 403 }
+        403
       );
     }
 
-    // Validate request body
-    const body = await request.json();
-    const validatedData = cancelBountySchema.parse(body);
+    const validation = await validateBody(request, cancelBountySchema);
 
-    // Verify bounty ID matches
+    if (validation.error) {
+      return validation.error;
+    }
+
+    const validatedData = validation.data!;
+
     if (validatedData.bountyId !== bountyId) {
-      return NextResponse.json(
+      return apiError(
         {
-          success: false,
-          error: {
-            code: "BOUNTY_ID_MISMATCH",
-            message: "Bounty ID in body does not match URL parameter",
-          },
-          meta: { timestamp: new Date().toISOString() },
+          code: ErrorCode.VALIDATION_ERROR,
+          message: "Bounty ID in body does not match URL parameter",
         },
-        { status: 400 }
+        400
       );
     }
 
-    // Get bounty and check permissions
     const bounty = await db.bounty.findUnique({
       where: {
         id: bountyId,
@@ -94,53 +78,38 @@ export async function PATCH(
     });
 
     if (!bounty) {
-      return NextResponse.json(
+      return apiError(
         {
-          success: false,
-          error: {
-            code: "NOT_FOUND",
-            message: "Bounty not found",
-          },
-          meta: { timestamp: new Date().toISOString() },
+          code: ErrorCode.NOT_FOUND,
+          message: "Bounty not found",
         },
-        { status: 404 }
+        404
       );
     }
 
-    // Check permissions: OWNER/ADMIN can cancel, or creator can cancel
     const isOwnerOrAdmin = ["OWNER", "ADMIN"].includes(member.role);
     const isCreator = bounty.creatorPubkey === user;
 
     if (!isOwnerOrAdmin && !isCreator) {
-      return NextResponse.json(
+      return apiError(
         {
-          success: false,
-          error: {
-            code: "FORBIDDEN",
-            message: "Only workspace owners, admins, or bounty creator can cancel this bounty",
-          },
-          meta: { timestamp: new Date().toISOString() },
+          code: ErrorCode.FORBIDDEN,
+          message: "Only workspace owners, admins, or bounty creator can cancel this bounty",
         },
-        { status: 403 }
+        403
       );
     }
 
-    // Check if bounty can be cancelled
     if (bounty.status === BountyStatus.COMPLETED || bounty.status === BountyStatus.PAID) {
-      return NextResponse.json(
+      return apiError(
         {
-          success: false,
-          error: {
-            code: "BOUNTY_COMPLETED",
-            message: "Cannot cancel a completed or paid bounty",
-          },
-          meta: { timestamp: new Date().toISOString() },
+          code: ErrorCode.VALIDATION_ERROR,
+          message: "Cannot cancel a completed or paid bounty",
         },
-        { status: 400 }
+        400
       );
     }
 
-    // Cancel the bounty and release reserved budget
     await db.$transaction(async (tx) => {
       await tx.bounty.update({
         where: { id: bountyId },
@@ -149,7 +118,6 @@ export async function PATCH(
         },
       });
 
-      // Release reserved budget back to available budget
       await tx.workspaceBudget.update({
         where: { workspaceId },
         data: {
@@ -162,7 +130,6 @@ export async function PATCH(
         },
       });
 
-      // Log the cancellation activity
       await tx.bountyActivity.create({
         data: {
           bountyId: bounty.id,
@@ -178,45 +145,20 @@ export async function PATCH(
       });
     });
 
-    return NextResponse.json(
-      {
-        success: true,
-        data: {
-          message: "Bounty cancelled successfully",
-        },
-        meta: {
-          timestamp: new Date().toISOString(),
-        },
-      },
-      { status: 200 }
-    );
+    return apiSuccess({
+      message: "Bounty cancelled successfully",
+    });
   } catch (error) {
-    console.error("Error cancelling bounty:", error);
-
-    if (error instanceof Error && error.name === "ZodError") {
-      return NextResponse.json(
-        {
-          success: false,
-          error: {
-            code: "VALIDATION_ERROR",
-            message: "Invalid request data",
-          },
-          meta: { timestamp: new Date().toISOString() },
-        },
-        { status: 400 }
-      );
-    }
-
-    return NextResponse.json(
+    logApiError(error as Error, {
+      url: `/api/workspaces/${workspaceId}/bounties/${bountyId}/cancel`,
+      method: "PATCH",
+    });
+    return apiError(
       {
-        success: false,
-        error: {
-          code: "INTERNAL_ERROR",
-          message: "Failed to cancel bounty",
-        },
-        meta: { timestamp: new Date().toISOString() },
+        code: ErrorCode.INTERNAL_SERVER_ERROR,
+        message: "Failed to cancel bounty",
       },
-      { status: 500 }
+      500
     );
   }
 }
