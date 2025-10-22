@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { ArrowRight, Zap } from "lucide-react";
 
 export function Hero() {
@@ -20,14 +20,15 @@ export function Hero() {
             Lightning payments. No middlemen, no Delays.
           </p>
           <div className="mt-10 flex items-center justify-center gap-x-6">
-            <Button asChild size="lg" className="gap-2">
-              <Link href="/bounties">
-                Browse Bounties <ArrowRight className="h-4 w-4" />
-              </Link>
-            </Button>
-            <Button asChild variant="outline" size="lg">
-              <Link href="/leaderboard">View Leaderboard</Link>
-            </Button>
+            <Link href="/bounties" className={buttonVariants({ size: "lg" })}>
+              Browse Bounties <ArrowRight className="h-4 w-4" />
+            </Link>
+            <Link
+              href="/leaderboard"
+              className={buttonVariants({ variant: "outline", size: "lg" })}
+            >
+              View Leaderboard
+            </Link>
           </div>
         </div>
       </div>

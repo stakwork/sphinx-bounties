@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { LogIn, Target } from "lucide-react";
 
 export function CTA() {
@@ -17,18 +17,14 @@ export function CTA() {
             Bounties connects the right people to get things done.
           </p>
           <div className="mt-10 flex items-center justify-center gap-x-6">
-            <Button asChild size="lg" className="gap-2">
-              <Link href="/login">
-                <LogIn className="h-4 w-4" />
-                Sign In with Lightning
-              </Link>
-            </Button>
-            <Button asChild variant="outline" size="lg" className="gap-2">
-              <Link href="/bounties">
-                <Target className="h-4 w-4" />
-                Explore Bounties
-              </Link>
-            </Button>
+            <Link href="/login" className={buttonVariants({ size: "lg" })}>
+              <LogIn className="h-4 w-4" />
+              Sign In with Lightning
+            </Link>
+            <Link href="/bounties" className={buttonVariants({ variant: "outline", size: "lg" })}>
+              <Target className="h-4 w-4" />
+              Explore Bounties
+            </Link>
           </div>
         </div>
       </div>
