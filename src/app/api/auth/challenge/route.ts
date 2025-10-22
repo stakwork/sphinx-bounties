@@ -6,6 +6,43 @@ import { env } from "@/lib/env";
 import { ErrorCode } from "@/types/error";
 import { logApiError } from "@/lib/errors/logger";
 
+/**
+ * @swagger
+ * /api/auth/challenge:
+ *   post:
+ *     tags: [Authentication]
+ *     summary: Request authentication challenge
+ *     description: Generate a Nostr-based LNURL authentication challenge
+ *     responses:
+ *       200:
+ *         description: Challenge generated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     k1:
+ *                       type: string
+ *                       description: Challenge string (32 bytes hex)
+ *                     lnurl:
+ *                       type: string
+ *                       description: Encoded LNURL for authentication
+ *                     expiresAt:
+ *                       type: string
+ *                       format: date-time
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 export async function POST(request: NextRequest) {
   try {
     const host = request.headers.get("host") ?? new URL(env.NEXT_PUBLIC_APP_URL).host;

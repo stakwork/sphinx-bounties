@@ -17,25 +17,6 @@ import { createBountySchema } from "@/validations/bounty.schema";
 import { ERROR_MESSAGES } from "@/lib/error-constants";
 import type { CreateBountyResponse } from "@/types/bounty";
 
-/**
- * BOUNTIES API
- *
- * Child routes to implement:
- * - [id]/route.ts                 GET, PATCH, DELETE bounty
- * - [id]/assign/route.ts          POST, DELETE assign/unassign hunter
- * - [id]/payment/route.ts         POST, GET bounty payment
- * - [id]/payment/status/route.ts  GET, PATCH payment status
- * - [id]/proofs/route.ts          GET, POST proof submissions
- * - [id]/proofs/[proofId]/route.ts PATCH, DELETE proof
- * - [id]/timing/route.ts          GET, DELETE timing data
- * - [id]/timing/start/route.ts    PUT start timing
- * - [id]/timing/close/route.ts    PUT close timing
- * - leaderboard/route.ts          GET bounty leaderboard
- *
- * Models: Bounty, BountyProof, BountyActivity, Transaction
- */
-
-// Query schema for GET /api/bounties exampple
 const bountiesQuerySchema = paginationSchema.merge(sortSchema).extend({
   status: z.nativeEnum(BountyStatus).optional(),
   workspaceId: z.string().uuid().optional(),
@@ -44,6 +25,133 @@ const bountiesQuerySchema = paginationSchema.merge(sortSchema).extend({
   search: z.string().optional(),
 });
 
+/**
+ * @swagger
+ * /api/bounties:
+ *   get:
+ *     tags: [Bounties]
+ *     summary: List bounties
+ *     description: Get paginated list of bounties with optional filtering
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *       - in: query
+ *         name: pageSize
+ *         schema:
+ *           type: integer
+ *           default: 10
+ *       - in: query
+ *         name: sortBy
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: sortOrder
+ *         schema:
+ *           type: string
+ *           enum: [asc, desc]
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *           enum: [DRAFT, OPEN, ASSIGNED, IN_REVIEW, PAID, COMPLETED, CANCELLED]
+ *       - in: query
+ *         name: workspaceId
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *       - in: query
+ *         name: assigneePubkey
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: creatorPubkey
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Paginated list of bounties
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                 pagination:
+ *                   $ref: '#/components/schemas/PaginationMeta'
+ *   post:
+ *     tags: [Bounties]
+ *     summary: Create bounty
+ *     description: Create a new bounty in a workspace
+ *     security:
+ *       - NostrAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - workspaceId
+ *               - title
+ *               - description
+ *               - deliverables
+ *               - amount
+ *             properties:
+ *               workspaceId:
+ *                 type: string
+ *                 format: uuid
+ *               title:
+ *                 type: string
+ *               description:
+ *                 type: string
+ *               deliverables:
+ *                 type: string
+ *               amount:
+ *                 type: integer
+ *               status:
+ *                 type: string
+ *                 enum: [DRAFT, OPEN]
+ *               estimatedHours:
+ *                 type: number
+ *               estimatedCompletionDate:
+ *                 type: string
+ *                 format: date-time
+ *               githubIssueUrl:
+ *                 type: string
+ *               loomVideoUrl:
+ *                 type: string
+ *               tags:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *               codingLanguages:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *     responses:
+ *       201:
+ *         description: Bounty created successfully
+ *       400:
+ *         description: Validation error
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Insufficient permissions
+ *       404:
+ *         description: Workspace not found
+ */
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);

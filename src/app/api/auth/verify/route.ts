@@ -13,6 +13,97 @@ const verifySchema = z.object({
   key: z.string().regex(/^[0-9a-f]{66}$/i, "Invalid public key format"),
 });
 
+/**
+ * @swagger
+ * /api/auth/verify:
+ *   post:
+ *     tags: [Authentication]
+ *     summary: Verify authentication signature
+ *     description: Verify LNURL signature and create or update user session
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - k1
+ *               - sig
+ *               - key
+ *             properties:
+ *               k1:
+ *                 type: string
+ *                 description: Challenge string from /api/auth/challenge
+ *               sig:
+ *                 type: string
+ *                 description: Signature of k1
+ *               key:
+ *                 type: string
+ *                 description: Nostr public key (hex format)
+ *     responses:
+ *       200:
+ *         description: Authentication successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     user:
+ *                       type: object
+ *                       properties:
+ *                         id:
+ *                           type: string
+ *                         pubkey:
+ *                           type: string
+ *                         username:
+ *                           type: string
+ *                         alias:
+ *                           type: string
+ *                           nullable: true
+ *                         avatarUrl:
+ *                           type: string
+ *                           nullable: true
+ *                     token:
+ *                       type: string
+ *       400:
+ *         description: Invalid or expired challenge
+ *       401:
+ *         description: Invalid signature
+ *       404:
+ *         description: Challenge not found
+ *   get:
+ *     tags: [Authentication]
+ *     summary: Verify authentication (LNURL callback)
+ *     description: LNURL authentication callback endpoint
+ *     parameters:
+ *       - in: query
+ *         name: k1
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: sig
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: key
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Authentication successful
+ *       400:
+ *         description: Invalid parameters
+ *       401:
+ *         description: Invalid signature
+ */
 export async function POST(request: NextRequest) {
   try {
     const { data: bodyData, error: validationError } = await validateBody(request, verifySchema);
