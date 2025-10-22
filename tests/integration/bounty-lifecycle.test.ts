@@ -843,7 +843,7 @@ describe("Bounty Lifecycle Integration Tests", () => {
         params: Promise.resolve({ id: workspaceId, bountyId }),
       });
 
-      expect(response.status).toBe(400);
+      expect(response.status).toBe(422);
       const data = await parseResponse(response);
       expect(data).toMatchObject({
         success: false,

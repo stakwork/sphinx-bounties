@@ -103,7 +103,7 @@ export async function PATCH(
     if (bounty.status === BountyStatus.COMPLETED || bounty.status === BountyStatus.PAID) {
       return apiError(
         {
-          code: ErrorCode.VALIDATION_ERROR,
+          code: ErrorCode.BOUNTY_COMPLETED,
           message: "Cannot cancel a completed or paid bounty",
         },
         400

@@ -332,19 +332,19 @@ describe("Bounty Proofs Integration Tests", () => {
       const data = await parseResponse(response);
       expect(data).toMatchObject({
         success: true,
-        data: {
-          proofs: expect.arrayContaining([
-            expect.objectContaining({
-              id: proof1Id,
-              status: ProofStatus.REJECTED,
-            }),
-            expect.objectContaining({
-              id: proof2Id,
-              status: ProofStatus.PENDING,
-            }),
-          ]),
+        data: expect.arrayContaining([
+          expect.objectContaining({
+            id: proof1Id,
+            status: ProofStatus.REJECTED,
+          }),
+          expect.objectContaining({
+            id: proof2Id,
+            status: ProofStatus.PENDING,
+          }),
+        ]),
+        meta: {
           pagination: {
-            total: 2,
+            totalCount: 2,
             page: 1,
           },
         },
@@ -390,11 +390,11 @@ describe("Bounty Proofs Integration Tests", () => {
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const data = (await parseResponse(response)) as any;
-      expect(data.data.proofs).toHaveLength(1);
-      expect(data.data.pagination).toMatchObject({
-        total: 2,
+      expect(data.data).toHaveLength(1);
+      expect(data.meta.pagination).toMatchObject({
+        totalCount: 2,
         page: 1,
-        limit: 1,
+        pageSize: 1,
         totalPages: 2,
       });
     });

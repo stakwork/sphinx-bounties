@@ -315,7 +315,7 @@ export async function PATCH(
           if (workspaceBudget.availableBudget < budgetAdjustment) {
             return apiError(
               {
-                code: ErrorCode.VALIDATION_ERROR,
+                code: ErrorCode.INSUFFICIENT_BUDGET,
                 message: "Insufficient workspace budget for amount increase",
               },
               400
