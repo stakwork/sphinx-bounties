@@ -1,40 +1,29 @@
-import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { db } from "@/lib/db";
-import type { ApiResponse } from "@/types/api";
-import type { BountyDetailsResponse, UpdateBountyResponse } from "@/types/bounty";
 import { updateBountySchema } from "@/validations/bounty.schema";
 import { BountyStatus, BountyActivityAction } from "@prisma/client";
+import { apiSuccess, apiError, validateBody } from "@/lib/api";
+import { logApiError } from "@/lib/errors/logger";
+import { ErrorCode } from "@/types/error";
 
-/**
- * GET /api/workspaces/[id]/bounties/[bountyId]
- * Get detailed information about a specific bounty
- * @permission All workspace members
- */
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string; bountyId: string }> }
-): Promise<NextResponse<ApiResponse<BountyDetailsResponse>>> {
+) {
+  const { id: workspaceId, bountyId } = await params;
   try {
-    const { id: workspaceId, bountyId } = await params;
     const userPubkey = request.headers.get("x-user-pubkey");
 
-    // Authentication check
     if (!userPubkey) {
-      return NextResponse.json(
+      return apiError(
         {
-          success: false,
-          error: {
-            code: "UNAUTHORIZED",
-            message: "Authentication required",
-          },
-          meta: { timestamp: new Date().toISOString() },
+          code: ErrorCode.UNAUTHORIZED,
+          message: "Authentication required",
         },
-        { status: 401 }
+        401
       );
     }
 
-    // Check workspace existence and user membership
     const workspace = await db.workspace.findUnique({
       where: { id: workspaceId, deletedAt: null },
       include: {
@@ -45,20 +34,15 @@ export async function GET(
     });
 
     if (!workspace || workspace.members.length === 0) {
-      return NextResponse.json(
+      return apiError(
         {
-          success: false,
-          error: {
-            code: "NOT_FOUND",
-            message: "Workspace not found or you are not a member",
-          },
-          meta: { timestamp: new Date().toISOString() },
+          code: ErrorCode.NOT_FOUND,
+          message: "Workspace not found or you are not a member",
         },
-        { status: 404 }
+        404
       );
     }
 
-    // Fetch bounty with all related data
     const bounty = await db.bounty.findUnique({
       where: {
         id: bountyId,
@@ -123,7 +107,7 @@ export async function GET(
           orderBy: {
             timestamp: "desc",
           },
-          take: 50, // Limit activities to last 50
+          take: 50,
         },
         _count: {
           select: {
@@ -135,101 +119,79 @@ export async function GET(
     });
 
     if (!bounty) {
-      return NextResponse.json(
+      return apiError(
         {
-          success: false,
-          error: {
-            code: "NOT_FOUND",
-            message: "Bounty not found",
-          },
-          meta: { timestamp: new Date().toISOString() },
+          code: ErrorCode.NOT_FOUND,
+          message: "Bounty not found",
         },
-        { status: 404 }
+        404
       );
     }
 
-    return NextResponse.json(
-      {
-        success: true,
-        data: {
-          id: bounty.id,
-          title: bounty.title,
-          description: bounty.description,
-          deliverables: bounty.deliverables,
-          amount: bounty.amount.toString(),
-          status: bounty.status,
-          tags: bounty.tags,
-          codingLanguages: bounty.codingLanguages,
-          estimatedHours: bounty.estimatedHours,
-          estimatedCompletionDate: bounty.estimatedCompletionDate?.toISOString() || null,
-          githubIssueUrl: bounty.githubIssueUrl,
-          loomVideoUrl: bounty.loomVideoUrl,
-          createdAt: bounty.createdAt.toISOString(),
-          updatedAt: bounty.updatedAt.toISOString(),
-          assignedAt: bounty.assignedAt?.toISOString() || null,
-          completedAt: bounty.completedAt?.toISOString() || null,
-          paidAt: bounty.paidAt?.toISOString() || null,
-          creator: bounty.creator,
-          assignee: bounty.assignee,
-          workspace: bounty.workspace,
-          proofs: bounty.proofs.map((proof) => ({
-            ...proof,
-            createdAt: proof.createdAt.toISOString(),
-          })),
-          activities: bounty.activities.map((activity) => ({
-            ...activity,
-            timestamp: activity.timestamp.toISOString(),
-          })),
-          _count: bounty._count,
-        },
-        meta: { timestamp: new Date().toISOString() },
-      },
-      { status: 200 }
-    );
+    return apiSuccess({
+      id: bounty.id,
+      title: bounty.title,
+      description: bounty.description,
+      deliverables: bounty.deliverables,
+      amount: bounty.amount.toString(),
+      status: bounty.status,
+      tags: bounty.tags,
+      codingLanguages: bounty.codingLanguages,
+      estimatedHours: bounty.estimatedHours,
+      estimatedCompletionDate: bounty.estimatedCompletionDate?.toISOString() || null,
+      githubIssueUrl: bounty.githubIssueUrl,
+      loomVideoUrl: bounty.loomVideoUrl,
+      createdAt: bounty.createdAt.toISOString(),
+      updatedAt: bounty.updatedAt.toISOString(),
+      assignedAt: bounty.assignedAt?.toISOString() || null,
+      completedAt: bounty.completedAt?.toISOString() || null,
+      paidAt: bounty.paidAt?.toISOString() || null,
+      creator: bounty.creator,
+      assignee: bounty.assignee,
+      workspace: bounty.workspace,
+      proofs: bounty.proofs.map((proof) => ({
+        ...proof,
+        createdAt: proof.createdAt.toISOString(),
+      })),
+      activities: bounty.activities.map((activity) => ({
+        ...activity,
+        timestamp: activity.timestamp.toISOString(),
+      })),
+      _count: bounty._count,
+    });
   } catch (error) {
-    console.error("Bounty details error:", error);
-    return NextResponse.json(
+    logApiError(error as Error, {
+      url: `/api/workspaces/${workspaceId}/bounties/${bountyId}`,
+      method: "GET",
+    });
+    return apiError(
       {
-        success: false,
-        error: {
-          code: "INTERNAL_ERROR",
-          message: "An unexpected error occurred",
-        },
-        meta: { timestamp: new Date().toISOString() },
+        code: ErrorCode.INTERNAL_SERVER_ERROR,
+        message: "Failed to fetch bounty details",
       },
-      { status: 500 }
+      500
     );
   }
 }
 
-/**
- * PATCH /api/workspaces/[id]/bounties/[bountyId]
- * Update bounty details
- * @permission Requires OWNER/ADMIN role or creator permission. Amount changes require OWNER/ADMIN.
- */
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string; bountyId: string }> }
-): Promise<NextResponse<ApiResponse<UpdateBountyResponse>>> {
+) {
+  const { id: workspaceId, bountyId } = await params;
   try {
-    const { id: workspaceId, bountyId } = await params;
-    const user = await request.headers.get("x-user-pubkey");
+    const user = request.headers.get("x-user-pubkey");
 
     if (!user) {
-      return NextResponse.json(
+      return apiError(
         {
-          success: false,
-          error: {
-            code: "UNAUTHORIZED",
-            message: "Authentication required",
-          },
-          meta: { timestamp: new Date().toISOString() },
+          code: ErrorCode.UNAUTHORIZED,
+          message: "Authentication required",
         },
-        { status: 401 }
+        401
       );
     }
 
-    // Verify workspace membership and get role
     const member = await db.workspaceMember.findUnique({
       where: {
         workspaceId_userPubkey: {
@@ -243,24 +205,23 @@ export async function PATCH(
     });
 
     if (!member) {
-      return NextResponse.json(
+      return apiError(
         {
-          success: false,
-          error: {
-            code: "FORBIDDEN",
-            message: "Access denied to this workspace",
-          },
-          meta: { timestamp: new Date().toISOString() },
+          code: ErrorCode.FORBIDDEN,
+          message: "Access denied to this workspace",
         },
-        { status: 403 }
+        403
       );
     }
 
-    // Parse and validate request body
-    const body = await request.json();
-    const validatedData = updateBountySchema.parse(body);
+    const validation = await validateBody(request, updateBountySchema);
 
-    // Get existing bounty
+    if (validation.error) {
+      return validation.error;
+    }
+
+    const validatedData = validation.data!;
+
     const existingBounty = await db.bounty.findUnique({
       where: {
         id: bountyId,
@@ -284,71 +245,51 @@ export async function PATCH(
     });
 
     if (!existingBounty) {
-      return NextResponse.json(
+      return apiError(
         {
-          success: false,
-          error: {
-            code: "NOT_FOUND",
-            message: "Bounty not found",
-          },
-          meta: { timestamp: new Date().toISOString() },
+          code: ErrorCode.NOT_FOUND,
+          message: "Bounty not found",
         },
-        { status: 404 }
+        404
       );
     }
 
-    // Check if bounty can be updated
     if (
       existingBounty.status === BountyStatus.COMPLETED ||
       existingBounty.status === BountyStatus.PAID
     ) {
-      return NextResponse.json(
+      return apiError(
         {
-          success: false,
-          error: {
-            code: "BOUNTY_COMPLETED",
-            message: "Cannot update completed or paid bounty",
-          },
-          meta: { timestamp: new Date().toISOString() },
+          code: ErrorCode.VALIDATION_ERROR,
+          message: "Cannot update completed or paid bounty",
         },
-        { status: 400 }
+        400
       );
     }
 
-    // Check permissions: OWNER/ADMIN can update anything, creator can update unless changing amount
     const isOwnerOrAdmin = ["OWNER", "ADMIN"].includes(member.role);
     const isCreator = existingBounty.creatorPubkey === user;
 
     if (!isOwnerOrAdmin && !isCreator) {
-      return NextResponse.json(
+      return apiError(
         {
-          success: false,
-          error: {
-            code: "FORBIDDEN",
-            message: "You don't have permission to update this bounty",
-          },
-          meta: { timestamp: new Date().toISOString() },
+          code: ErrorCode.FORBIDDEN,
+          message: "You don't have permission to update this bounty",
         },
-        { status: 403 }
+        403
       );
     }
 
-    // If amount is being changed, only OWNER/ADMIN can do it
     if (validatedData.amount !== undefined && !isOwnerOrAdmin) {
-      return NextResponse.json(
+      return apiError(
         {
-          success: false,
-          error: {
-            code: "FORBIDDEN",
-            message: "Only workspace owners and admins can change bounty amount",
-          },
-          meta: { timestamp: new Date().toISOString() },
+          code: ErrorCode.FORBIDDEN,
+          message: "Only workspace owners and admins can change bounty amount",
         },
-        { status: 403 }
+        403
       );
     }
 
-    // Handle budget adjustments if amount is changing
     let budgetAdjustment: bigint | null = null;
     if (validatedData.amount !== undefined) {
       const oldAmount = existingBounty.amount;
@@ -361,41 +302,30 @@ export async function PATCH(
         });
 
         if (!workspaceBudget) {
-          return NextResponse.json(
+          return apiError(
             {
-              success: false,
-              error: {
-                code: "BUDGET_NOT_FOUND",
-                message: "Workspace budget not found",
-              },
-              meta: { timestamp: new Date().toISOString() },
+              code: ErrorCode.NOT_FOUND,
+              message: "Workspace budget not found",
             },
-            { status: 404 }
+            404
           );
         }
 
-        // If increasing amount, check available budget
         if (budgetAdjustment > BigInt(0)) {
           if (workspaceBudget.availableBudget < budgetAdjustment) {
-            return NextResponse.json(
+            return apiError(
               {
-                success: false,
-                error: {
-                  code: "INSUFFICIENT_BUDGET",
-                  message: "Insufficient workspace budget for amount increase",
-                },
-                meta: { timestamp: new Date().toISOString() },
+                code: ErrorCode.VALIDATION_ERROR,
+                message: "Insufficient workspace budget for amount increase",
               },
-              { status: 400 }
+              400
             );
           }
         }
       }
     }
 
-    // Update bounty and adjust budget in a transaction
     const updatedBounty = await db.$transaction(async (tx) => {
-      // Update the bounty
       const bounty = await tx.bounty.update({
         where: { id: bountyId },
         data: {
@@ -427,10 +357,8 @@ export async function PATCH(
         },
       });
 
-      // Adjust workspace budget if amount changed
       if (budgetAdjustment !== null && budgetAdjustment !== BigInt(0)) {
         if (budgetAdjustment > BigInt(0)) {
-          // Increasing amount: decrease available, increase reserved
           await tx.workspaceBudget.update({
             where: { workspaceId },
             data: {
@@ -443,7 +371,6 @@ export async function PATCH(
             },
           });
         } else {
-          // Decreasing amount: increase available, decrease reserved
           await tx.workspaceBudget.update({
             where: { workspaceId },
             data: {
@@ -458,7 +385,6 @@ export async function PATCH(
         }
       }
 
-      // Log the update activity
       await tx.bountyActivity.create({
         data: {
           bountyId: bounty.id,
@@ -474,59 +400,34 @@ export async function PATCH(
       return bounty;
     });
 
-    return NextResponse.json(
-      {
-        success: true,
-        data: {
-          message: "Bounty updated successfully",
-          bounty: {
-            id: updatedBounty.id,
-            title: updatedBounty.title,
-            description: updatedBounty.description,
-            deliverables: updatedBounty.deliverables,
-            amount: updatedBounty.amount.toString(),
-            status: updatedBounty.status,
-            tags: updatedBounty.tags,
-            codingLanguages: updatedBounty.codingLanguages,
-            estimatedHours: updatedBounty.estimatedHours,
-            estimatedCompletionDate: updatedBounty.estimatedCompletionDate?.toISOString() ?? null,
-            githubIssueUrl: updatedBounty.githubIssueUrl,
-            loomVideoUrl: updatedBounty.loomVideoUrl,
-          },
-        },
-        meta: {
-          timestamp: new Date().toISOString(),
-        },
+    return apiSuccess({
+      message: "Bounty updated successfully",
+      bounty: {
+        id: updatedBounty.id,
+        title: updatedBounty.title,
+        description: updatedBounty.description,
+        deliverables: updatedBounty.deliverables,
+        amount: updatedBounty.amount.toString(),
+        status: updatedBounty.status,
+        tags: updatedBounty.tags,
+        codingLanguages: updatedBounty.codingLanguages,
+        estimatedHours: updatedBounty.estimatedHours,
+        estimatedCompletionDate: updatedBounty.estimatedCompletionDate?.toISOString() ?? null,
+        githubIssueUrl: updatedBounty.githubIssueUrl,
+        loomVideoUrl: updatedBounty.loomVideoUrl,
       },
-      { status: 200 }
-    );
+    });
   } catch (error) {
-    console.error("Error updating bounty:", error);
-
-    if (error instanceof Error && error.name === "ZodError") {
-      return NextResponse.json(
-        {
-          success: false,
-          error: {
-            code: "VALIDATION_ERROR",
-            message: "Invalid request data",
-          },
-          meta: { timestamp: new Date().toISOString() },
-        },
-        { status: 400 }
-      );
-    }
-
-    return NextResponse.json(
+    logApiError(error as Error, {
+      url: `/api/workspaces/${workspaceId}/bounties/${bountyId}`,
+      method: "PATCH",
+    });
+    return apiError(
       {
-        success: false,
-        error: {
-          code: "INTERNAL_ERROR",
-          message: "Failed to update bounty",
-        },
-        meta: { timestamp: new Date().toISOString() },
+        code: ErrorCode.INTERNAL_SERVER_ERROR,
+        message: "Failed to update bounty",
       },
-      { status: 500 }
+      500
     );
   }
 }

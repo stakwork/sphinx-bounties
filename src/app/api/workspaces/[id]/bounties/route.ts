@@ -1,12 +1,12 @@
-import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { z } from "zod";
 import { db } from "@/lib/db";
 import { BountyStatus, BountyActivityAction, WorkspaceRole } from "@prisma/client";
-import type { ApiResponse } from "@/types/api";
-import type { CreateBountyResponse, ListBountiesResponse } from "@/types/bounty";
-import { createBountySchema } from "@/validations/bounty.schema";
 import type { Prisma } from "@prisma/client";
+import { apiError, apiCreated, apiPaginated, validateBody, validateQuery } from "@/lib/api";
+import { logApiError } from "@/lib/errors/logger";
+import { ErrorCode } from "@/types/error";
+import { createBountySchema } from "@/validations/bounty.schema";
 
 const listBountiesSchema = z.object({
   page: z.coerce.number().int().positive().default(1),
@@ -24,64 +24,29 @@ const listBountiesSchema = z.object({
   sortOrder: z.enum(["asc", "desc"]).default("desc"),
 });
 
-type ListBountiesQuery = z.infer<typeof listBountiesSchema>;
-
-/**
- * POST /api/workspaces/[id]/bounties
- * Create a new bounty in the workspace
- * @permission OWNER, ADMIN, CONTRIBUTOR
- */
-export async function POST(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-): Promise<NextResponse<ApiResponse<CreateBountyResponse>>> {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id: workspaceId } = await params;
   try {
-    const { id: workspaceId } = await params;
     const userPubkey = request.headers.get("x-user-pubkey");
 
-    // Authentication check
     if (!userPubkey) {
-      return NextResponse.json(
+      return apiError(
         {
-          success: false,
-          error: {
-            code: "UNAUTHORIZED",
-            message: "Authentication required",
-          },
-          meta: { timestamp: new Date().toISOString() },
+          code: ErrorCode.UNAUTHORIZED,
+          message: "Authentication required",
         },
-        { status: 401 }
+        401
       );
     }
 
-    // Parse and validate request body
-    const body = await request.json();
-    const validation = createBountySchema.safeParse(body);
+    const validation = await validateBody(request, createBountySchema);
 
-    if (!validation.success) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: {
-            code: "VALIDATION_ERROR",
-            message: "Request validation failed",
-            details: {
-              errors: validation.error.issues.map((err) => ({
-                field: err.path.join("."),
-                message: err.message,
-                code: err.code,
-              })),
-            },
-          },
-          meta: { timestamp: new Date().toISOString() },
-        },
-        { status: 422 }
-      );
+    if (validation.error) {
+      return validation.error;
     }
 
-    const data = validation.data;
+    const data = validation.data!;
 
-    // Check workspace existence and user membership
     const workspace = await db.workspace.findUnique({
       where: { id: workspaceId, deletedAt: null },
       include: {
@@ -93,65 +58,49 @@ export async function POST(
     });
 
     if (!workspace || workspace.members.length === 0) {
-      return NextResponse.json(
+      return apiError(
         {
-          success: false,
-          error: {
-            code: "NOT_FOUND",
-            message: "Workspace not found or you are not a member",
-          },
-          meta: { timestamp: new Date().toISOString() },
+          code: ErrorCode.NOT_FOUND,
+          message: "Workspace not found or you are not a member",
         },
-        { status: 404 }
+        404
       );
     }
 
     const member = workspace.members[0];
 
-    // Permission check: OWNER, ADMIN, or CONTRIBUTOR can create bounties
     if (
       member.role !== WorkspaceRole.OWNER &&
       member.role !== WorkspaceRole.ADMIN &&
       member.role !== WorkspaceRole.CONTRIBUTOR
     ) {
-      return NextResponse.json(
+      return apiError(
         {
-          success: false,
-          error: {
-            code: "FORBIDDEN",
-            message: "Only workspace owners, admins, and contributors can create bounties",
-          },
-          meta: { timestamp: new Date().toISOString() },
+          code: ErrorCode.FORBIDDEN,
+          message: "Only workspace owners, admins, and contributors can create bounties",
         },
-        { status: 403 }
+        403
       );
     }
 
-    // Check budget availability if status is OPEN
     if (data.status === BountyStatus.OPEN) {
       const budget = workspace.budget;
       if (!budget || BigInt(data.amount) > budget.availableBudget) {
-        return NextResponse.json(
+        return apiError(
           {
-            success: false,
-            error: {
-              code: "INSUFFICIENT_FUNDS",
-              message: "Insufficient workspace budget to open this bounty",
-              details: {
-                required: data.amount,
-                available: budget?.availableBudget.toString() || "0",
-              },
+            code: ErrorCode.VALIDATION_ERROR,
+            message: "Insufficient workspace budget to open this bounty",
+            details: {
+              required: data.amount,
+              available: budget?.availableBudget.toString() || "0",
             },
-            meta: { timestamp: new Date().toISOString() },
           },
-          { status: 422 }
+          400
         );
       }
     }
 
-    // Create bounty with transaction to reserve budget if OPEN
     const result = await db.$transaction(async (tx) => {
-      // Create the bounty
       const bounty = await tx.bounty.create({
         data: {
           workspaceId,
@@ -178,7 +127,6 @@ export async function POST(
         },
       });
 
-      // If status is OPEN, reserve budget
       if (data.status === BountyStatus.OPEN) {
         await tx.workspaceBudget.update({
           where: { workspaceId },
@@ -193,7 +141,6 @@ export async function POST(
         });
       }
 
-      // Log bounty activity
       await tx.bountyActivity.create({
         data: {
           bountyId: bounty.id,
@@ -210,99 +157,59 @@ export async function POST(
       return bounty;
     });
 
-    return NextResponse.json(
-      {
-        success: true,
-        data: {
-          id: result.id,
-          title: result.title,
-          description: result.description,
-          deliverables: result.deliverables,
-          amount: result.amount.toString(),
-          status: result.status,
-          tags: result.tags,
-          codingLanguages: result.codingLanguages,
-          estimatedCompletionDate: result.estimatedCompletionDate?.toISOString() || null,
-          githubIssueUrl: result.githubIssueUrl,
-          createdAt: result.createdAt.toISOString(),
-          creator: result.creator,
-        },
-        meta: { timestamp: new Date().toISOString() },
-      },
-      { status: 201 }
-    );
+    return apiCreated({
+      id: result.id,
+      title: result.title,
+      description: result.description,
+      deliverables: result.deliverables,
+      amount: result.amount.toString(),
+      status: result.status,
+      tags: result.tags,
+      codingLanguages: result.codingLanguages,
+      estimatedCompletionDate: result.estimatedCompletionDate?.toISOString() || null,
+      githubIssueUrl: result.githubIssueUrl,
+      createdAt: result.createdAt.toISOString(),
+      creator: result.creator,
+    });
   } catch (error) {
-    console.error("Bounty creation error:", error);
-    return NextResponse.json(
+    logApiError(error as Error, {
+      url: `/api/workspaces/${workspaceId}/bounties`,
+      method: "POST",
+    });
+    return apiError(
       {
-        success: false,
-        error: {
-          code: "INTERNAL_ERROR",
-          message: "An unexpected error occurred",
-        },
-        meta: { timestamp: new Date().toISOString() },
+        code: ErrorCode.INTERNAL_SERVER_ERROR,
+        message: "Failed to create bounty",
       },
-      { status: 500 }
+      500
     );
   }
 }
 
-/**
- * GET /api/workspaces/[id]/bounties
- * List bounties in the workspace with filtering and pagination
- * @permission All workspace members
- */
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-): Promise<NextResponse<ApiResponse<ListBountiesResponse>>> {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id: workspaceId } = await params;
   try {
-    const { id: workspaceId } = await params;
     const userPubkey = request.headers.get("x-user-pubkey");
 
-    // Authentication check
     if (!userPubkey) {
-      return NextResponse.json(
+      return apiError(
         {
-          success: false,
-          error: {
-            code: "UNAUTHORIZED",
-            message: "Authentication required",
-          },
-          meta: { timestamp: new Date().toISOString() },
+          code: ErrorCode.UNAUTHORIZED,
+          message: "Authentication required",
         },
-        { status: 401 }
+        401
       );
     }
 
-    // Parse query parameters
-    const searchParams = Object.fromEntries(request.nextUrl.searchParams);
-    const validation = listBountiesSchema.safeParse(searchParams);
+    const { searchParams } = new URL(request.url);
+    const validation = validateQuery(searchParams, listBountiesSchema);
 
-    if (!validation.success) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: {
-            code: "VALIDATION_ERROR",
-            message: "Invalid query parameters",
-            details: {
-              errors: validation.error.issues.map((err) => ({
-                field: err.path.join("."),
-                message: err.message,
-                code: err.code,
-              })),
-            },
-          },
-          meta: { timestamp: new Date().toISOString() },
-        },
-        { status: 422 }
-      );
+    if (validation.error) {
+      return validation.error;
     }
 
-    const query: ListBountiesQuery = validation.data;
+    const query = validation.data!;
 
-    // Check workspace existence and user membership
     const workspace = await db.workspace.findUnique({
       where: { id: workspaceId, deletedAt: null },
       include: {
@@ -313,20 +220,15 @@ export async function GET(
     });
 
     if (!workspace || workspace.members.length === 0) {
-      return NextResponse.json(
+      return apiError(
         {
-          success: false,
-          error: {
-            code: "NOT_FOUND",
-            message: "Workspace not found or you are not a member",
-          },
-          meta: { timestamp: new Date().toISOString() },
+          code: ErrorCode.NOT_FOUND,
+          message: "Workspace not found or you are not a member",
         },
-        { status: 404 }
+        404
       );
     }
 
-    // Build where clause for filtering
     const where: Prisma.BountyWhereInput = {
       workspaceId,
     };
@@ -352,11 +254,9 @@ export async function GET(
       ];
     }
 
-    // Calculate pagination
     const skip = (query.page - 1) * query.limit;
     const take = query.limit;
 
-    // Get total count and bounties in parallel
     const [total, bounties] = await Promise.all([
       db.bounty.count({ where }),
       db.bounty.findMany({
@@ -388,51 +288,40 @@ export async function GET(
       }),
     ]);
 
-    const totalPages = Math.ceil(total / query.limit);
-
-    return NextResponse.json(
+    return apiPaginated(
+      bounties.map((bounty) => ({
+        id: bounty.id,
+        title: bounty.title,
+        description: bounty.description,
+        amount: bounty.amount.toString(),
+        status: bounty.status,
+        tags: bounty.tags,
+        codingLanguages: bounty.codingLanguages,
+        estimatedCompletionDate: bounty.estimatedCompletionDate?.toISOString() || null,
+        githubIssueUrl: bounty.githubIssueUrl,
+        createdAt: bounty.createdAt.toISOString(),
+        updatedAt: bounty.updatedAt.toISOString(),
+        creator: bounty.creator,
+        assignee: bounty.assignee,
+        _count: bounty._count,
+      })),
       {
-        success: true,
-        data: {
-          bounties: bounties.map((bounty) => ({
-            id: bounty.id,
-            title: bounty.title,
-            description: bounty.description,
-            amount: bounty.amount.toString(),
-            status: bounty.status,
-            tags: bounty.tags,
-            codingLanguages: bounty.codingLanguages,
-            estimatedCompletionDate: bounty.estimatedCompletionDate?.toISOString() || null,
-            githubIssueUrl: bounty.githubIssueUrl,
-            createdAt: bounty.createdAt.toISOString(),
-            updatedAt: bounty.updatedAt.toISOString(),
-            creator: bounty.creator,
-            assignee: bounty.assignee,
-            _count: bounty._count,
-          })),
-          pagination: {
-            total,
-            page: query.page,
-            limit: query.limit,
-            totalPages,
-          },
-        },
-        meta: { timestamp: new Date().toISOString() },
-      },
-      { status: 200 }
+        page: query.page,
+        pageSize: query.limit,
+        totalCount: total,
+      }
     );
   } catch (error) {
-    console.error("Bounty listing error:", error);
-    return NextResponse.json(
+    logApiError(error as Error, {
+      url: `/api/workspaces/${workspaceId}/bounties`,
+      method: "GET",
+    });
+    return apiError(
       {
-        success: false,
-        error: {
-          code: "INTERNAL_ERROR",
-          message: "An unexpected error occurred",
-        },
-        meta: { timestamp: new Date().toISOString() },
+        code: ErrorCode.INTERNAL_SERVER_ERROR,
+        message: "Failed to fetch bounties",
       },
-      { status: 500 }
+      500
     );
   }
 }
