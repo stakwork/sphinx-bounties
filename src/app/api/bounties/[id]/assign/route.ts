@@ -5,6 +5,70 @@ import { ErrorCode } from "@/types/error";
 import { db } from "@/lib/db";
 import { BountyStatus, BountyActivityAction, WorkspaceRole } from "@prisma/client";
 
+/**
+ * @swagger
+ * /api/bounties/{id}/assign:
+ *   post:
+ *     tags: [Bounty Actions]
+ *     summary: Assign bounty to hunter
+ *     description: Assign an OPEN bounty to a workspace member (admin only)
+ *     security:
+ *       - NostrAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - assigneePubkey
+ *             properties:
+ *               assigneePubkey:
+ *                 type: string
+ *                 description: Public key of user to assign
+ *     responses:
+ *       200:
+ *         description: Bounty assigned successfully
+ *       400:
+ *         description: Invalid status or insufficient budget
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Admin access required
+ *       404:
+ *         description: Bounty or assignee not found
+ *   delete:
+ *     tags: [Bounty Actions]
+ *     summary: Unassign bounty
+ *     description: Remove hunter assignment and return bounty to OPEN (admin only)
+ *     security:
+ *       - NostrAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *     responses:
+ *       200:
+ *         description: Bounty unassigned successfully
+ *       400:
+ *         description: Bounty not assigned or invalid status
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Admin access required
+ *       404:
+ *         description: Bounty not found
+ */
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id: bountyId } = await params;

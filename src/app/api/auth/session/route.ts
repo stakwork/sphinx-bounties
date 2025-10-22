@@ -4,6 +4,67 @@ import { db } from "@/lib/db";
 import { ErrorCode } from "@/types/error";
 import { logError } from "@/lib/errors/logger";
 
+/**
+ * @swagger
+ * /api/auth/session:
+ *   get:
+ *     tags: [Authentication]
+ *     summary: Get current session
+ *     description: Retrieve authenticated user session information
+ *     responses:
+ *       200:
+ *         description: Session retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     authenticated:
+ *                       type: boolean
+ *                     user:
+ *                       type: object
+ *                       properties:
+ *                         id:
+ *                           type: string
+ *                         pubkey:
+ *                           type: string
+ *                         username:
+ *                           type: string
+ *                         alias:
+ *                           type: string
+ *                           nullable: true
+ *                         description:
+ *                           type: string
+ *                           nullable: true
+ *                         avatarUrl:
+ *                           type: string
+ *                           nullable: true
+ *                         githubUsername:
+ *                           type: string
+ *                           nullable: true
+ *                         githubVerified:
+ *                           type: boolean
+ *                         twitterUsername:
+ *                           type: string
+ *                           nullable: true
+ *                         twitterVerified:
+ *                           type: boolean
+ *                         createdAt:
+ *                           type: string
+ *                           format: date-time
+ *                         lastLogin:
+ *                           type: string
+ *                           format: date-time
+ *       401:
+ *         description: Not authenticated
+ *       404:
+ *         description: User not found
+ */
 export async function GET() {
   try {
     const session = await getSessionFromCookies();

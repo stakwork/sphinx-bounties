@@ -8,6 +8,96 @@ import { updateBountySchema } from "@/validations/bounty.schema";
 import { BountyStatus, BountyActivityAction, WorkspaceRole } from "@prisma/client";
 import type { BountyDetailsResponse, UpdateBountyResponse } from "@/types/bounty";
 
+/**
+ * @swagger
+ * /api/bounties/{id}:
+ *   get:
+ *     tags: [Bounties]
+ *     summary: Get bounty details
+ *     description: Retrieve detailed information about a specific bounty
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *     responses:
+ *       200:
+ *         description: Bounty details retrieved successfully
+ *       403:
+ *         description: Draft bounty access denied
+ *       404:
+ *         description: Bounty not found
+ *   patch:
+ *     tags: [Bounties]
+ *     summary: Update bounty
+ *     description: Update bounty information (creator or admin only)
+ *     security:
+ *       - NostrAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               title:
+ *                 type: string
+ *               description:
+ *                 type: string
+ *               deliverables:
+ *                 type: string
+ *               amount:
+ *                 type: integer
+ *               status:
+ *                 type: string
+ *               tags:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *     responses:
+ *       200:
+ *         description: Bounty updated successfully
+ *       400:
+ *         description: Invalid status transition or validation error
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Insufficient permissions
+ *       404:
+ *         description: Bounty not found
+ *   delete:
+ *     tags: [Bounties]
+ *     summary: Delete bounty
+ *     description: Soft delete a bounty (creator or owner only)
+ *     security:
+ *       - NostrAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *     responses:
+ *       200:
+ *         description: Bounty deleted successfully
+ *       400:
+ *         description: Cannot delete assigned or in-progress bounty
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Insufficient permissions
+ *       404:
+ *         description: Bounty not found
+ */
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id: bountyId } = await params;
