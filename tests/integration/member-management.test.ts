@@ -34,7 +34,7 @@ describe("Member Management Integration", () => {
 
     const { workspace } = await createTestWorkspace({
       ownerPubkey,
-      name: "Member Test Workspace",
+      name: `Member Test Workspace ${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
     });
     workspaceId = workspace.id;
 
