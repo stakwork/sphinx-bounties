@@ -8,10 +8,14 @@ export function Hero() {
   return (
     <section className="relative min-h-screen overflow-hidden bg-gradient-to-br from-neutral-900 via-neutral-800 to-neutral-900">
       {/* Ambient gradient orbs */}
-      <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary-500/20 rounded-full blur-3xl animate-pulse-slow" />
+      <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-primary-500/20 rounded-full blur-3xl animate-pulse-slow" />
       <div
-        className="absolute bottom-0 right-1/4 w-96 h-96 bg-secondary-500/20 rounded-full blur-3xl animate-pulse-slow"
+        className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-secondary-500/20 rounded-full blur-3xl animate-pulse-slow"
         style={{ animationDelay: "1s" }}
+      />
+      <div
+        className="absolute top-1/2 right-1/3 w-[400px] h-[400px] bg-tertiary-500/15 rounded-full blur-3xl animate-pulse-slow"
+        style={{ animationDelay: "2s" }}
       />
 
       <div className="relative mx-auto max-w-7xl px-6 lg:px-8 py-20 lg:py-32">
@@ -21,11 +25,7 @@ export function Hero() {
             <div className="space-y-6">
               <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight">
                 <span className="bg-gradient-to-r from-white via-white to-white/80 bg-clip-text text-transparent">
-                  Complete tasks and
-                </span>
-                <br />
-                <span className="bg-gradient-to-r from-primary-400 to-primary-600 bg-clip-text text-transparent">
-                  get paid, instantly.
+                  Complete tasks and get paid, instantly.
                 </span>
               </h1>
 
@@ -49,7 +49,7 @@ export function Hero() {
                 <Button
                   size="lg"
                   variant="outline"
-                  className="w-full sm:w-auto border-2 border-neutral-600 hover:border-neutral-500 bg-transparent hover:bg-neutral-800 text-white font-semibold px-8 py-6 text-lg rounded-xl transition-all duration-300"
+                  className="w-full sm:w-auto border-2 border-neutral-600 hover:border-neutral-500 bg-transparent hover:bg-white/10 text-white font-semibold px-8 py-6 text-lg rounded-xl transition-all duration-300"
                 >
                   View Bounties
                 </Button>
@@ -59,7 +59,7 @@ export function Hero() {
 
           {/* Right side - Glassmorphic Video Card */}
           <div className="relative">
-            <div className="relative rounded-3xl overflow-hidden backdrop-blur-xl bg-white/5 border border-white/10 shadow-2xl shadow-black/20">
+            <div className="relative rounded-3xl overflow-hidden backdrop-blur-xl bg-white/10 border border-white/20 shadow-2xl shadow-black/30">
               {/* Glass effect overlay */}
               <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-white/5 to-transparent pointer-events-none" />
 
@@ -75,11 +75,11 @@ export function Hero() {
               </div>
 
               {/* Bottom gradient fade */}
-              <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black/50 to-transparent pointer-events-none" />
+              <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black/60 to-transparent pointer-events-none" />
             </div>
 
             {/* Decorative glow */}
-            <div className="absolute -inset-4 bg-gradient-to-r from-primary-500/20 to-secondary-500/20 rounded-3xl blur-2xl -z-10 opacity-50" />
+            <div className="absolute -inset-4 bg-gradient-to-br from-primary-400/30 via-secondary-400/20 to-tertiary-400/30 rounded-3xl blur-3xl -z-10 opacity-60 animate-pulse-slow" />
           </div>
         </div>
       </div>
