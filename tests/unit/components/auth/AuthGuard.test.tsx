@@ -18,6 +18,9 @@ const mockRouter = {
   push: vi.fn(),
   replace: vi.fn(),
   back: vi.fn(),
+  forward: vi.fn(),
+  refresh: vi.fn(),
+  prefetch: vi.fn(),
 };
 
 const Wrapper = ({ children }: { children: React.ReactNode }) => {
@@ -33,7 +36,7 @@ Wrapper.displayName = "QueryClientWrapper";
 
 describe("AuthGuard", () => {
   beforeEach(() => {
-    vi.mocked(useRouter).mockReturnValue(mockRouter as any);
+    vi.mocked(useRouter).mockReturnValue(mockRouter as ReturnType<typeof useRouter>);
   });
 
   afterEach(() => {
