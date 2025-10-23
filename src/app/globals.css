@@ -166,7 +166,7 @@
   * {
     @apply border-border outline-ring/50;
   }
-  
+
   /* Force light mode - override dark mode completely */
   :root,
   html,
@@ -174,13 +174,13 @@
   html.dark {
     color-scheme: light !important;
   }
-  
+
   /* Disable dark mode styles */
   html.dark {
     --background: oklch(1 0 0);
     --foreground: oklch(0.145 0 0);
   }
-  
+
   body {
     @apply bg-background text-foreground;
   }
@@ -188,7 +188,8 @@
 
 @layer utilities {
   @keyframes pulse-soft {
-    0%, 100% {
+    0%,
+    100% {
       opacity: 1;
       box-shadow: 0 0 0 0 rgba(80, 120, 242, 0.3);
     }
@@ -197,9 +198,10 @@
       box-shadow: 0 0 0 8px rgba(80, 120, 242, 0);
     }
   }
-  
+
   @keyframes pulse-slow {
-    0%, 100% {
+    0%,
+    100% {
       opacity: 0.3;
       transform: scale(1);
     }
@@ -208,11 +210,11 @@
       transform: scale(1.1);
     }
   }
-  
+
   .animate-pulse-soft {
     animation: pulse-soft 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
   }
-  
+
   .animate-pulse-slow {
     animation: pulse-slow 8s cubic-bezier(0.4, 0, 0.6, 1) infinite;
   }
