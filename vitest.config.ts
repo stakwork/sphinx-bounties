@@ -10,6 +10,12 @@ export default defineConfig({
     setupFiles: ["./src/test/setup.ts"],
     watch: false,
     reporters: ["default"],
+    pool: "forks",
+    poolOptions: {
+      forks: {
+        singleFork: true, // Run tests sequentially to avoid database conflicts
+      },
+    },
     exclude: [
       "**/node_modules/**",
       "**/dist/**",
