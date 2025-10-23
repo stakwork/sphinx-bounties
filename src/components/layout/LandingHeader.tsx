@@ -16,7 +16,7 @@ export function LandingHeader() {
 
   return (
     <>
-      <header className="sticky top-0 z-50 w-full border-b border-white/10 bg-neutral-900/80 backdrop-blur-xl">
+      <header className="sticky top-0 z-50 w-full border-b border-white/10 bg-neutral-900/90 backdrop-blur-xl">
         <nav className="mx-auto flex h-20 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-6 lg:gap-10">
             <Link href="/" className="flex items-center space-x-3">
@@ -62,7 +62,7 @@ export function LandingHeader() {
               <>
                 <Button
                   onClick={() => setIsLoginModalOpen(true)}
-                  className="hidden sm:inline-flex bg-white/5 hover:bg-white/10 text-white border border-white/20 hover:border-white/30 font-semibold px-6 rounded-lg transition-all duration-300"
+                  className="hidden sm:inline-flex bg-white/10 hover:bg-white/20 text-white border border-white/20 hover:border-white/30 font-semibold px-6 rounded-lg transition-all duration-300"
                 >
                   Sign in
                 </Button>
@@ -101,7 +101,7 @@ export function LandingHeader() {
               {!isAuthenticated && (
                 <div className="pt-4 space-y-2">
                   <Button
-                    className="w-full justify-start bg-white/5 hover:bg-white/10 text-white border border-white/20 hover:border-white/30"
+                    className="w-full justify-start bg-white/10 hover:bg-white/20 text-white border border-white/20"
                     onClick={() => {
                       setIsLoginModalOpen(true);
                       setIsMobileMenuOpen(false);

@@ -17,8 +17,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className={`${barlow.variable} antialiased`} suppressHydrationWarning>
+    <html lang="en" className="light" style={{ colorScheme: "light" }}>
+      <body className={barlow.className} style={{ fontFamily: barlow.style.fontFamily }}>
         <QueryProvider>{children}</QueryProvider>
         <Toaster />
       </body>
