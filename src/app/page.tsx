@@ -1,6 +1,7 @@
-import { LandingHeader } from "@/components/layout";
+import { LandingHeader, Footer } from "@/components/layout";
 import { Hero } from "@/components/landing/Hero";
 import { Community } from "@/components/landing/Community";
+import { PaymentFeatures } from "@/components/landing/PaymentFeatures";
 
 export default function Home() {
   return (
@@ -8,6 +9,8 @@ export default function Home() {
       <LandingHeader />
       <Hero />
       <Community />
+      <PaymentFeatures />
+      <Footer />
     </main>
   );
 }
