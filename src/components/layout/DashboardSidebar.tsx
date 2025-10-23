@@ -58,8 +58,10 @@ export function DashboardSidebar({ isCollapsed }: DashboardSidebarProps) {
                 asChild
               >
                 <Link href={item.href}>
-                  <Icon className="h-5 w-5 shrink-0" />
-                  {!isCollapsed && <span>{item.label}</span>}
+                  <>
+                    <Icon className="h-5 w-5 shrink-0" />
+                    {!isCollapsed && <span>{item.label}</span>}
+                  </>
                 </Link>
               </Button>
             );
@@ -85,8 +87,10 @@ export function DashboardSidebar({ isCollapsed }: DashboardSidebarProps) {
                 asChild
               >
                 <Link href={item.href}>
-                  <Icon className="h-5 w-5 shrink-0" />
-                  {!isCollapsed && <span>{item.label}</span>}
+                  <>
+                    <Icon className="h-5 w-5 shrink-0" />
+                    {!isCollapsed && <span>{item.label}</span>}
+                  </>
                 </Link>
               </Button>
             );
