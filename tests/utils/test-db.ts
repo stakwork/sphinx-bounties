@@ -130,25 +130,56 @@ export const createTestBounty = async (options: {
  */
 export const cleanupTestUser = async (pubkey: string) => {
   // Delete bounty-related data first (foreign key constraints)
+  // Delete activity for bounties where user is involved
   await db.bountyActivity.deleteMany({
     where: {
-      bounty: {
-        workspace: { ownerPubkey: pubkey },
-      },
+      OR: [
+        {
+          bounty: {
+            workspace: { ownerPubkey: pubkey },
+          },
+        },
+        {
+          bounty: {
+            assigneePubkey: pubkey,
+          },
+        },
+        { userPubkey: pubkey },
+      ],
     },
   });
 
   await db.bountyProof.deleteMany({
     where: {
-      bounty: {
-        workspace: { ownerPubkey: pubkey },
-      },
+      OR: [
+        {
+          bounty: {
+            workspace: { ownerPubkey: pubkey },
+          },
+        },
+        {
+          bounty: {
+            assigneePubkey: pubkey,
+          },
+        },
+      ],
     },
   });
 
+  // Delete bounties where user is owner OR assignee
   await db.bounty.deleteMany({
     where: {
-      workspace: { ownerPubkey: pubkey },
+      OR: [
+        {
+          workspace: { ownerPubkey: pubkey },
+        },
+        {
+          assigneePubkey: pubkey,
+        },
+        {
+          creatorPubkey: pubkey,
+        },
+      ],
     },
   });
 
@@ -171,7 +202,11 @@ export const cleanupTestUser = async (pubkey: string) => {
     where: { ownerPubkey: pubkey },
   });
 
-  // Finally the user
+  // Finally the user and any notifications
+  await db.notification.deleteMany({
+    where: { userPubkey: pubkey },
+  });
+
   await db.user.deleteMany({
     where: { pubkey },
   });
