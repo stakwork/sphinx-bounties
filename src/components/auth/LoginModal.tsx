@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { QRCodeSVG } from "qrcode.react";
 import Image from "next/image";
 import { useChallenge } from "@/hooks/use-challenge";
@@ -21,6 +22,7 @@ interface LoginModalProps {
 }
 
 export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
+  const router = useRouter();
   const {
     challenge,
     isGenerating,
@@ -28,6 +30,7 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
     isVerifying,
     startVerification,
     verificationData,
+    reset,
   } = useChallenge();
 
   useEffect(() => {
@@ -38,7 +41,12 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
 
   useEffect(() => {
     if (challenge?.k1 && !isVerifying) {
-      startVerification(challenge.k1);
+      // Start polling after a short delay to let user see the QR code first
+      const timer = setTimeout(() => {
+        startVerification(challenge.k1);
+      }, 1000);
+
+      return () => clearTimeout(timer);
     }
   }, [challenge, isVerifying, startVerification]);
 
@@ -46,11 +54,19 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
     if (verificationData) {
       onSuccess?.();
       onClose();
+      router.push("/dashboard");
     }
-  }, [verificationData, onSuccess, onClose]);
+  }, [verificationData, onSuccess, onClose, router]);
 
   const handleClose = () => {
+    reset();
     onClose();
+  };
+
+  const handleLoginWithSphinx = () => {
+    if (challenge?.lnurl) {
+      window.location.href = challenge.lnurl;
+    }
   };
 
   const handleGetSphinx = () => {
@@ -76,8 +92,8 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
               <p className="text-sm text-neutral-600">Generating authentication challenge...</p>
             </div>
           ) : (
-            <div className="relative">
-              <div className="relative p-4 bg-white rounded-2xl shadow-lg ring-1 ring-primary-100">
+            <div className="relative flex flex-col items-center space-y-4">
+              <div className="relative p-4 bg-white rounded-2xl shadow-lg ring-1 ring-primary-100 animate-pulse-soft">
                 <QRCodeSVG
                   value={challenge.lnurl}
                   size={240}
@@ -97,22 +113,23 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
                   </div>
                 </div>
               </div>
-
-              {isVerifying && (
-                <div className="absolute inset-0 flex items-center justify-center bg-white/90 rounded-2xl">
-                  <div className="flex flex-col items-center space-y-3">
-                    <Loader2 className="h-10 w-10 animate-spin text-primary-600" />
-                    <p className="text-sm font-medium text-neutral-700">Verifying...</p>
-                  </div>
-                </div>
-              )}
+              <div className="flex items-center gap-2 text-sm text-neutral-700">
+                {isVerifying ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin text-primary-600" />
+                    <span className="font-medium">Waiting for scan...</span>
+                  </>
+                ) : (
+                  <span className="font-medium">Scan with Sphinx to continue</span>
+                )}
+              </div>
             </div>
           )}
 
           <div className="flex flex-col items-center space-y-3 w-full">
             <Button
-              onClick={handleGetSphinx}
-              disabled={isGenerating || isVerifying}
+              onClick={handleLoginWithSphinx}
+              disabled={isGenerating || isVerifying || !challenge}
               className="w-full bg-primary-600 hover:bg-primary-700 text-white font-medium py-6 rounded-xl shadow-md hover:shadow-lg transition-all duration-200"
             >
               Login with Sphinx
@@ -120,8 +137,8 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
             </Button>
 
             <Button
-              onClick={handleGetSphinx}
-              disabled={isGenerating || isVerifying}
+              onClick={handleLoginWithSphinx}
+              disabled={isGenerating || isVerifying || !challenge}
               variant="outline"
               className="w-full border-2 border-primary-200 hover:border-primary-300 hover:bg-primary-50 text-primary-700 font-medium py-6 rounded-xl transition-all duration-200"
             >

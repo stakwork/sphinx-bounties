@@ -376,6 +376,8 @@ sphinx-bounties/
 
 ## Key Design Decisions
 
+### 0. Let's make our UI modern and kinda liquid glassy, just like apple did recently.
+
 ### 1. Bitcoin Pubkey as User ID
 
 **Decision:** Use Bitcoin public key (pubkey) as the primary user identifier instead of email.

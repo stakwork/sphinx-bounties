@@ -85,6 +85,11 @@ export function useChallenge() {
     },
   });
 
+  const reset = () => {
+    challengeMutation.reset();
+    verifyMutation.reset();
+  };
+
   return {
     challenge: challengeMutation.data,
     isGenerating: challengeMutation.isPending,
@@ -93,5 +98,6 @@ export function useChallenge() {
     startVerification: (k1: string) => verifyMutation.mutate(k1),
     verificationData: verifyMutation.data,
     error: challengeMutation.error || verifyMutation.error,
+    reset,
   };
 }
