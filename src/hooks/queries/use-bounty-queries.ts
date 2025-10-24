@@ -35,14 +35,46 @@ export function useGetBounties(
 ) {
   return useQuery({
     queryKey: bountyKeys.list(filters, pagination, sort),
-    queryFn: () => bountyQueries.getAll(filters, pagination, sort),
+    queryFn: async () => {
+      const params = new URLSearchParams();
+
+      if (filters?.status) params.append("status", filters.status);
+      if (filters?.workspaceId) params.append("workspaceId", filters.workspaceId);
+      if (filters?.assigneePubkey) params.append("assigneePubkey", filters.assigneePubkey);
+      if (filters?.creatorPubkey) params.append("creatorPubkey", filters.creatorPubkey);
+      if (filters?.search) params.append("search", filters.search);
+
+      if (pagination?.page) params.append("page", pagination.page.toString());
+      if (pagination?.pageSize) params.append("pageSize", pagination.pageSize.toString());
+
+      if (sort?.sortBy) params.append("sortBy", sort.sortBy);
+      if (sort?.sortOrder) params.append("sortOrder", sort.sortOrder);
+
+      const response = await fetch(`/api/bounties?${params.toString()}`);
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch bounties");
+      }
+
+      const result = await response.json();
+      return result;
+    },
   });
 }
 
 export function useGetBounty(id: string, enabled = true) {
   return useQuery({
     queryKey: bountyKeys.detail(id),
-    queryFn: () => bountyQueries.getById(id),
+    queryFn: async () => {
+      const response = await fetch(`/api/bounties/${id}`);
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch bounty");
+      }
+
+      const result = await response.json();
+      return result.data;
+    },
     enabled: enabled && !!id,
   });
 }

@@ -205,14 +205,16 @@ export async function GET(request: NextRequest) {
           creator: {
             select: {
               pubkey: true,
-              githubUsername: true,
+              username: true,
+              alias: true,
               avatarUrl: true,
             },
           },
           assignee: {
             select: {
               pubkey: true,
-              githubUsername: true,
+              username: true,
+              alias: true,
               avatarUrl: true,
             },
           },
@@ -227,8 +229,14 @@ export async function GET(request: NextRequest) {
       db.bounty.count({ where }),
     ]);
 
+    // Convert BigInt to number for JSON serialization
+    const serializedBounties = bounties.map((bounty) => ({
+      ...bounty,
+      amount: Number(bounty.amount),
+    }));
+
     // Return paginated response
-    return apiPaginated(bounties, {
+    return apiPaginated(serializedBounties, {
       page,
       pageSize,
       totalCount,
