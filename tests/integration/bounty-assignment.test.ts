@@ -150,8 +150,8 @@ describe("Bounty Assignment Integration Tests", () => {
       const budget = await db.workspaceBudget.findUnique({
         where: { workspaceId },
       });
-      expect(Number(budget?.reservedBudget)).toBe(50000);
-      expect(Number(budget?.availableBudget)).toBe(50000); // Started with 100000, reserved 50000
+      expect(budget?.reservedBudget).toBe(50000);
+      expect(budget?.availableBudget).toBe(50000); // Started with 100000, reserved 50000
 
       // Verify activity was logged
       const activity = await db.bountyActivity.findFirst({
@@ -414,8 +414,8 @@ describe("Bounty Assignment Integration Tests", () => {
       const budget = await db.workspaceBudget.findUnique({
         where: { workspaceId },
       });
-      expect(Number(budget?.reservedBudget)).toBe(0);
-      expect(Number(budget?.availableBudget)).toBe(100000); // Returned to available (was 100000 initially)
+      expect(budget?.reservedBudget).toBe(0);
+      expect(budget?.availableBudget).toBe(100000); // Returned to available (was 100000 initially)
 
       // Verify activity was logged
       const activity = await db.bountyActivity.findFirst({

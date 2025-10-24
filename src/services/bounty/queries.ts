@@ -105,8 +105,15 @@ export const bountyQueries = {
       db.bounty.count({ where }),
     ]);
 
+    const serializedBounties = bounties.map((bounty) => ({
+      ...bounty,
+      createdAt: bounty.createdAt.toISOString(),
+      updatedAt: bounty.updatedAt.toISOString(),
+      estimatedCompletionDate: bounty.estimatedCompletionDate?.toISOString() ?? null,
+    }));
+
     return {
-      data: bounties,
+      data: serializedBounties,
       pagination: {
         page,
         pageSize,
@@ -166,6 +173,8 @@ export const bountyQueries = {
         },
       },
     });
+
+    if (!bounty) return null;
 
     return bounty;
   },

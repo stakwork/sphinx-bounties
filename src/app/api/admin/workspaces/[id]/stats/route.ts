@@ -193,7 +193,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       (b) => b.status === BountyStatus.COMPLETED || b.status === BountyStatus.PAID
     ).length;
 
-    const totalAllocated = bounties.reduce((sum, b) => sum + BigInt(b.amount), BigInt(0));
+    const totalAllocated = bounties.reduce((sum, b) => sum + b.amount, 0);
 
     const completedBountiesWithDates = bounties.filter(
       (b) =>

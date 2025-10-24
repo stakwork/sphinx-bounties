@@ -117,9 +117,9 @@ describe("Bounty Lifecycle Integration Tests", () => {
     await db.workspaceBudget.update({
       where: { workspaceId },
       data: {
-        totalBudget: BigInt(1000000),
-        availableBudget: BigInt(800000),
-        reservedBudget: BigInt(200000),
+        totalBudget: 1000000,
+        availableBudget: 800000,
+        reservedBudget: 200000,
       },
     });
 
@@ -456,8 +456,8 @@ describe("Bounty Lifecycle Integration Tests", () => {
         where: { workspaceId },
       });
 
-      expect(budget?.reservedBudget).toBe(BigInt(225000)); // 200000 + (75000 - 50000)
-      expect(budget?.availableBudget).toBe(BigInt(775000)); // 800000 - (75000 - 50000)
+      expect(budget?.reservedBudget).toBe(225000); // 200000 + (75000 - 50000)
+      expect(budget?.availableBudget).toBe(775000); // 800000 - (75000 - 50000)
     });
 
     it("should allow creator to update bounty (non-amount fields)", async () => {
@@ -737,8 +737,8 @@ describe("Bounty Lifecycle Integration Tests", () => {
         where: { workspaceId },
       });
 
-      expect(budget?.availableBudget).toBe(BigInt(850000)); // 800000 + 50000
-      expect(budget?.reservedBudget).toBe(BigInt(150000)); // 200000 - 50000
+      expect(budget?.availableBudget).toBe(850000); // 800000 + 50000
+      expect(budget?.reservedBudget).toBe(150000); // 200000 - 50000
 
       // Verify activity
       const activity = await db.bountyActivity.findFirst({

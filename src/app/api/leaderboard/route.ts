@@ -113,10 +113,7 @@ export async function GET(request: NextRequest) {
 
     const leaderboard = users
       .map((user) => {
-        const totalEarned = user.assignedBounties.reduce(
-          (sum, bounty) => sum + BigInt(bounty.amount),
-          BigInt(0)
-        );
+        const totalEarned = user.assignedBounties.reduce((sum, bounty) => sum + bounty.amount, 0);
 
         return {
           pubkey: user.pubkey,
@@ -129,8 +126,8 @@ export async function GET(request: NextRequest) {
         };
       })
       .sort((a, b) => {
-        const diff = BigInt(b.totalEarned) - BigInt(a.totalEarned);
-        return diff > 0 ? 1 : diff < 0 ? -1 : 0;
+        const diff = Number(b.totalEarned) - Number(a.totalEarned);
+        return diff;
       })
       .slice(skip, skip + limit);
 

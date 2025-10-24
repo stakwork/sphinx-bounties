@@ -46,7 +46,7 @@ const testBounty = {
   title: "Test Bounty for Payments",
   description: "Testing payment processing",
   deliverables: "Complete payment feature implementation",
-  amount: BigInt(50000),
+  amount: 50000,
   status: BountyStatus.COMPLETED,
   assigneePubkey: testUsers.assignee.pubkey,
 };
@@ -75,10 +75,10 @@ describe.skip("Bounty Payment Endpoints - TODO: Rewrite to use direct route impo
       update: {},
       create: {
         workspaceId: testWorkspace.id,
-        totalBudget: BigInt(1000000),
-        availableBudget: BigInt(900000),
-        reservedBudget: BigInt(100000),
-        paidBudget: BigInt(0),
+        totalBudget: 1000000,
+        availableBudget: 900000,
+        reservedBudget: 100000,
+        paidBudget: 0,
       },
     });
 
@@ -152,8 +152,8 @@ describe.skip("Bounty Payment Endpoints - TODO: Rewrite to use direct route impo
     await db.workspaceBudget.update({
       where: { workspaceId: testWorkspace.id },
       data: {
-        reservedBudget: BigInt(100000),
-        paidBudget: BigInt(0),
+        reservedBudget: 100000,
+        paidBudget: 0,
       },
     });
   });
@@ -247,7 +247,7 @@ describe.skip("Bounty Payment Endpoints - TODO: Rewrite to use direct route impo
       const budget = await db.workspaceBudget.findUnique({
         where: { workspaceId: testWorkspace.id },
       });
-      expect(budget?.reservedBudget).toBe(BigInt(50000));
+      expect(budget?.reservedBudget).toBe(50000);
       expect(budget?.paidBudget).toBe(testBounty.amount);
 
       // Verify bounty marked as paid
@@ -546,7 +546,7 @@ describe.skip("Bounty Payment Endpoints - TODO: Rewrite to use direct route impo
       // Set reserved budget to less than bounty amount
       await db.workspaceBudget.update({
         where: { workspaceId: testWorkspace.id },
-        data: { reservedBudget: BigInt(10000) },
+        data: { reservedBudget: 10000 },
       });
 
       const bounty = await db.bounty.create({
@@ -899,8 +899,8 @@ describe.skip("Bounty Payment Endpoints - TODO: Rewrite to use direct route impo
       const budget = await db.workspaceBudget.findUnique({
         where: { workspaceId: testWorkspace.id },
       });
-      expect(budget?.reservedBudget).toBe(BigInt(100000));
-      expect(budget?.paidBudget).toBe(BigInt(0));
+      expect(budget?.reservedBudget).toBe(100000);
+      expect(budget?.paidBudget).toBe(0);
 
       // Verify bounty paidAt reset
       const updatedBounty = await db.bounty.findUnique({

@@ -134,7 +134,7 @@ describe("Bounty Proofs Integration Tests", () => {
         title: "Test Bounty for Proofs",
         description: "This is a test bounty for proof submissions",
         deliverables: "Complete the implementation and submit proof",
-        amount: BigInt(5000),
+        amount: 5000,
         status: BountyStatus.ASSIGNED,
         assigneePubkey: contributorPubkey,
         assignedAt: new Date(),

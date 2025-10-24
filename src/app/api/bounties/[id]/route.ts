@@ -206,12 +206,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       }
     }
 
-    const serializedBounty = {
-      ...bounty,
-      amount: Number(bounty.amount),
-    };
-
-    return apiSuccess(serializedBounty);
+    return apiSuccess(bounty);
   } catch (error) {
     logApiError(error as Error, {
       url: `/api/bounties/[id]`,

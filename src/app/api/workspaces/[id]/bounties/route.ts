@@ -197,7 +197,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
     if (data.status === BountyStatus.OPEN) {
       const budget = workspace.budget;
-      if (!budget || BigInt(data.amount) > budget.availableBudget) {
+      if (!budget || data.amount > budget.availableBudget) {
         return apiError(
           {
             code: ErrorCode.VALIDATION_ERROR,
@@ -220,7 +220,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
           title: data.title,
           description: data.description,
           deliverables: data.deliverables,
-          amount: BigInt(data.amount),
+          amount: data.amount,
           status: data.status,
           tags: data.tags,
           codingLanguages: data.codingLanguages,
@@ -244,10 +244,10 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
           where: { workspaceId },
           data: {
             availableBudget: {
-              decrement: BigInt(data.amount),
+              decrement: data.amount,
             },
             reservedBudget: {
-              increment: BigInt(data.amount),
+              increment: data.amount,
             },
           },
         });

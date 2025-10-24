@@ -16,7 +16,7 @@ export async function createBountyAction(formData: FormData) {
     const workspaceId = formData.get("workspaceId") as string;
     const title = formData.get("title") as string;
     const description = formData.get("description") as string;
-    const amount = BigInt(formData.get("amount") as string);
+    const amount = Number(formData.get("amount") as string);
 
     if (!workspaceId || !title || !description || !amount) {
       throw new ValidationError("Missing required fields");
@@ -102,7 +102,7 @@ export async function updateBountyAction(bountyId: string, formData: FormData) {
       data: {
         ...(title && { title }),
         ...(description && { description, deliverables: description }),
-        ...(amount && { amount: BigInt(amount) }),
+        ...(amount && { amount: Number(amount) }),
       },
     });
 

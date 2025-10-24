@@ -116,7 +116,7 @@ export const createTestBounty = async (options: {
       description:
         options.description || "Test bounty description that is long enough to pass validation",
       deliverables: options.deliverables || "Test deliverables description for bounty completion",
-      amount: BigInt(options.amount || 50000),
+      amount: options.amount || 5000,
       status: options.status || BountyStatus.DRAFT,
       tags: options.tags || [],
       codingLanguages: options.codingLanguages || [],

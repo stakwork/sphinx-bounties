@@ -35,10 +35,10 @@ export const createMockWorkspaceBudget = (
   return {
     id: `budget-${Date.now()}`,
     workspaceId: `workspace-${Date.now()}`,
-    totalBudget: BigInt(0),
-    availableBudget: BigInt(0),
-    reservedBudget: BigInt(0),
-    paidBudget: BigInt(0),
+    totalBudget: 0,
+    availableBudget: 0,
+    reservedBudget: 0,
+    paidBudget: 0,
     updatedAt: new Date(),
     ...overrides,
   };

@@ -320,13 +320,13 @@ export async function PATCH(
       );
     }
 
-    let budgetAdjustment: bigint | null = null;
+    let budgetAdjustment: number | null = null;
     if (validatedData.amount !== undefined) {
       const oldAmount = existingBounty.amount;
-      const newAmount = BigInt(validatedData.amount);
+      const newAmount = validatedData.amount;
       budgetAdjustment = newAmount - oldAmount;
 
-      if (budgetAdjustment !== BigInt(0)) {
+      if (budgetAdjustment !== 0) {
         const workspaceBudget = await db.workspaceBudget.findUnique({
           where: { workspaceId },
         });
@@ -341,7 +341,7 @@ export async function PATCH(
           );
         }
 
-        if (budgetAdjustment > BigInt(0)) {
+        if (budgetAdjustment > 0) {
           if (workspaceBudget.availableBudget < budgetAdjustment) {
             return apiError(
               {
@@ -362,7 +362,7 @@ export async function PATCH(
           title: validatedData.title,
           description: validatedData.description,
           deliverables: validatedData.deliverables,
-          amount: validatedData.amount !== undefined ? BigInt(validatedData.amount) : undefined,
+          amount: validatedData.amount,
           tags: validatedData.tags,
           codingLanguages: validatedData.codingLanguages,
           estimatedHours: validatedData.estimatedHours,
@@ -387,8 +387,8 @@ export async function PATCH(
         },
       });
 
-      if (budgetAdjustment !== null && budgetAdjustment !== BigInt(0)) {
-        if (budgetAdjustment > BigInt(0)) {
+      if (budgetAdjustment !== null && budgetAdjustment !== 0) {
+        if (budgetAdjustment > 0) {
           await tx.workspaceBudget.update({
             where: { workspaceId },
             data: {

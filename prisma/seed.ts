@@ -104,10 +104,10 @@ async function main() {
   await db.workspaceBudget.create({
     data: {
       workspaceId: workspace1.id,
-      totalBudget: BigInt(5000000),
-      availableBudget: BigInt(5000000),
-      reservedBudget: BigInt(0),
-      paidBudget: BigInt(0),
+      totalBudget: 5000000,
+      availableBudget: 5000000,
+      reservedBudget: 0,
+      paidBudget: 0,
     },
   });
 
@@ -134,10 +134,10 @@ async function main() {
   await db.workspaceBudget.create({
     data: {
       workspaceId: workspace2.id,
-      totalBudget: BigInt(2000000),
-      availableBudget: BigInt(2000000),
-      reservedBudget: BigInt(0),
-      paidBudget: BigInt(0),
+      totalBudget: 2000000,
+      availableBudget: 2000000,
+      reservedBudget: 0,
+      paidBudget: 0,
     },
   });
 
@@ -161,10 +161,10 @@ async function main() {
   await db.workspaceBudget.create({
     data: {
       workspaceId: workspace3.id,
-      totalBudget: BigInt(1000000),
-      availableBudget: BigInt(1000000),
-      reservedBudget: BigInt(0),
-      paidBudget: BigInt(0),
+      totalBudget: 1000000,
+      availableBudget: 1000000,
+      reservedBudget: 0,
+      paidBudget: 0,
     },
   });
 
@@ -179,7 +179,7 @@ async function main() {
         "Create a React component that displays Lightning invoices as scannable QR codes with copy functionality.",
       deliverables:
         "- React component with TypeScript\n- QR code generation\n- Copy to clipboard button\n- Mobile responsive\n- Unit tests",
-      amount: BigInt(25000),
+      amount: 25000,
       status: "OPEN" as BountyStatus,
       codingLanguages: ["TYPESCRIPT" as ProgrammingLanguage, "REACT" as ProgrammingLanguage],
       tags: ["frontend", "react", "lightning"],
@@ -194,7 +194,7 @@ async function main() {
         "Backend service to verify Lightning Network payment confirmations and update payment status.",
       deliverables:
         "- Node.js service\n- LND integration\n- Payment webhook handling\n- Error handling & retry logic\n- Integration tests",
-      amount: BigInt(50000),
+      amount: 50000,
       status: "ASSIGNED" as BountyStatus,
       codingLanguages: ["TYPESCRIPT" as ProgrammingLanguage, "NODEJS" as ProgrammingLanguage],
       tags: ["backend", "lightning", "payments"],
@@ -210,7 +210,7 @@ async function main() {
         "Design and implement a user dashboard showing Lightning balance, recent transactions, and quick actions.",
       deliverables:
         "- Next.js page component\n- Balance display widget\n- Transaction history list\n- Quick send/receive buttons\n- Responsive design",
-      amount: BigInt(35000),
+      amount: 35000,
       status: "IN_REVIEW" as BountyStatus,
       codingLanguages: [
         "TYPESCRIPT" as ProgrammingLanguage,
@@ -230,7 +230,7 @@ async function main() {
       description: "Create an intuitive onboarding experience for new Lightning wallet users.",
       deliverables:
         "- Figma designs\n- User flow diagrams\n- Mobile & desktop mockups\n- Micro-interactions\n- Design system integration",
-      amount: BigInt(30000),
+      amount: 30000,
       status: "COMPLETED" as BountyStatus,
       codingLanguages: [],
       tags: ["design", "ux", "onboarding"],
@@ -246,7 +246,7 @@ async function main() {
       description: "Build a high-performance Nostr relay server in Rust with WebSocket support.",
       deliverables:
         "- Rust relay server\n- WebSocket connections\n- Event filtering\n- Database persistence\n- Docker deployment",
-      amount: BigInt(45000),
+      amount: 45000,
       status: "OPEN" as BountyStatus,
       codingLanguages: ["RUST" as ProgrammingLanguage],
       tags: ["nostr", "backend", "websockets"],
@@ -261,7 +261,7 @@ async function main() {
         "Create reusable React components for Nostr client applications (feed, profiles, messages).",
       deliverables:
         "- React component library\n- TypeScript definitions\n- Storybook documentation\n- Unit tests\n- NPM package",
-      amount: BigInt(40000),
+      amount: 40000,
       status: "ASSIGNED" as BountyStatus,
       codingLanguages: ["TYPESCRIPT" as ProgrammingLanguage, "REACT" as ProgrammingLanguage],
       tags: ["frontend", "nostr", "components"],
@@ -275,7 +275,7 @@ async function main() {
       description: "TypeScript library for validating Nostr events and signatures.",
       deliverables:
         "- TypeScript library\n- Event schema validation\n- Signature verification\n- Comprehensive tests\n- Documentation",
-      amount: BigInt(20000),
+      amount: 20000,
       status: "OPEN" as BountyStatus,
       codingLanguages: ["TYPESCRIPT" as ProgrammingLanguage],
       tags: ["library", "nostr", "validation"],
@@ -289,7 +289,7 @@ async function main() {
         "Design a beautiful mobile-first Nostr client with focus on simplicity and speed.",
       deliverables:
         "- Mobile UI designs\n- Component specifications\n- Color system\n- Typography guidelines\n- Icon set",
-      amount: BigInt(28000),
+      amount: 28000,
       status: "OPEN" as BountyStatus,
       codingLanguages: [],
       tags: ["design", "mobile", "nostr"],
@@ -302,7 +302,7 @@ async function main() {
       description: "Create a comprehensive icon set for Bitcoin wallet applications.",
       deliverables:
         "- 50+ icons in SVG format\n- Multiple sizes\n- Light & dark variants\n- Figma source files\n- Usage guidelines",
-      amount: BigInt(15000),
+      amount: 15000,
       status: "OPEN" as BountyStatus,
       codingLanguages: [],
       tags: ["design", "icons", "bitcoin"],
@@ -316,7 +316,7 @@ async function main() {
       description: "Create animated explainer videos showing how Lightning Network works.",
       deliverables:
         "- 3 short animations (30-60s each)\n- Source files\n- Multiple export formats\n- Narration scripts",
-      amount: BigInt(35000),
+      amount: 35000,
       status: "IN_REVIEW" as BountyStatus,
       codingLanguages: [],
       tags: ["design", "animation", "education"],
@@ -332,7 +332,7 @@ async function main() {
         "Research and redesign the user experience for making Bitcoin payments in mobile wallets.",
       deliverables:
         "- User research findings\n- Journey maps\n- Wireframes\n- High-fidelity mockups\n- Prototype",
-      amount: BigInt(42000),
+      amount: 42000,
       status: "OPEN" as BountyStatus,
       codingLanguages: [],
       tags: ["design", "ux-research", "payments"],
@@ -346,7 +346,7 @@ async function main() {
         "Build REST API for managing Lightning Network channels (open, close, rebalance).",
       deliverables:
         "- REST API endpoints\n- OpenAPI documentation\n- Channel management logic\n- Error handling\n- Integration tests",
-      amount: BigInt(48000),
+      amount: 48000,
       status: "OPEN" as BountyStatus,
       codingLanguages: ["TYPESCRIPT" as ProgrammingLanguage, "NODEJS" as ProgrammingLanguage],
       tags: ["backend", "api", "lightning"],
@@ -361,7 +361,7 @@ async function main() {
         "Implement a reliable webhook system to notify external services of payment events.",
       deliverables:
         "- Webhook delivery system\n- Retry mechanism\n- Signature verification\n- Admin dashboard\n- Documentation",
-      amount: BigInt(38000),
+      amount: 38000,
       status: "COMPLETED" as BountyStatus,
       codingLanguages: ["TYPESCRIPT" as ProgrammingLanguage, "NODEJS" as ProgrammingLanguage],
       tags: ["backend", "webhooks", "events"],
@@ -378,7 +378,7 @@ async function main() {
       description: "Implement secure direct messaging with NIP-04 encryption in TypeScript.",
       deliverables:
         "- Encryption/decryption functions\n- Key management\n- Message padding\n- Security audit report\n- Example usage",
-      amount: BigInt(32000),
+      amount: 32000,
       status: "OPEN" as BountyStatus,
       codingLanguages: ["TYPESCRIPT" as ProgrammingLanguage],
       tags: ["nostr", "encryption", "security"],
@@ -392,7 +392,7 @@ async function main() {
       description: "Create comprehensive branding guidelines for Bitcoin-focused applications.",
       deliverables:
         "- Brand guidelines PDF\n- Logo usage rules\n- Color palettes\n- Typography system\n- Do's and Don'ts",
-      amount: BigInt(22000),
+      amount: 22000,
       status: "COMPLETED" as BountyStatus,
       codingLanguages: [],
       tags: ["design", "branding", "documentation"],

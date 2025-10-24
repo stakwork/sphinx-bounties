@@ -26,10 +26,10 @@ export const mockWorkspaceBudget = (overrides?: Partial<WorkspaceBudget>): Works
   return {
     id: overrides?.id || `budget_${timestamp}`,
     workspaceId: overrides?.workspaceId || `workspace_${timestamp}`,
-    totalBudget: overrides?.totalBudget || BigInt(0),
-    availableBudget: overrides?.availableBudget || BigInt(0),
-    reservedBudget: overrides?.reservedBudget || BigInt(0),
-    paidBudget: overrides?.paidBudget || BigInt(0),
+    totalBudget: overrides?.totalBudget || 0,
+    availableBudget: overrides?.availableBudget || 0,
+    reservedBudget: overrides?.reservedBudget || 0,
+    paidBudget: overrides?.paidBudget || 0,
     updatedAt: overrides?.updatedAt || new Date(),
   };
 };

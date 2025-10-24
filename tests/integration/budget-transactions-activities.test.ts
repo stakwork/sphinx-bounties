@@ -404,8 +404,8 @@ describe("Budget, Transactions & Activities Integration", () => {
       });
 
       expect(budget).toBeDefined();
-      expect(budget?.totalBudget).toBe(BigInt(75000)); // 50000 + 25000 from earlier tests
-      expect(budget?.availableBudget).toBe(BigInt(75000));
+      expect(budget?.totalBudget).toBe(75000); // 50000 + 25000 from earlier tests
+      expect(budget?.availableBudget).toBe(75000);
     });
   });
 });
