@@ -156,10 +156,7 @@ export async function GET(
       }),
     ]);
 
-    const totalEarned = completedBounties.reduce(
-      (sum, bounty) => sum + BigInt(bounty.amount),
-      BigInt(0)
-    );
+    const totalEarned = completedBounties.reduce((sum, bounty) => sum + bounty.amount, 0);
 
     const successRate =
       assignedBountiesCount > 0 ? (completedBounties.length / assignedBountiesCount) * 100 : 0;

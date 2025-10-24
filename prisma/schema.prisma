@@ -218,7 +218,7 @@ model Bounty {
   title                   String                @db.VarChar(200)
   description             String                @db.Text
   deliverables            String                @db.Text
-  amount                  BigInt
+  amount                  Int
   status                  BountyStatus          @default(DRAFT)
   codingLanguages         ProgrammingLanguage[]
   tags                    String[]
@@ -314,10 +314,10 @@ model BountyComment {
 model WorkspaceBudget {
   id              String   @id @default(cuid())
   workspaceId     String   @unique
-  totalBudget     BigInt   @default(0)
-  availableBudget BigInt   @default(0)
-  reservedBudget  BigInt   @default(0)
-  paidBudget      BigInt   @default(0)
+  totalBudget     Int      @default(0)
+  availableBudget Int      @default(0)
+  reservedBudget  Int      @default(0)
+  paidBudget      Int      @default(0)
   updatedAt       DateTime @updatedAt
 
   workspace Workspace @relation("WorkspaceBudget", fields: [workspaceId], references: [id], onDelete: Cascade)
@@ -331,7 +331,7 @@ model Transaction {
   workspaceId      String
   bountyId         String?
   type             TransactionType
-  amount           BigInt
+  amount           Int
   fromUserPubkey   String?           @db.VarChar(66)
   toUserPubkey     String?           @db.VarChar(66)
   lightningInvoice String?           @db.Text
@@ -363,7 +363,7 @@ model Invoice {
   transactionId  String        @unique
   paymentRequest String        @unique @db.Text
   paymentHash    String        @unique @db.VarChar(64)
-  amount         BigInt
+  amount         Int
   memo           String?       @db.Text
   status         InvoiceStatus @default(PENDING)
   expiresAt      DateTime
@@ -385,7 +385,7 @@ model ConnectionCode {
   connectionString String    @unique @db.VarChar(100)
   creatorPubkey    String    @db.VarChar(66)
   routeHint        String?   @db.Text
-  satsAmount       BigInt
+  satsAmount       Int
   isUsed           Boolean   @default(false)
   usedByPubkey     String?   @db.VarChar(66)
   usedAt           DateTime?

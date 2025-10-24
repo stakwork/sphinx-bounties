@@ -202,7 +202,7 @@ export async function POST(
         data: {
           workspaceId,
           type: TransactionType.DEPOSIT,
-          amount: BigInt(amount),
+          amount,
           fromUserPubkey: userPubkey,
           status: TransactionStatus.COMPLETED,
           memo,
@@ -215,17 +215,17 @@ export async function POST(
         where: { workspaceId },
         create: {
           workspaceId,
-          totalBudget: BigInt(amount),
-          availableBudget: BigInt(amount),
-          reservedBudget: BigInt(0),
-          paidBudget: BigInt(0),
+          totalBudget: amount,
+          availableBudget: amount,
+          reservedBudget: 0,
+          paidBudget: 0,
         },
         update: {
           totalBudget: {
-            increment: BigInt(amount),
+            increment: amount,
           },
           availableBudget: {
-            increment: BigInt(amount),
+            increment: amount,
           },
         },
       });

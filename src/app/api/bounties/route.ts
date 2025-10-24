@@ -229,7 +229,6 @@ export async function GET(request: NextRequest) {
       db.bounty.count({ where }),
     ]);
 
-    // Convert BigInt to number for JSON serialization
     const serializedBounties = bounties.map((bounty) => ({
       ...bounty,
       amount: Number(bounty.amount),
@@ -350,7 +349,7 @@ export async function POST(request: NextRequest) {
           title: bountyData.title,
           description: bountyData.description,
           deliverables: bountyData.deliverables,
-          amount: BigInt(bountyData.amount),
+          amount: bountyData.amount,
           status: bountyData.status || BountyStatus.DRAFT,
           estimatedHours: bountyData.estimatedHours,
           estimatedCompletionDate: bountyData.estimatedCompletionDate,
@@ -388,7 +387,7 @@ export async function POST(request: NextRequest) {
       title: bounty.title,
       description: bounty.description,
       deliverables: bounty.deliverables,
-      amount: bounty.amount.toString(),
+      amount: String(bounty.amount),
       status: bounty.status,
       tags: bounty.tags,
       codingLanguages: bounty.codingLanguages,

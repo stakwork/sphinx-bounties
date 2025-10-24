@@ -20,6 +20,7 @@ describe("bountyQueries", () => {
   });
 
   describe("getAll", () => {
+    const now = new Date();
     const mockBounties = [
       {
         id: "bounty1",
@@ -31,6 +32,9 @@ describe("bountyQueries", () => {
         assignee: null,
         creator: { pubkey: "pub1", username: "user1", alias: "User 1", avatarUrl: null },
         _count: { proofs: 0 },
+        createdAt: now,
+        updatedAt: now,
+        estimatedCompletionDate: null,
       },
       {
         id: "bounty2",
@@ -42,6 +46,9 @@ describe("bountyQueries", () => {
         assignee: { pubkey: "pub2", username: "user2", alias: "User 2", avatarUrl: null },
         creator: { pubkey: "pub1", username: "user1", alias: "User 1", avatarUrl: null },
         _count: { proofs: 1 },
+        createdAt: now,
+        updatedAt: now,
+        estimatedCompletionDate: new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000),
       },
     ];
 
@@ -52,7 +59,21 @@ describe("bountyQueries", () => {
 
       const result = await bountyQueries.getAll();
 
-      expect(result.data).toEqual(mockBounties);
+      // Expect serialized dates (ISO strings)
+      expect(result.data).toEqual([
+        {
+          ...mockBounties[0],
+          createdAt: mockBounties[0].createdAt.toISOString(),
+          updatedAt: mockBounties[0].updatedAt.toISOString(),
+          estimatedCompletionDate: null,
+        },
+        {
+          ...mockBounties[1],
+          createdAt: mockBounties[1].createdAt.toISOString(),
+          updatedAt: mockBounties[1].updatedAt.toISOString(),
+          estimatedCompletionDate: mockBounties[1].estimatedCompletionDate?.toISOString(),
+        },
+      ]);
       expect(result.pagination).toEqual({
         page: 1,
         pageSize: 20,
@@ -310,9 +331,24 @@ describe("bountyQueries", () => {
 
   describe("getByWorkspaceId", () => {
     it("delegates to getAll with workspaceId filter", async () => {
+      const now = new Date();
       const mockBounties = [
-        { id: "bounty1", title: "Bounty 1", workspaceId: "ws1" },
-        { id: "bounty2", title: "Bounty 2", workspaceId: "ws1" },
+        {
+          id: "bounty1",
+          title: "Bounty 1",
+          workspaceId: "ws1",
+          createdAt: now,
+          updatedAt: now,
+          estimatedCompletionDate: null,
+        },
+        {
+          id: "bounty2",
+          title: "Bounty 2",
+          workspaceId: "ws1",
+          createdAt: now,
+          updatedAt: now,
+          estimatedCompletionDate: null,
+        },
       ];
       vi.mocked(db.bounty.findMany) // @ts-expect-error - Mock data
         .mockResolvedValue(mockBounties);
@@ -332,7 +368,16 @@ describe("bountyQueries", () => {
 
   describe("getByAssigneePubkey", () => {
     it("delegates to getAll with assigneePubkey filter", async () => {
-      const mockBounties = [{ id: "bounty1", assigneePubkey: "pub1" }];
+      const now = new Date();
+      const mockBounties = [
+        {
+          id: "bounty1",
+          assigneePubkey: "pub1",
+          createdAt: now,
+          updatedAt: now,
+          estimatedCompletionDate: null,
+        },
+      ];
       vi.mocked(db.bounty.findMany) // @ts-expect-error - Mock data
         .mockResolvedValue(mockBounties);
       vi.mocked(db.bounty.count).mockResolvedValue(1);
@@ -351,7 +396,16 @@ describe("bountyQueries", () => {
 
   describe("getByCreatorPubkey", () => {
     it("delegates to getAll with creatorPubkey filter", async () => {
-      const mockBounties = [{ id: "bounty1", creatorPubkey: "pub1" }];
+      const now = new Date();
+      const mockBounties = [
+        {
+          id: "bounty1",
+          creatorPubkey: "pub1",
+          createdAt: now,
+          updatedAt: now,
+          estimatedCompletionDate: null,
+        },
+      ];
       vi.mocked(db.bounty.findMany) // @ts-expect-error - Mock data
         .mockResolvedValue(mockBounties);
       vi.mocked(db.bounty.count).mockResolvedValue(1);

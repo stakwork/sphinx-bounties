@@ -170,10 +170,7 @@ export async function GET(
       }),
     ]);
 
-    const totalEarned = user.assignedBounties.reduce(
-      (sum, bounty) => sum + BigInt(bounty.amount),
-      BigInt(0)
-    );
+    const totalEarned = user.assignedBounties.reduce((sum, bounty) => sum + bounty.amount, 0);
 
     const response: UserProfileResponse = {
       user: {

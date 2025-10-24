@@ -14,7 +14,7 @@ export const mockBounty = (overrides?: Partial<Bounty>): Bounty => {
     creatorPubkey: overrides?.creatorPubkey || generateTestPubkey(),
     assigneePubkey: overrides?.assigneePubkey || null,
     status: overrides?.status || BountyStatus.OPEN,
-    amount: overrides?.amount || BigInt(10000),
+    amount: overrides?.amount || 10000,
     codingLanguages: overrides?.codingLanguages || [],
     tags: overrides?.tags || [],
     estimatedHours: overrides?.estimatedHours || null,

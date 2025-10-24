@@ -122,10 +122,10 @@ describe("Final Endpoints", () => {
     await db.workspaceBudget.create({
       data: {
         workspaceId: testWorkspace.id,
-        totalBudget: BigInt(1000000),
-        availableBudget: BigInt(400000),
-        reservedBudget: BigInt(300000),
-        paidBudget: BigInt(300000),
+        totalBudget: 1000000,
+        availableBudget: 400000,
+        reservedBudget: 300000,
+        paidBudget: 300000,
       },
     });
 
@@ -157,7 +157,7 @@ describe("Final Endpoints", () => {
         title: "Test Bounty 1 - OPEN",
         description: "Open bounty",
         deliverables: "Complete the task",
-        amount: BigInt(100000),
+        amount: 100000,
         status: BountyStatus.OPEN,
         creatorPubkey: ownerUser.pubkey,
       },
@@ -170,7 +170,7 @@ describe("Final Endpoints", () => {
         title: "Test Bounty 2 - ASSIGNED",
         description: "Assigned bounty",
         deliverables: "Complete the task",
-        amount: BigInt(150000),
+        amount: 150000,
         status: BountyStatus.ASSIGNED,
         assigneePubkey: hunterUser.pubkey,
         creatorPubkey: ownerUser.pubkey,
@@ -184,7 +184,7 @@ describe("Final Endpoints", () => {
         title: "Test Bounty 3 - COMPLETED",
         description: "Completed bounty",
         deliverables: "Complete the task",
-        amount: BigInt(200000),
+        amount: 200000,
         status: BountyStatus.COMPLETED,
         assigneePubkey: hunterUser.pubkey,
         creatorPubkey: ownerUser.pubkey,
@@ -199,7 +199,7 @@ describe("Final Endpoints", () => {
         title: "Test Bounty 4 - PAID",
         description: "Paid bounty",
         deliverables: "Complete the task",
-        amount: BigInt(100000),
+        amount: 100000,
         status: BountyStatus.PAID,
         assigneePubkey: hunterUser.pubkey,
         creatorPubkey: ownerUser.pubkey,
@@ -316,7 +316,7 @@ describe("Final Endpoints", () => {
       const data: any = await parseResponse(response);
       data.data.forEach((user: any) => {
         expect(user.bountiesCompleted).toBeGreaterThan(0);
-        expect(BigInt(user.totalEarned)).toBeGreaterThan(BigInt(0));
+        expect(BigInt(user.totalEarned)).toBeGreaterThan(0);
       });
     });
 
