@@ -1,26 +1,47 @@
 import type { BountyStatus, ProgrammingLanguage } from "@prisma/client";
+import type { ApiResponse, PaginationMeta } from "./api";
+
+export interface BountiesResponse {
+  success: true;
+  data: BountyListItem[];
+  meta: {
+    timestamp: string;
+    pagination: PaginationMeta;
+  };
+}
+
+export type BountyDetailResponse = ApiResponse<BountyDetail>;
 
 export interface BountyListItem {
   id: string;
   title: string;
   description: string;
-  amount: string;
+  amount: number;
   status: BountyStatus;
   tags: string[];
   codingLanguages: ProgrammingLanguage[];
+  estimatedHours: number | null;
   estimatedCompletionDate: string | null;
   githubIssueUrl: string | null;
   createdAt: string;
   updatedAt: string;
+  workspace: {
+    id: string;
+    name: string;
+  };
   creator: {
     pubkey: string;
     username: string;
+    alias: string | null;
+    avatarUrl: string | null;
   };
   assignee: {
     pubkey: string;
     username: string;
+    alias: string | null;
+    avatarUrl: string | null;
   } | null;
-  _count: {
+  _count?: {
     proofs: number;
   };
 }
@@ -43,34 +64,35 @@ export interface CreateBountyResponse {
   };
 }
 
-export interface ListBountiesResponse {
-  bounties: BountyListItem[];
-  pagination: {
-    total: number;
-    page: number;
-    limit: number;
-    totalPages: number;
-  };
-}
-
-export interface BountyDetailsResponse {
+export interface BountyDetail {
   id: string;
   title: string;
   description: string;
   deliverables: string;
-  amount: string;
+  amount: number;
   status: BountyStatus;
   tags: string[];
   codingLanguages: ProgrammingLanguage[];
   estimatedHours: number | null;
-  estimatedCompletionDate: string | null;
+  estimatedCompletionDate: Date | null;
   githubIssueUrl: string | null;
   loomVideoUrl: string | null;
-  createdAt: string;
-  updatedAt: string;
-  assignedAt: string | null;
-  completedAt: string | null;
-  paidAt: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+  assignedAt: Date | null;
+  completedAt: Date | null;
+  paidAt: Date | null;
+  workStartedAt: Date | null;
+  workClosedAt: Date | null;
+  workspace: {
+    id: string;
+    name: string;
+    description: string | null;
+    avatarUrl: string | null;
+    websiteUrl: string | null;
+    githubUrl: string | null;
+    ownerPubkey: string;
+  };
   creator: {
     pubkey: string;
     username: string;
@@ -82,12 +104,10 @@ export interface BountyDetailsResponse {
     username: string;
     alias: string | null;
     avatarUrl: string | null;
+    description: string | null;
+    githubUsername: string | null;
+    twitterUsername: string | null;
   } | null;
-  workspace: {
-    id: string;
-    name: string;
-    avatarUrl: string | null;
-  };
   proofs: Array<{
     id: string;
     proofUrl: string;
@@ -98,22 +118,9 @@ export interface BountyDetailsResponse {
       pubkey: string;
       username: string;
       alias: string | null;
+      avatarUrl: string | null;
     };
   }>;
-  activities: Array<{
-    id: string;
-    action: string;
-    timestamp: string;
-    user: {
-      pubkey: string;
-      username: string;
-      alias: string | null;
-    };
-  }>;
-  _count: {
-    proofs: number;
-    activities: number;
-  };
 }
 
 export interface ClaimBountyResponse {

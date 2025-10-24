@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { QRCodeSVG } from "qrcode.react";
 import Image from "next/image";
+import { toast } from "sonner";
 import { useChallenge } from "@/hooks/use-challenge";
 import {
   Dialog,
@@ -13,7 +14,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Loader2, ExternalLink } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
+import { Loader2, ExternalLink, Zap } from "lucide-react";
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -21,8 +23,27 @@ interface LoginModalProps {
   onSuccess?: () => void;
 }
 
+const DEV_USERS = [
+  {
+    pubkey: "02a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2",
+    name: "Alice",
+    role: "Owner",
+  },
+  {
+    pubkey: "03b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2",
+    name: "Bob",
+    role: "Contributor",
+  },
+  {
+    pubkey: "04c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2",
+    name: "Charlie",
+    role: "Designer",
+  },
+];
+
 export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
   const router = useRouter();
+  const [isDevLoggingIn, setIsDevLoggingIn] = useState(false);
   const {
     challenge,
     isGenerating,
@@ -54,7 +75,7 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
     if (verificationData) {
       onSuccess?.();
       onClose();
-      router.push("/dashboard");
+      router.push("/bounties");
     }
   }, [verificationData, onSuccess, onClose, router]);
 
@@ -72,6 +93,35 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
   const handleGetSphinx = () => {
     window.open("https://sphinx.chat", "_blank");
   };
+
+  const handleDevLogin = async (pubkey: string, name: string) => {
+    setIsDevLoggingIn(true);
+    try {
+      const response = await fetch("/api/auth/dev-login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pubkey }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        toast.error(result.error || "Dev login failed");
+        return;
+      }
+
+      toast.success(`Logged in as ${name}!`);
+      onSuccess?.();
+      handleClose();
+      router.push("/bounties");
+    } catch {
+      toast.error("Dev login failed. Is the seed data loaded?");
+    } finally {
+      setIsDevLoggingIn(false);
+    }
+  };
+
+  const isDevelopment = process.env.NODE_ENV === "development";
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
@@ -158,6 +208,41 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
               <ExternalLink className="ml-2 h-4 w-4" />
             </Button>
           </div>
+
+          {isDevelopment && (
+            <>
+              <Separator className="my-4" />
+              <div className="w-full space-y-3">
+                <div className="flex items-center gap-2 justify-center">
+                  <Zap className="h-4 w-4 text-accent-600" />
+                  <p className="text-sm font-medium text-neutral-700">Dev Quick Login</p>
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                  {DEV_USERS.map((user) => (
+                    <Button
+                      key={user.pubkey}
+                      onClick={() => handleDevLogin(user.pubkey, user.name)}
+                      disabled={isDevLoggingIn}
+                      variant="outline"
+                      className="flex flex-col h-auto py-3 px-2 border-accent-200 hover:border-accent-400 hover:bg-accent-50 text-center"
+                    >
+                      {isDevLoggingIn ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <>
+                          <span className="font-semibold text-sm">{user.name}</span>
+                          <span className="text-xs text-neutral-500">{user.role}</span>
+                        </>
+                      )}
+                    </Button>
+                  ))}
+                </div>
+                <p className="text-xs text-center text-neutral-400">
+                  Development only • Run db:seed if users not found
+                </p>
+              </div>
+            </>
+          )}
         </div>
       </DialogContent>
     </Dialog>

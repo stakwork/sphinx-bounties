@@ -6,7 +6,7 @@ import { ERROR_MESSAGES } from "@/lib/error-constants";
 import { db } from "@/lib/db";
 import { updateBountySchema } from "@/validations/bounty.schema";
 import { BountyStatus, BountyActivityAction, WorkspaceRole } from "@prisma/client";
-import type { BountyDetailsResponse, UpdateBountyResponse } from "@/types/bounty";
+import type { UpdateBountyResponse } from "@/types/bounty";
 
 /**
  * @swagger
@@ -206,45 +206,12 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       }
     }
 
-    const response: BountyDetailsResponse = {
-      id: bounty.id,
-      title: bounty.title,
-      description: bounty.description,
-      deliverables: bounty.deliverables,
-      amount: bounty.amount.toString(),
-      status: bounty.status,
-      tags: bounty.tags,
-      codingLanguages: bounty.codingLanguages,
-      estimatedHours: bounty.estimatedHours,
-      estimatedCompletionDate: bounty.estimatedCompletionDate?.toISOString() || null,
-      githubIssueUrl: bounty.githubIssueUrl,
-      loomVideoUrl: bounty.loomVideoUrl,
-      createdAt: bounty.createdAt.toISOString(),
-      updatedAt: bounty.updatedAt.toISOString(),
-      assignedAt: bounty.assignedAt?.toISOString() || null,
-      completedAt: bounty.completedAt?.toISOString() || null,
-      paidAt: bounty.paidAt?.toISOString() || null,
-      creator: bounty.creator,
-      assignee: bounty.assignee,
-      workspace: bounty.workspace,
-      proofs: bounty.proofs.map((proof) => ({
-        id: proof.id,
-        proofUrl: proof.proofUrl,
-        description: proof.description,
-        status: proof.status,
-        createdAt: proof.createdAt.toISOString(),
-        submitter: proof.submitter,
-      })),
-      activities: bounty.activities.map((activity) => ({
-        id: activity.id,
-        action: activity.action,
-        timestamp: activity.timestamp.toISOString(),
-        user: activity.user,
-      })),
-      _count: bounty._count,
+    const serializedBounty = {
+      ...bounty,
+      amount: Number(bounty.amount),
     };
 
-    return apiSuccess(response);
+    return apiSuccess(serializedBounty);
   } catch (error) {
     logApiError(error as Error, {
       url: `/api/bounties/[id]`,

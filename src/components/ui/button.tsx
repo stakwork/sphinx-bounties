@@ -54,6 +54,15 @@ function Button({
 }: ButtonProps) {
   const Comp = asChild ? Slot : "button";
 
+  const content = isLoading ? (
+    <>
+      <Loader2 className="animate-spin" />
+      {loadingText || children}
+    </>
+  ) : (
+    children
+  );
+
   return (
     <Comp
       data-slot="button"
@@ -61,10 +70,7 @@ function Button({
       disabled={disabled || isLoading}
       {...props}
     >
-      <>
-        {isLoading && <Loader2 className="animate-spin" />}
-        {isLoading && loadingText ? loadingText : children}
-      </>
+      {content}
     </Comp>
   );
 }
