@@ -17,7 +17,7 @@ import {
 import { FormSelect } from "@/components/forms";
 import { updateMemberRoleAction, removeMemberAction } from "@/actions";
 import { showSuccess, showError } from "@/lib/toast";
-import { WorkspaceRole } from "@prisma/client";
+import { WorkspaceRole } from "@/types/enums";
 
 const roleOptions = [
   { value: WorkspaceRole.OWNER, label: "Owner" },

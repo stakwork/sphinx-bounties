@@ -15,7 +15,12 @@ test.describe("Smoke Tests", () => {
 
     page.on("console", (msg) => {
       // Filter out expected React Server Component errors during development
-      if (msg.type() === "error" && !msg.text().includes("React.Children.only")) {
+      // Also filter out 401 errors from auth session checks (expected when not logged in)
+      if (
+        msg.type() === "error" &&
+        !msg.text().includes("React.Children.only") &&
+        !msg.text().includes("401 (Unauthorized)")
+      ) {
         errors.push(msg.text());
       }
     });

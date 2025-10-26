@@ -5,6 +5,7 @@ import { BountyStatus, BountyActivityAction } from "@prisma/client";
 import { apiSuccess, apiError, validateBody } from "@/lib/api";
 import { logApiError } from "@/lib/errors/logger";
 import { ErrorCode } from "@/types/error";
+import { mapProgrammingLanguages } from "@/lib/api/enum-mapper";
 
 /**
  * @swagger
@@ -364,7 +365,9 @@ export async function PATCH(
           deliverables: validatedData.deliverables,
           amount: validatedData.amount,
           tags: validatedData.tags,
-          codingLanguages: validatedData.codingLanguages,
+          codingLanguages: validatedData.codingLanguages
+            ? mapProgrammingLanguages(validatedData.codingLanguages)
+            : undefined,
           estimatedHours: validatedData.estimatedHours,
           estimatedCompletionDate: validatedData.estimatedCompletionDate,
           githubIssueUrl: validatedData.githubIssueUrl,

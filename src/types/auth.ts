@@ -1,4 +1,4 @@
-import type { WorkspaceRole } from "@prisma/client";
+import type { WorkspaceRole } from "./enums";
 
 export interface JWTPayload {
   pubkey: string;

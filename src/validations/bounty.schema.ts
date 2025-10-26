@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { BountyStatus, ProgrammingLanguage } from "@prisma/client";
+import { BountyStatus, ProgrammingLanguage } from "@/types/enums";
 import { LIMITS } from "@/constants";
 
 export const createBountySchema = z.object({

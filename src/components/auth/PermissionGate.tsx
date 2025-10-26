@@ -1,7 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
-import type { WorkspaceRole } from "@prisma/client";
+import type { WorkspaceRole } from "@/types/enums";
 import { usePermissions } from "@/hooks/use-permissions";
 import { useAuth } from "@/hooks/use-auth";
 

@@ -12,7 +12,7 @@ import { inviteMemberSchema } from "@/validations/workspace.schema";
 import { addMemberAction } from "@/actions";
 import { showSuccess, showError } from "@/lib/toast";
 import type { InviteMemberInput } from "@/validations/workspace.schema";
-import { WorkspaceRole } from "@prisma/client";
+import { WorkspaceRole } from "@/types/enums";
 
 const roleOptions = [
   { value: WorkspaceRole.CONTRIBUTOR, label: "Contributor" },
