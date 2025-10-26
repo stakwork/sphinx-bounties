@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Check, ChevronsUpDown, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { AvatarWithFallback } from "@/components/common";
 import { cn } from "@/lib/utils";
 
 const workspaces = [
@@ -22,9 +23,16 @@ export function WorkspaceSwitcher() {
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="w-[200px] justify-between"
+          className="w-[200px] justify-between bg-neutral-50/50 hover:bg-neutral-100/50 dark:bg-neutral-800/50 dark:hover:bg-neutral-700/50 border-neutral-200/50 dark:border-neutral-700/50"
         >
-          <span className="truncate">{selectedWorkspace.name}</span>
+          <div className="flex items-center gap-2 overflow-hidden">
+            <AvatarWithFallback
+              fallbackText={selectedWorkspace.name}
+              alt={selectedWorkspace.name}
+              size="sm"
+            />
+            <span className="truncate text-sm font-medium">{selectedWorkspace.name}</span>
+          </div>
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
@@ -32,33 +40,41 @@ export function WorkspaceSwitcher() {
         <div className="p-2">
           <div className="space-y-1">
             {workspaces.map((workspace) => (
-              <Button
+              <button
                 key={workspace.id}
-                variant="ghost"
-                className="w-full justify-start gap-2"
                 onClick={() => {
                   setSelectedWorkspace(workspace);
                   setOpen(false);
                 }}
+                className={cn(
+                  "flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors",
+                  "hover:bg-neutral-100 dark:hover:bg-neutral-800",
+                  selectedWorkspace.id === workspace.id && "bg-primary-50 dark:bg-primary-950/50"
+                )}
               >
-                <Check
-                  className={cn(
-                    "h-4 w-4",
-                    selectedWorkspace.id === workspace.id ? "opacity-100" : "opacity-0"
-                  )}
-                />
-                <div className="flex flex-1 flex-col items-start text-sm">
+                <AvatarWithFallback fallbackText={workspace.name} alt={workspace.name} size="sm" />
+                <div className="flex flex-1 flex-col items-start">
                   <span className="font-medium">{workspace.name}</span>
-                  <span className="text-xs text-muted-foreground">{workspace.role}</span>
+                  <span className="text-xs text-neutral-500 dark:text-neutral-400">
+                    {workspace.role}
+                  </span>
                 </div>
-              </Button>
+                {selectedWorkspace.id === workspace.id && (
+                  <Check className="h-4 w-4 text-primary-600 dark:text-primary-400" />
+                )}
+              </button>
             ))}
           </div>
-          <div className="mt-2 border-t pt-2">
-            <Button variant="ghost" className="w-full justify-start gap-2" size="sm">
-              <Plus className="h-4 w-4" />
+          <div className="mt-2 border-t border-neutral-200 pt-2 dark:border-neutral-800">
+            <button
+              className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-neutral-700 transition-colors hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-neutral-800"
+              onClick={() => setOpen(false)}
+            >
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg border-2 border-dashed border-neutral-300 dark:border-neutral-700">
+                <Plus className="h-4 w-4" />
+              </div>
               <span>Create Workspace</span>
-            </Button>
+            </button>
           </div>
         </div>
       </PopoverContent>

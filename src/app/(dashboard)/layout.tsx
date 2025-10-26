@@ -23,7 +23,9 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
           onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
           onToggleMobileMenu={() => setMobileMenuOpen(true)}
         />
-        <main className="flex-1 overflow-y-auto bg-muted/10 p-4 sm:p-6">{children}</main>
+        <main className="flex-1 overflow-y-auto bg-neutral-50/50 p-4 sm:p-6 dark:bg-neutral-950/50">
+          {children}
+        </main>
       </div>
     </div>
   );

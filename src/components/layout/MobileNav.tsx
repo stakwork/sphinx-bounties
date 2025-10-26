@@ -7,16 +7,16 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import { Target, Building, Users, Trophy, Settings, Zap } from "lucide-react";
+import { LayoutDashboard, Target, Building, Trophy, Settings } from "lucide-react";
 
 const navItems = [
-  { label: "Bounties", href: "/bounties", icon: Target },
-  { label: "Workspaces", href: "/workspaces", icon: Building },
-  { label: "People", href: "/people", icon: Users },
+  { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+  { label: "Bounties", href: "/dashboard/bounties", icon: Target },
+  { label: "Workspaces", href: "/dashboard/workspaces", icon: Building },
   { label: "Leaderboard", href: "/leaderboard", icon: Trophy },
 ];
 
-const secondaryItems = [{ label: "Settings", href: "/settings", icon: Settings }];
+const secondaryItems = [{ label: "Settings", href: "/profile/settings", icon: Settings }];
 
 interface MobileNavProps {
   open: boolean;
@@ -29,12 +29,14 @@ export function MobileNav({ open, onOpenChange }: MobileNavProps) {
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="left" className="w-64 p-0">
-        <SheetHeader className="border-b px-4 py-3">
+        <SheetHeader className="border-b border-neutral-200/50 px-4 py-3 dark:border-neutral-800/50">
           <SheetTitle className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-500 text-primary-foreground">
-              <Zap className="h-5 w-5" />
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-primary-500 to-primary-600 shadow-sm">
+              <Trophy className="h-5 w-5 text-white" />
             </div>
-            <span className="text-lg font-semibold">Sphinx</span>
+            <span className="text-lg font-semibold text-neutral-900 dark:text-neutral-100">
+              Sphinx
+            </span>
           </SheetTitle>
         </SheetHeader>
 

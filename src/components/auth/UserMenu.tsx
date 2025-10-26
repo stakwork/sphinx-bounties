@@ -12,7 +12,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { AvatarWithFallback } from "@/components/common";
 import { User, LogOut, Settings, Loader2 } from "lucide-react";
 
 export function UserMenu() {
@@ -39,36 +39,19 @@ export function UserMenu() {
     setIsOpen(false);
   };
 
-  const getInitials = () => {
-    if (user.alias) {
-      return user.alias
-        .split(" ")
-        .map((n) => n[0])
-        .join("")
-        .toUpperCase()
-        .slice(0, 2);
-    }
-    if (user.username) {
-      return user.username.slice(0, 2).toUpperCase();
-    }
-    return user.pubkey.slice(0, 2).toUpperCase();
-  };
-
   const displayName = user.alias || user.username || `${user.pubkey.slice(0, 8)}...`;
+  const fallbackText = user.alias || user.username || user.pubkey;
 
   return (
     <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
       <DropdownMenuTrigger asChild>
-        <Button
-          variant="ghost"
-          className="relative h-10 w-10 rounded-full ring-2 ring-primary-100 hover:ring-primary-200 transition-all duration-200"
-        >
-          <Avatar className="h-10 w-10">
-            <AvatarImage src={user.avatarUrl || undefined} alt={displayName} />
-            <AvatarFallback className="bg-gradient-to-br from-primary-500 to-primary-600 text-white font-semibold">
-              {getInitials()}
-            </AvatarFallback>
-          </Avatar>
+        <Button variant="ghost" className="relative h-10 w-10 rounded-full p-0">
+          <AvatarWithFallback
+            src={user.avatarUrl || undefined}
+            alt={displayName}
+            fallbackText={fallbackText}
+            size="md"
+          />
         </Button>
       </DropdownMenuTrigger>
 
@@ -76,12 +59,12 @@ export function UserMenu() {
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-2">
             <div className="flex items-center space-x-3">
-              <Avatar className="h-12 w-12">
-                <AvatarImage src={user.avatarUrl || undefined} alt={displayName} />
-                <AvatarFallback className="bg-gradient-to-br from-primary-500 to-primary-600 text-white font-semibold">
-                  {getInitials()}
-                </AvatarFallback>
-              </Avatar>
+              <AvatarWithFallback
+                src={user.avatarUrl || undefined}
+                alt={displayName}
+                fallbackText={fallbackText}
+                size="lg"
+              />
               <div className="flex flex-col space-y-1">
                 <p className="text-sm font-semibold text-neutral-900 leading-none">{displayName}</p>
                 {user.username && user.alias && (
