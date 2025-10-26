@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -48,6 +48,18 @@ export function BountyProofs({ bounty }: BountyProofsProps) {
 
   const isAssignee = user && bounty.assignee && bounty.assignee.pubkey === user.pubkey;
   const canSubmitProof = isAssignee && bounty.status === "ASSIGNED";
+
+  // Listen for custom event to open proof submission modal
+  useEffect(() => {
+    const handleOpenProofSubmission = () => {
+      if (canSubmitProof) {
+        setIsSubmitModalOpen(true);
+      }
+    };
+
+    window.addEventListener("openProofSubmission", handleOpenProofSubmission);
+    return () => window.removeEventListener("openProofSubmission", handleOpenProofSubmission);
+  }, [canSubmitProof]);
 
   // Fetch proofs
   const { data: proofsData, isLoading } = useQuery({
