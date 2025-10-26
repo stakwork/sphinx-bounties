@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { useAuth, usePermissions } from "@/hooks";
-import { assignBountyAction } from "@/actions/bounty-simple.actions";
 import { BountyStatus } from "@/types/enums";
 import type { BountyDetail } from "@/types";
 import { Loader2 } from "lucide-react";
@@ -23,7 +22,25 @@ export function BountyActions({ bounty }: BountyActionsProps) {
   const claimMutation = useMutation({
     mutationFn: async () => {
       if (!user) throw new Error("Not authenticated");
-      return await assignBountyAction(bounty.id, user.pubkey);
+
+      const response = await fetch(
+        `/api/workspaces/${bounty.workspace.id}/bounties/${bounty.id}/claim`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify({}),
+        }
+      );
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error?.message || "Failed to claim bounty");
+      }
+
+      return await response.json();
     },
     onMutate: async () => {
       // Optimistic update
@@ -73,8 +90,24 @@ export function BountyActions({ bounty }: BountyActionsProps) {
 
   const unclaimMutation = useMutation({
     mutationFn: async () => {
-      // TODO: Implement unclaim action
-      throw new Error("Unclaim not implemented yet");
+      const response = await fetch(
+        `/api/workspaces/${bounty.workspace.id}/bounties/${bounty.id}/unclaim`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify({}),
+        }
+      );
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error?.message || "Failed to unclaim bounty");
+      }
+
+      return await response.json();
     },
     onSuccess: () => {
       toast.success("Bounty unclaimed successfully!");
