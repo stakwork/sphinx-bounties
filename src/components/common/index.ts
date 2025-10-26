@@ -4,3 +4,6 @@ export { EmptyWorkspaces } from "./empty-workspaces";
 export { EmptyMembers } from "./empty-members";
 export { EmptyUsers } from "./empty-users";
 export { EmptySearch } from "./empty-search";
+export { StatusBadge } from "./StatusBadge";
+export { AvatarWithFallback } from "./AvatarWithFallback";
+export { CurrencyDisplay } from "./CurrencyDisplay";
