@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { WorkspaceCard } from "@/components/workspaces";
+import { WorkspaceCard, CreateWorkspaceModal } from "@/components/workspaces";
 import { useGetWorkspaces } from "@/hooks/queries/use-workspace-queries";
 import { useAuth } from "@/hooks";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,7 @@ export default function WorkspacesPage() {
   const { isAuthenticated } = useAuth();
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const limit = 12;
 
   const filters = {
@@ -47,11 +48,14 @@ export default function WorkspacesPage() {
           <h1 className="text-3xl font-bold">Workspaces</h1>
           <p className="text-neutral-600 mt-1">Manage your workspaces and teams</p>
         </div>
-        <Button size="lg" className="gap-2">
+        <Button size="lg" className="gap-2" onClick={() => setIsCreateModalOpen(true)}>
           <Plus className="h-5 w-5" />
           Create Workspace
         </Button>
       </div>
+
+      {/* Create Workspace Modal */}
+      <CreateWorkspaceModal open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen} />
 
       {/* Search */}
       <div className="flex flex-col sm:flex-row gap-4">
@@ -101,7 +105,7 @@ export default function WorkspacesPage() {
                   : "Get started by creating your first workspace to organize bounties and collaborate with your team."}
               </p>
               {!search && (
-                <Button size="lg" className="gap-2">
+                <Button size="lg" className="gap-2" onClick={() => setIsCreateModalOpen(true)}>
                   <Plus className="h-5 w-5" />
                   Create Your First Workspace
                 </Button>
