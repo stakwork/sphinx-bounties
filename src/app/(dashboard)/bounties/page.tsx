@@ -13,7 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Search, Plus } from "lucide-react";
+import { Search, Plus, ChevronLeft, ChevronRight } from "lucide-react";
 import type { BountyStatus } from "@/types/enums";
 import type { BountyListItem } from "@/types";
 import Link from "next/link";
@@ -21,13 +21,20 @@ import Link from "next/link";
 export default function BountiesPage() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<BountyStatus | "ALL">("ALL");
+  const [page, setPage] = useState(1);
+  const limit = 12;
 
   const filters = {
     status: statusFilter === "ALL" ? undefined : statusFilter,
     search: search || undefined,
   };
 
-  const { data, isLoading, error } = useGetBounties(filters);
+  const pagination = {
+    page,
+    limit,
+  };
+
+  const { data, isLoading, error } = useGetBounties(filters, pagination);
 
   return (
     <div className="space-y-6">
@@ -101,9 +108,81 @@ export default function BountiesPage() {
           )}
 
           {data.pagination && data.pagination.totalPages > 1 && (
-            <div className="flex justify-center gap-2">
+            <div className="flex flex-col items-center gap-4 pt-4">
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  disabled={page === 1}
+                >
+                  <ChevronLeft className="h-4 w-4 mr-1" />
+                  Previous
+                </Button>
+
+                <div className="flex items-center gap-1">
+                  {/* First page */}
+                  {page > 3 && (
+                    <>
+                      <Button
+                        variant={page === 1 ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setPage(1)}
+                        className="w-10"
+                      >
+                        1
+                      </Button>
+                      {page > 4 && <span className="px-2 text-neutral-500">...</span>}
+                    </>
+                  )}
+
+                  {/* Pages around current page */}
+                  {Array.from({ length: data.pagination.totalPages }, (_, i) => i + 1)
+                    .filter((p) => p >= page - 2 && p <= page + 2)
+                    .map((p) => (
+                      <Button
+                        key={p}
+                        variant={page === p ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setPage(p)}
+                        className="w-10"
+                      >
+                        {p}
+                      </Button>
+                    ))}
+
+                  {/* Last page */}
+                  {page < data.pagination.totalPages - 2 && (
+                    <>
+                      {page < data.pagination.totalPages - 3 && (
+                        <span className="px-2 text-neutral-500">...</span>
+                      )}
+                      <Button
+                        variant={page === data.pagination.totalPages ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setPage(data.pagination.totalPages)}
+                        className="w-10"
+                      >
+                        {data.pagination.totalPages}
+                      </Button>
+                    </>
+                  )}
+                </div>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPage((p) => Math.min(data.pagination.totalPages, p + 1))}
+                  disabled={page === data.pagination.totalPages}
+                >
+                  Next
+                  <ChevronRight className="h-4 w-4 ml-1" />
+                </Button>
+              </div>
+
               <p className="text-sm text-neutral-600">
-                Page {data.pagination.page} of {data.pagination.totalPages}
+                Page {data.pagination.page} of {data.pagination.totalPages} ({data.pagination.total}{" "}
+                total bounties)
               </p>
             </div>
           )}
