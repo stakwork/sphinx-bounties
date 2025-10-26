@@ -281,3 +281,42 @@ export interface UpdatePaymentStatusResponse {
     errorMessage: string | null;
   };
 }
+
+// Comment types
+export interface BountyComment {
+  id: string;
+  bountyId: string;
+  authorPubkey: string;
+  content: string;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
+  author: {
+    pubkey: string;
+    username: string;
+    alias: string | null;
+    avatarUrl: string | null;
+  };
+}
+
+export interface ListCommentsResponse {
+  items: BountyComment[];
+  pagination: {
+    page: number;
+    pageSize: number;
+    totalCount: number;
+    totalPages: number;
+  };
+}
+
+export interface CreateCommentResponse {
+  comment: BountyComment;
+}
+
+export interface UpdateCommentResponse {
+  comment: BountyComment;
+}
+
+export interface DeleteCommentResponse {
+  message: string;
+}
