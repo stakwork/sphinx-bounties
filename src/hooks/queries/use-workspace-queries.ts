@@ -1,9 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  workspaceQueries,
-  type WorkspaceFilters,
-  type WorkspaceSortParams,
-} from "@/services/workspace/queries";
+import { workspaceClient } from "@/lib/api/workspace-client";
+import type { WorkspaceFilters, WorkspaceSortParams } from "@/services/workspace/queries";
 import type { PaginationParams } from "@/types";
 import {
   createWorkspaceAction,
@@ -37,14 +34,14 @@ export function useGetWorkspaces(
 ) {
   return useQuery({
     queryKey: workspaceKeys.list(filters, pagination, sort),
-    queryFn: () => workspaceQueries.getAll(filters, pagination, sort),
+    queryFn: () => workspaceClient.getAll(filters, pagination, sort),
   });
 }
 
 export function useGetWorkspace(id: string, enabled = true) {
   return useQuery({
     queryKey: workspaceKeys.detail(id),
-    queryFn: () => workspaceQueries.getById(id),
+    queryFn: () => workspaceClient.getById(id),
     enabled: enabled && !!id,
   });
 }
@@ -56,7 +53,7 @@ export function useGetWorkspacesByOwner(
 ) {
   return useQuery({
     queryKey: workspaceKeys.owner(ownerPubkey),
-    queryFn: () => workspaceQueries.getByOwnerPubkey(ownerPubkey, pagination, sort),
+    queryFn: () => workspaceClient.getByOwnerPubkey(ownerPubkey, pagination, sort),
     enabled: !!ownerPubkey,
   });
 }
@@ -68,7 +65,7 @@ export function useGetWorkspacesByMember(
 ) {
   return useQuery({
     queryKey: workspaceKeys.member(memberPubkey),
-    queryFn: () => workspaceQueries.getByMemberPubkey(memberPubkey, pagination, sort),
+    queryFn: () => workspaceClient.getByMemberPubkey(memberPubkey, pagination, sort),
     enabled: !!memberPubkey,
   });
 }
@@ -76,7 +73,7 @@ export function useGetWorkspacesByMember(
 export function useGetWorkspaceMembers(workspaceId: string) {
   return useQuery({
     queryKey: workspaceKeys.members(workspaceId),
-    queryFn: () => workspaceQueries.getMembersByWorkspaceId(workspaceId),
+    queryFn: () => workspaceClient.getMembersByWorkspaceId(workspaceId),
     enabled: !!workspaceId,
   });
 }
@@ -84,7 +81,7 @@ export function useGetWorkspaceMembers(workspaceId: string) {
 export function useGetUserRole(workspaceId: string, userPubkey: string) {
   return useQuery({
     queryKey: workspaceKeys.userRole(workspaceId, userPubkey),
-    queryFn: () => workspaceQueries.getUserRole(workspaceId, userPubkey),
+    queryFn: () => workspaceClient.getUserRole(workspaceId, userPubkey),
     enabled: !!workspaceId && !!userPubkey,
   });
 }
@@ -92,7 +89,7 @@ export function useGetUserRole(workspaceId: string, userPubkey: string) {
 export function useGetWorkspaceBudget(workspaceId: string) {
   return useQuery({
     queryKey: workspaceKeys.budget(workspaceId),
-    queryFn: () => workspaceQueries.getBudget(workspaceId),
+    queryFn: () => workspaceClient.getBudget(workspaceId),
     enabled: !!workspaceId,
   });
 }

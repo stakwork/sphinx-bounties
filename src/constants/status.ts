@@ -13,8 +13,8 @@ export const BOUNTY_STATUS_CONFIG = {
   },
   [BountyStatus.OPEN]: {
     label: "Open",
-    color: colors.secondary[600],
-    bgColor: colors.secondary[100],
+    color: colors.secondary[700],
+    bgColor: colors.secondary[50],
     description: "Available for claiming",
     canClaim: true,
     canEdit: true,
@@ -22,8 +22,8 @@ export const BOUNTY_STATUS_CONFIG = {
   },
   [BountyStatus.ASSIGNED]: {
     label: "Assigned",
-    color: colors.primary[600],
-    bgColor: colors.primary[100],
+    color: colors.primary[700],
+    bgColor: colors.primary[50],
     description: "Claimed by a user",
     canClaim: false,
     canEdit: false,
@@ -31,8 +31,8 @@ export const BOUNTY_STATUS_CONFIG = {
   },
   [BountyStatus.IN_REVIEW]: {
     label: "In Review",
-    color: colors.tertiary[600],
-    bgColor: colors.tertiary[100],
+    color: colors.tertiary[700],
+    bgColor: colors.tertiary[50],
     description: "Awaiting verification",
     canClaim: false,
     canEdit: false,
@@ -40,7 +40,7 @@ export const BOUNTY_STATUS_CONFIG = {
   },
   [BountyStatus.COMPLETED]: {
     label: "Completed",
-    color: colors.secondary[700],
+    color: colors.secondary[800],
     bgColor: colors.secondary[100],
     description: "Verified and approved",
     canClaim: false,
@@ -49,8 +49,8 @@ export const BOUNTY_STATUS_CONFIG = {
   },
   [BountyStatus.PAID]: {
     label: "Paid",
-    color: colors.secondary[800],
-    bgColor: colors.secondary[100],
+    color: colors.tertiary[800],
+    bgColor: colors.tertiary[100],
     description: "Payment completed",
     canClaim: false,
     canEdit: false,

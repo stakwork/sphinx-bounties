@@ -1,9 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  bountyQueries,
-  type BountyFilters,
-  type BountySortParams,
-} from "@/services/bounty/queries";
+import { bountyClient } from "@/lib/api/bounty-client";
+import type { BountyFilters, BountySortParams } from "@/services/bounty/queries";
 import type { PaginationParams } from "@/types";
 import {
   createBountyAction,
@@ -35,14 +32,14 @@ export function useGetBounties(
 ) {
   return useQuery({
     queryKey: bountyKeys.list(filters, pagination, sort),
-    queryFn: () => bountyQueries.getAll(filters, pagination, sort),
+    queryFn: () => bountyClient.getAll(filters, pagination, sort),
   });
 }
 
 export function useGetBounty(id: string, enabled = true) {
   return useQuery({
     queryKey: bountyKeys.detail(id),
-    queryFn: () => bountyQueries.getById(id),
+    queryFn: () => bountyClient.getById(id),
     enabled: enabled && !!id,
   });
 }
@@ -54,7 +51,7 @@ export function useGetBountiesByWorkspace(
 ) {
   return useQuery({
     queryKey: bountyKeys.workspace(workspaceId),
-    queryFn: () => bountyQueries.getByWorkspaceId(workspaceId, pagination, sort),
+    queryFn: () => bountyClient.getByWorkspaceId(workspaceId, pagination, sort),
     enabled: !!workspaceId,
   });
 }
@@ -66,7 +63,7 @@ export function useGetBountiesByAssignee(
 ) {
   return useQuery({
     queryKey: bountyKeys.assignee(assigneePubkey),
-    queryFn: () => bountyQueries.getByAssigneePubkey(assigneePubkey, pagination, sort),
+    queryFn: () => bountyClient.getByAssigneePubkey(assigneePubkey, pagination, sort),
     enabled: !!assigneePubkey,
   });
 }
@@ -78,7 +75,7 @@ export function useGetBountiesByCreator(
 ) {
   return useQuery({
     queryKey: bountyKeys.creator(creatorPubkey),
-    queryFn: () => bountyQueries.getByCreatorPubkey(creatorPubkey, pagination, sort),
+    queryFn: () => bountyClient.getByCreatorPubkey(creatorPubkey, pagination, sort),
     enabled: !!creatorPubkey,
   });
 }
@@ -86,16 +83,16 @@ export function useGetBountiesByCreator(
 export function useGetBountyProofs(bountyId: string) {
   return useQuery({
     queryKey: bountyKeys.proofs(bountyId),
-    queryFn: () => bountyQueries.getProofsByBountyId(bountyId),
+    queryFn: () => bountyClient.getProofsByBountyId(bountyId),
     enabled: !!bountyId,
   });
 }
 
-export function useGetProof(proofId: string, enabled = true) {
+export function useGetProof(proofId: string, bountyId: string, enabled = true) {
   return useQuery({
     queryKey: bountyKeys.proof(proofId),
-    queryFn: () => bountyQueries.getProofById(proofId),
-    enabled: enabled && !!proofId,
+    queryFn: () => bountyClient.getProofById(proofId, bountyId),
+    enabled: enabled && !!proofId && !!bountyId,
   });
 }
 

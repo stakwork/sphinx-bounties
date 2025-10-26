@@ -73,7 +73,7 @@ export default function BountiesPage() {
       </div>
 
       {error && (
-        <div className="rounded-lg border border-accent-200 bg-accent-50 p-4 text-accent-700">
+        <div className="rounded-lg border border-neutral-200 bg-neutral-50 p-4 text-neutral-700 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-300">
           Failed to load bounties. Please try again.
         </div>
       )}
@@ -89,8 +89,8 @@ export default function BountiesPage() {
       {data && !isLoading && (
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {data.data.map((bounty) => (
-              <BountyCard key={bounty.id} bounty={bounty as BountyListItem} />
+            {data.data.map((bounty: BountyListItem) => (
+              <BountyCard key={bounty.id} bounty={bounty} />
             ))}
           </div>
 
