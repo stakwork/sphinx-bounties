@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { WorkspaceRole } from "@prisma/client";
+import { WorkspaceRole } from "@/types/enums";
 
 export const createWorkspaceSchema = z.object({
   name: z

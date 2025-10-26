@@ -14,7 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Search, Plus } from "lucide-react";
-import type { BountyStatus } from "@prisma/client";
+import type { BountyStatus } from "@/types/enums";
 import type { BountyListItem } from "@/types";
 import Link from "next/link";
 
@@ -89,8 +89,8 @@ export default function BountiesPage() {
       {data && !isLoading && (
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {data.data.map((bounty: BountyListItem) => (
-              <BountyCard key={bounty.id} bounty={bounty} />
+            {data.data.map((bounty) => (
+              <BountyCard key={bounty.id} bounty={bounty as BountyListItem} />
             ))}
           </div>
 

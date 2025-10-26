@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { WorkspaceRole } from "@prisma/client";
+import { WorkspaceRole } from "@/types/enums";
 import { useAuth } from "./use-auth";
 
 const ROLE_HIERARCHY: Record<WorkspaceRole, number> = {

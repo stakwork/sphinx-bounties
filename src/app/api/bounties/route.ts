@@ -12,10 +12,12 @@ import {
 import { ErrorCode } from "@/types/error";
 import { logApiError } from "@/lib/errors/logger";
 import { db } from "@/lib/db";
-import { BountyStatus, BountyActivityAction, WorkspaceRole } from "@prisma/client";
+import { BountyActivityAction, WorkspaceRole } from "@prisma/client";
+import { BountyStatus } from "@/types/enums";
 import { createBountySchema } from "@/validations/bounty.schema";
 import { ERROR_MESSAGES } from "@/lib/error-constants";
 import type { CreateBountyResponse } from "@/types/bounty";
+import { mapBountyStatus, mapProgrammingLanguages } from "@/lib/api/enum-mapper";
 
 const bountiesQuerySchema = paginationSchema.merge(sortSchema).extend({
   status: z.nativeEnum(BountyStatus).optional(),
@@ -350,13 +352,13 @@ export async function POST(request: NextRequest) {
           description: bountyData.description,
           deliverables: bountyData.deliverables,
           amount: bountyData.amount,
-          status: bountyData.status || BountyStatus.DRAFT,
+          status: mapBountyStatus(bountyData.status || BountyStatus.DRAFT),
           estimatedHours: bountyData.estimatedHours,
           estimatedCompletionDate: bountyData.estimatedCompletionDate,
           githubIssueUrl: bountyData.githubIssueUrl || null,
           loomVideoUrl: bountyData.loomVideoUrl || null,
           tags: bountyData.tags || [],
-          codingLanguages: bountyData.codingLanguages || [],
+          codingLanguages: mapProgrammingLanguages(bountyData.codingLanguages || []),
         },
         include: {
           creator: {
@@ -382,7 +384,7 @@ export async function POST(request: NextRequest) {
       return newBounty;
     });
 
-    const response: CreateBountyResponse = {
+    const response = {
       id: bounty.id,
       title: bounty.title,
       description: bounty.description,
@@ -395,7 +397,7 @@ export async function POST(request: NextRequest) {
       githubIssueUrl: bounty.githubIssueUrl,
       createdAt: bounty.createdAt.toISOString(),
       creator: bounty.creator,
-    };
+    } as CreateBountyResponse;
 
     return apiCreated(response);
   } catch (error) {

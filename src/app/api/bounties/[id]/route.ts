@@ -5,8 +5,14 @@ import { ErrorCode } from "@/types/error";
 import { ERROR_MESSAGES } from "@/lib/error-constants";
 import { db } from "@/lib/db";
 import { updateBountySchema } from "@/validations/bounty.schema";
-import { BountyStatus, BountyActivityAction, WorkspaceRole } from "@prisma/client";
+import {
+  BountyStatus as PrismaBountyStatus,
+  BountyActivityAction,
+  WorkspaceRole as PrismaWorkspaceRole,
+} from "@prisma/client";
+import { BountyStatus } from "@/types/enums";
 import type { UpdateBountyResponse } from "@/types/bounty";
+import { mapBountyStatus } from "@/lib/api/enum-mapper";
 
 /**
  * @swagger
@@ -281,8 +287,8 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     const workspaceMember = bounty.workspace.members[0];
     const isAdmin =
       workspaceMember &&
-      (workspaceMember.role === WorkspaceRole.ADMIN ||
-        workspaceMember.role === WorkspaceRole.OWNER);
+      (workspaceMember.role === PrismaWorkspaceRole.ADMIN ||
+        workspaceMember.role === PrismaWorkspaceRole.OWNER);
 
     if (!isCreator && !isAdmin) {
       return apiError(
@@ -297,22 +303,22 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     const { id: _id, status, ...updateData } = validationResult.data;
 
     if (status && status !== bounty.status) {
-      const validTransitions: Record<BountyStatus, BountyStatus[]> = {
-        [BountyStatus.DRAFT]: [BountyStatus.OPEN, BountyStatus.CANCELLED],
-        [BountyStatus.OPEN]: [BountyStatus.ASSIGNED, BountyStatus.CANCELLED],
-        [BountyStatus.ASSIGNED]: [
-          BountyStatus.OPEN,
-          BountyStatus.IN_REVIEW,
-          BountyStatus.CANCELLED,
+      const validTransitions: Record<string, string[]> = {
+        [PrismaBountyStatus.DRAFT]: [PrismaBountyStatus.OPEN, PrismaBountyStatus.CANCELLED],
+        [PrismaBountyStatus.OPEN]: [PrismaBountyStatus.ASSIGNED, PrismaBountyStatus.CANCELLED],
+        [PrismaBountyStatus.ASSIGNED]: [
+          PrismaBountyStatus.OPEN,
+          PrismaBountyStatus.IN_REVIEW,
+          PrismaBountyStatus.CANCELLED,
         ],
-        [BountyStatus.IN_REVIEW]: [
-          BountyStatus.ASSIGNED,
-          BountyStatus.PAID,
-          BountyStatus.CANCELLED,
+        [PrismaBountyStatus.IN_REVIEW]: [
+          PrismaBountyStatus.ASSIGNED,
+          PrismaBountyStatus.PAID,
+          PrismaBountyStatus.CANCELLED,
         ],
-        [BountyStatus.PAID]: [BountyStatus.COMPLETED],
-        [BountyStatus.COMPLETED]: [],
-        [BountyStatus.CANCELLED]: [],
+        [PrismaBountyStatus.PAID]: [PrismaBountyStatus.COMPLETED],
+        [PrismaBountyStatus.COMPLETED]: [],
+        [PrismaBountyStatus.CANCELLED]: [],
       };
 
       const allowedTransitions = validTransitions[bounty.status];
@@ -331,8 +337,8 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
       const updated = await tx.bounty.update({
         where: { id: bountyId },
         data: {
-          ...updateData,
-          ...(status && { status }),
+          ...(updateData as Record<string, unknown>),
+          ...(status && { status: mapBountyStatus(status) }),
           ...(status === BountyStatus.COMPLETED && { completedAt: new Date() }),
         },
       });
@@ -432,7 +438,7 @@ export async function DELETE(
 
     const isCreator = bounty.creatorPubkey === userPubkey;
     const workspaceMember = bounty.workspace.members[0];
-    const isOwner = workspaceMember && workspaceMember.role === WorkspaceRole.OWNER;
+    const isOwner = workspaceMember && workspaceMember.role === PrismaWorkspaceRole.OWNER;
 
     if (!isCreator && !isOwner) {
       return apiError(

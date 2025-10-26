@@ -7,6 +7,7 @@ import { apiError, apiCreated, apiPaginated, validateBody, validateQuery } from 
 import { logApiError } from "@/lib/errors/logger";
 import { ErrorCode } from "@/types/error";
 import { createBountySchema } from "@/validations/bounty.schema";
+import { mapBountyStatus, mapProgrammingLanguages } from "@/lib/api/enum-mapper";
 
 /**
  * @swagger
@@ -221,9 +222,9 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
           description: data.description,
           deliverables: data.deliverables,
           amount: data.amount,
-          status: data.status,
+          status: mapBountyStatus(data.status),
           tags: data.tags,
-          codingLanguages: data.codingLanguages,
+          codingLanguages: mapProgrammingLanguages(data.codingLanguages),
           estimatedHours: data.estimatedHours,
           estimatedCompletionDate: data.estimatedCompletionDate,
           githubIssueUrl: data.githubIssueUrl || null,

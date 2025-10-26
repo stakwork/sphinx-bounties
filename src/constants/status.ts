@@ -1,4 +1,4 @@
-import { BountyStatus, WorkspaceRole, ProofStatus } from "@prisma/client";
+import { BountyStatus, WorkspaceRole, ProofStatus } from "@/types/enums";
 import { colors } from "@/config/colors";
 
 export const BOUNTY_STATUS_CONFIG = {
