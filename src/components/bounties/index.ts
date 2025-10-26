@@ -4,3 +4,4 @@ export { BountyDetailModal } from "./BountyDetailModal";
 export { BountyActions } from "./BountyActions";
 export { BountyComments } from "./BountyComments";
 export { BountyProofs } from "./BountyProofs";
+export { BountyForm } from "./BountyForm";
