@@ -6,16 +6,16 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import { Target, Building, Users, Trophy, Settings, Zap } from "lucide-react";
+import { LayoutDashboard, Target, Building, Trophy, Settings } from "lucide-react";
 
 const navItems = [
-  { label: "Bounties", href: "/bounties", icon: Target },
-  { label: "Workspaces", href: "/workspaces", icon: Building },
-  { label: "People", href: "/people", icon: Users },
+  { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+  { label: "Bounties", href: "/dashboard/bounties", icon: Target },
+  { label: "Workspaces", href: "/dashboard/workspaces", icon: Building },
   { label: "Leaderboard", href: "/leaderboard", icon: Trophy },
 ];
 
-const secondaryItems = [{ label: "Settings", href: "/settings", icon: Settings }];
+const secondaryItems = [{ label: "Settings", href: "/profile/settings", icon: Settings }];
 
 interface DashboardSidebarProps {
   isCollapsed: boolean;
@@ -27,16 +27,24 @@ export function DashboardSidebar({ isCollapsed }: DashboardSidebarProps) {
   return (
     <div
       className={cn(
-        "flex h-full flex-col border-r bg-background transition-all duration-300",
+        "flex h-full flex-col border-r border-neutral-200/50 bg-white/80 backdrop-blur-xl transition-all duration-300",
+        "dark:border-neutral-800/50 dark:bg-neutral-900/80",
         isCollapsed ? "w-16" : "w-64"
       )}
     >
-      <div className={cn("flex h-14 items-center border-b px-4", isCollapsed && "justify-center")}>
-        <Link href="/" className="flex items-center gap-2 font-semibold">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-500 text-primary-foreground">
-            <Zap className="h-5 w-5" />
+      <div
+        className={cn(
+          "flex h-14 items-center border-b border-neutral-200/50 px-4 dark:border-neutral-800/50",
+          isCollapsed && "justify-center"
+        )}
+      >
+        <Link href="/dashboard" className="flex items-center gap-2 font-semibold">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-primary-500 to-primary-600 shadow-sm">
+            <Trophy className="h-5 w-5 text-white" />
           </div>
-          {!isCollapsed && <span className="text-lg">Sphinx</span>}
+          {!isCollapsed && (
+            <span className="text-lg text-neutral-900 dark:text-neutral-100">Sphinx</span>
+          )}
         </Link>
       </div>
 
