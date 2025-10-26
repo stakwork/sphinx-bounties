@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { workspaceClient } from "@/lib/api/workspace-client";
-import type { WorkspaceFilters, WorkspaceSortParams } from "@/services/workspace/queries";
+import type { WorkspaceFilters, WorkspaceSortParams } from "@/types/filters";
 import type { PaginationParams } from "@/types";
 import {
   createWorkspaceAction,

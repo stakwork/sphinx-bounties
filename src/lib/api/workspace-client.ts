@@ -1,4 +1,4 @@
-import type { WorkspaceFilters, WorkspaceSortParams } from "@/services/workspace/queries";
+import type { WorkspaceFilters, WorkspaceSortParams } from "@/types/filters";
 import type { PaginationParams } from "@/types";
 
 export const workspaceClient = {
