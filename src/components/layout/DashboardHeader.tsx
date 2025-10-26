@@ -2,9 +2,10 @@
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Bell, Menu, PanelLeftClose, PanelLeftOpen, Search } from "lucide-react";
+import { Menu, PanelLeftClose, PanelLeftOpen, Search } from "lucide-react";
 import { WorkspaceSwitcher } from "./WorkspaceSwitcher";
 import { UserMenu } from "@/components/auth/UserMenu";
+import { NotificationBell } from "./NotificationBell";
 
 interface DashboardHeaderProps {
   isCollapsed: boolean;
@@ -56,10 +57,7 @@ export function DashboardHeader({
       </div>
 
       <div className="flex items-center gap-2">
-        <Button variant="ghost" size="icon" className="relative">
-          <Bell className="h-5 w-5" />
-          <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-accent-500" />
-        </Button>
+        <NotificationBell />
         <UserMenu />
       </div>
     </header>
