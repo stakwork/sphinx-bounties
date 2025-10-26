@@ -24,6 +24,15 @@ export const userKeys = {
   profile: (pubkey: string) => [...userKeys.all, "profile", pubkey] as const,
   githubVerified: () => [...userKeys.all, "github-verified"] as const,
   twitterVerified: () => [...userKeys.all, "twitter-verified"] as const,
+  stats: (pubkey: string) => [...userKeys.all, "stats", pubkey] as const,
+  assignedBounties: (
+    pubkey: string,
+    pagination?: PaginationParams,
+    status?: string,
+    active?: boolean
+  ) => [...userKeys.all, "assigned-bounties", pubkey, { pagination, status, active }] as const,
+  createdBounties: (pubkey: string, pagination?: PaginationParams, status?: string) =>
+    [...userKeys.all, "created-bounties", pubkey, { pagination, status }] as const,
 };
 
 export function useGetUsers(
@@ -253,5 +262,38 @@ export function useVerifyTwitter() {
     onError: (error: Error) => {
       showError(error.message || "Failed to verify Twitter account");
     },
+  });
+}
+
+export function useGetUserStats(pubkey: string, enabled = true) {
+  return useQuery({
+    queryKey: userKeys.stats(pubkey),
+    queryFn: () => userClient.getStats(pubkey),
+    enabled: enabled && !!pubkey,
+  });
+}
+
+export function useGetUserAssignedBounties(
+  pubkey: string,
+  pagination?: PaginationParams,
+  status?: string,
+  active?: boolean
+) {
+  return useQuery({
+    queryKey: userKeys.assignedBounties(pubkey, pagination, status, active),
+    queryFn: () => userClient.getAssignedBounties(pubkey, pagination, status, active),
+    enabled: !!pubkey,
+  });
+}
+
+export function useGetUserCreatedBounties(
+  pubkey: string,
+  pagination?: PaginationParams,
+  status?: string
+) {
+  return useQuery({
+    queryKey: userKeys.createdBounties(pubkey, pagination, status),
+    queryFn: () => userClient.getCreatedBounties(pubkey, pagination, status),
+    enabled: !!pubkey,
   });
 }
