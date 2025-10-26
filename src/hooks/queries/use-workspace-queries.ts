@@ -94,6 +94,18 @@ export function useGetWorkspaceBudget(workspaceId: string) {
   });
 }
 
+export function useGetWorkspaceTransactions(
+  workspaceId: string,
+  pagination?: PaginationParams,
+  type?: string
+) {
+  return useQuery({
+    queryKey: [...workspaceKeys.all, "transactions", workspaceId, { pagination, type }] as const,
+    queryFn: () => workspaceClient.getTransactions(workspaceId, pagination, type),
+    enabled: !!workspaceId,
+  });
+}
+
 export function useCreateWorkspace() {
   const queryClient = useQueryClient();
 

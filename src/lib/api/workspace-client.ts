@@ -91,4 +91,24 @@ export const workspaceClient = {
     const result = await response.json();
     return result.data;
   },
+
+  async getTransactions(workspaceId: string, pagination?: PaginationParams, type?: string) {
+    const params = new URLSearchParams();
+
+    if (pagination?.page) params.append("page", pagination.page.toString());
+    if (pagination?.pageSize) params.append("perPage", pagination.pageSize.toString());
+    if (type) params.append("type", type);
+
+    const response = await fetch(
+      `/api/workspaces/${workspaceId}/transactions?${params.toString()}`
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || "Failed to fetch workspace transactions");
+    }
+
+    const result = await response.json();
+    return result.data;
+  },
 };
