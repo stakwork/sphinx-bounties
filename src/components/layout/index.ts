@@ -5,3 +5,4 @@ export { WorkspaceSwitcher } from "./WorkspaceSwitcher";
 export { Footer } from "./Footer";
 export { Breadcrumbs } from "./Breadcrumbs";
 export { MobileNav } from "./MobileNav";
+export { NotificationBell } from "./NotificationBell";
