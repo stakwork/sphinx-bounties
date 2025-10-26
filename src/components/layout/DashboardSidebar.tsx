@@ -9,9 +9,9 @@ import { Separator } from "@/components/ui/separator";
 import { LayoutDashboard, Target, Building, Trophy, Settings } from "lucide-react";
 
 const navItems = [
-  { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { label: "Bounties", href: "/dashboard/bounties", icon: Target },
-  { label: "Workspaces", href: "/dashboard/workspaces", icon: Building },
+  { label: "Dashboard", href: "/dashboard/analytics", icon: LayoutDashboard },
+  { label: "Bounties", href: "/bounties", icon: Target },
+  { label: "Workspaces", href: "/workspaces", icon: Building },
   { label: "Leaderboard", href: "/leaderboard", icon: Trophy },
 ];
 
@@ -38,7 +38,7 @@ export function DashboardSidebar({ isCollapsed }: DashboardSidebarProps) {
           isCollapsed && "justify-center"
         )}
       >
-        <Link href="/dashboard" className="flex items-center gap-2 font-semibold">
+        <Link href="/dashboard/analytics" className="flex items-center gap-2 font-semibold">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-primary-500 to-primary-600 shadow-sm">
             <Trophy className="h-5 w-5 text-white" />
           </div>

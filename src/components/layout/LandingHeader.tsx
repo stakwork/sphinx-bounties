@@ -51,7 +51,7 @@ export function LandingHeader() {
           <div className="flex items-center gap-4">
             {isAuthenticated ? (
               <>
-                <Link href="/dashboard">
+                <Link href="/bounties">
                   <Button variant="ghost" className="hidden sm:inline-flex">
                     Dashboard
                   </Button>

@@ -10,9 +10,9 @@ import { Separator } from "@/components/ui/separator";
 import { LayoutDashboard, Target, Building, Trophy, Settings } from "lucide-react";
 
 const navItems = [
-  { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { label: "Bounties", href: "/dashboard/bounties", icon: Target },
-  { label: "Workspaces", href: "/dashboard/workspaces", icon: Building },
+  { label: "Dashboard", href: "/dashboard/analytics", icon: LayoutDashboard },
+  { label: "Bounties", href: "/bounties", icon: Target },
+  { label: "Workspaces", href: "/workspaces", icon: Building },
   { label: "Leaderboard", href: "/leaderboard", icon: Trophy },
 ];
 
