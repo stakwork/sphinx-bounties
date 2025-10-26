@@ -79,4 +79,56 @@ export const userClient = {
     const result = await response.json();
     return result.data?.available || false;
   },
+
+  async getStats(pubkey: string) {
+    const response = await fetch(`/api/users/${pubkey}/stats`);
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || "Failed to fetch user stats");
+    }
+
+    const result = await response.json();
+    return result.data;
+  },
+
+  async getAssignedBounties(
+    pubkey: string,
+    pagination?: PaginationParams,
+    status?: string,
+    active?: boolean
+  ) {
+    const params = new URLSearchParams();
+    if (pagination?.page) params.append("page", pagination.page.toString());
+    if (pagination?.pageSize) params.append("limit", pagination.pageSize.toString());
+    if (status) params.append("status", status);
+    if (active !== undefined) params.append("active", active.toString());
+
+    const response = await fetch(`/api/users/${pubkey}/bounties/assigned?${params.toString()}`);
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || "Failed to fetch assigned bounties");
+    }
+
+    const result = await response.json();
+    return result.data;
+  },
+
+  async getCreatedBounties(pubkey: string, pagination?: PaginationParams, status?: string) {
+    const params = new URLSearchParams();
+    if (pagination?.page) params.append("page", pagination.page.toString());
+    if (pagination?.pageSize) params.append("limit", pagination.pageSize.toString());
+    if (status) params.append("status", status);
+
+    const response = await fetch(`/api/users/${pubkey}/bounties/created?${params.toString()}`);
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || "Failed to fetch created bounties");
+    }
+
+    const result = await response.json();
+    return result.data;
+  },
 };
