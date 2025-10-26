@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { userQueries, type UserFilters, type UserSortParams } from "@/services/user/queries";
+import { userClient } from "@/lib/api/user-client";
+import type { UserFilters, UserSortParams } from "@/services/user/queries";
 import type { PaginationParams } from "@/types";
 import {
   createUserAction,
@@ -32,14 +33,14 @@ export function useGetUsers(
 ) {
   return useQuery({
     queryKey: userKeys.list(filters, pagination, sort),
-    queryFn: () => userQueries.getAll(filters, pagination, sort),
+    queryFn: () => userClient.getAll(filters, pagination, sort),
   });
 }
 
 export function useGetUser(pubkey: string, enabled = true) {
   return useQuery({
     queryKey: userKeys.detail(pubkey),
-    queryFn: () => userQueries.getByPubkey(pubkey),
+    queryFn: () => userClient.getByPubkey(pubkey),
     enabled: enabled && !!pubkey,
   });
 }
@@ -47,7 +48,7 @@ export function useGetUser(pubkey: string, enabled = true) {
 export function useGetUserByUsername(username: string, enabled = true) {
   return useQuery({
     queryKey: userKeys.detailByUsername(username),
-    queryFn: () => userQueries.getByUsername(username),
+    queryFn: () => userClient.getByUsername(username),
     enabled: enabled && !!username,
   });
 }
@@ -55,7 +56,7 @@ export function useGetUserByUsername(username: string, enabled = true) {
 export function useGetUserProfile(pubkey: string, enabled = true) {
   return useQuery({
     queryKey: userKeys.profile(pubkey),
-    queryFn: () => userQueries.getProfileByPubkey(pubkey),
+    queryFn: () => userClient.getProfileByPubkey(pubkey),
     enabled: enabled && !!pubkey,
   });
 }
@@ -63,7 +64,7 @@ export function useGetUserProfile(pubkey: string, enabled = true) {
 export function useSearchUsers(query: string, pagination?: PaginationParams) {
   return useQuery({
     queryKey: [...userKeys.lists(), "search", query, pagination],
-    queryFn: () => userQueries.search(query, pagination),
+    queryFn: () => userClient.search(query, pagination),
     enabled: !!query && query.length >= 2,
   });
 }
@@ -71,21 +72,21 @@ export function useSearchUsers(query: string, pagination?: PaginationParams) {
 export function useGetGithubVerifiedUsers(pagination?: PaginationParams) {
   return useQuery({
     queryKey: userKeys.githubVerified(),
-    queryFn: () => userQueries.getGithubVerified(pagination),
+    queryFn: () => userClient.getGithubVerified(pagination),
   });
 }
 
 export function useGetTwitterVerifiedUsers(pagination?: PaginationParams) {
   return useQuery({
     queryKey: userKeys.twitterVerified(),
-    queryFn: () => userQueries.getTwitterVerified(pagination),
+    queryFn: () => userClient.getTwitterVerified(pagination),
   });
 }
 
 export function useCheckUsernameAvailability(username: string, excludePubkey?: string) {
   return useQuery({
     queryKey: [...userKeys.all, "username-available", username, excludePubkey],
-    queryFn: () => userQueries.isUsernameAvailable(username, excludePubkey),
+    queryFn: () => userClient.isUsernameAvailable(username, excludePubkey),
     enabled: !!username && username.length >= 3,
     staleTime: 1000 * 30, // 30 seconds
   });
