@@ -111,4 +111,22 @@ export const workspaceClient = {
     const result = await response.json();
     return result.data;
   },
+
+  async getActivities(workspaceId: string, pagination?: PaginationParams, action?: string) {
+    const params = new URLSearchParams();
+
+    if (pagination?.page) params.append("page", pagination.page.toString());
+    if (pagination?.pageSize) params.append("perPage", pagination.pageSize.toString());
+    if (action) params.append("action", action);
+
+    const response = await fetch(`/api/workspaces/${workspaceId}/activities?${params.toString()}`);
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || "Failed to fetch workspace activities");
+    }
+
+    const result = await response.json();
+    return result.data;
+  },
 };
