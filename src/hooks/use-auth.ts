@@ -83,10 +83,19 @@ export function useAuth() {
   const logoutMutation = useMutation({
     mutationFn: logout,
     onSuccess: () => {
+      // Immediately clear the user data from cache
       queryClient.setQueryData(["auth", "session"], null);
+      // Invalidate and refetch all queries to ensure fresh data
+      queryClient.invalidateQueries();
+      // Clear all cached data
       queryClient.clear();
       toast.success("Logged out successfully");
-      router.push("/");
+      // Use replace to prevent going back to authenticated pages
+      router.replace("/");
+      // Force a hard refresh after a short delay to ensure all state is cleared
+      setTimeout(() => {
+        window.location.href = "/";
+      }, 100);
     },
     onError: (error: Error) => {
       toast.error(error.message || "Failed to logout");
