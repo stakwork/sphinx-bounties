@@ -4,6 +4,8 @@ import { useGetBounty } from "@/hooks/queries/use-bounty-queries";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StatusBadge, CurrencyDisplay, AvatarWithFallback } from "@/components/common";
 import { BountyActions } from "./BountyActions";
+import { BountyComments } from "./BountyComments";
+import { BountyProofs } from "./BountyProofs";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, Clock, Building2 } from "lucide-react";
 
@@ -136,6 +138,16 @@ export function BountyDetail({ bountyId }: BountyDetailProps) {
 
         {/* Action Buttons */}
         <BountyActions bounty={bounty} />
+      </div>
+
+      {/* Proof Submissions Section */}
+      <div className="pt-6 border-t border-neutral-200">
+        <BountyProofs bounty={bounty} />
+      </div>
+
+      {/* Comments Section */}
+      <div className="pt-6 border-t border-neutral-200">
+        <BountyComments bounty={bounty} />
       </div>
     </div>
   );
