@@ -22,10 +22,6 @@ export default defineConfig({
       "**/.{idea,git,cache,output,temp}/**",
       "**/{karma,rollup,webpack,vite,vitest,jest,ava,babel,nyc,cypress,tsup,build,eslint,prettier}.config.*",
       "**/e2e/**",
-      // TODO: Update these tests to use API clients instead of service layer (PR #5)
-      "**/tests/unit/hooks/queries/use-bounty-queries.test.tsx",
-      "**/tests/unit/hooks/queries/use-user-queries.test.tsx",
-      "**/tests/unit/hooks/queries/use-workspace-queries.test.tsx",
     ],
   },
   resolve: {

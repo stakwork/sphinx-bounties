@@ -1,4 +1,4 @@
-import type { UserFilters, UserSortParams } from "@/services/user/queries";
+import type { UserFilters, UserSortParams } from "@/types/filters";
 import type { PaginationParams } from "@/types";
 
 export const userClient = {

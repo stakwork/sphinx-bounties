@@ -1,4 +1,4 @@
-import type { BountyFilters, BountySortParams } from "@/services/bounty/queries";
+import type { BountyFilters, BountySortParams } from "@/types/filters";
 import type { PaginationParams } from "@/types";
 
 export const bountyClient = {

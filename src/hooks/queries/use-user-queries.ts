@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { userClient } from "@/lib/api/user-client";
-import type { UserFilters, UserSortParams } from "@/services/user/queries";
+import type { UserFilters, UserSortParams } from "@/types/filters";
 import type { PaginationParams } from "@/types";
 import {
   createUserAction,

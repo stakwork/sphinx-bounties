@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { bountyClient } from "@/lib/api/bounty-client";
-import type { BountyFilters, BountySortParams } from "@/services/bounty/queries";
+import type { BountyFilters, BountySortParams } from "@/types/filters";
 import type { PaginationParams } from "@/types";
 import {
   createBountyAction,
