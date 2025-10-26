@@ -21,7 +21,15 @@ export async function setSessionCookie(pubkey: string): Promise<string> {
 
 export async function clearSessionCookie(): Promise<void> {
   const cookieStore = await cookies();
-  cookieStore.delete(AUTH_COOKIE_NAME);
+  // Delete with the same options as when setting to ensure proper clearing
+  cookieStore.set(AUTH_COOKIE_NAME, "", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    maxAge: 0,
+    path: "/",
+    expires: new Date(0),
+  });
 }
 
 export async function getSessionFromCookies(): Promise<Session | null> {
