@@ -144,7 +144,7 @@ describe("useAuth", () => {
       expect(result.current.isLoggingOut).toBe(false);
     });
 
-    expect(mockRouter.push).toHaveBeenCalledWith("/");
+    expect(mockRouter.replace).toHaveBeenCalledWith("/");
     expect(global.fetch).toHaveBeenCalledWith(
       "/api/auth/logout",
       expect.objectContaining({
