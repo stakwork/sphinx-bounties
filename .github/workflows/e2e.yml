@@ -11,6 +11,19 @@ jobs:
     name: Playwright E2E Tests
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:15
+        ports: [5432:5432]
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        options: >-
+          --health-cmd="pg_isready"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -29,6 +42,7 @@ jobs:
 
       - name: Run Playwright tests
         env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/postgres
           SKIP_ENV_VALIDATION: 1
         run: npm run test:e2e
 
