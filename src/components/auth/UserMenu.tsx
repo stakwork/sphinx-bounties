@@ -30,7 +30,7 @@ export function UserMenu() {
   };
 
   const handleProfile = () => {
-    router.push("/profile");
+    router.push("/settings/profile");
     setIsOpen(false);
   };
 

@@ -15,7 +15,7 @@ const navItems = [
   { label: "Leaderboard", href: "/leaderboard", icon: Trophy },
 ];
 
-const secondaryItems = [{ label: "Settings", href: "/profile/settings", icon: Settings }];
+const secondaryItems = [{ label: "Settings", href: "/settings", icon: Settings }];
 
 interface DashboardSidebarProps {
   isCollapsed: boolean;
