@@ -1,4 +1,5 @@
 import type { PaginationParams } from "@/types";
+import { apiFetch } from "@/lib/api/api-fetch";
 
 export const notificationClient = {
   async getAll(pagination?: PaginationParams, unreadOnly?: boolean, type?: string) {
@@ -8,7 +9,7 @@ export const notificationClient = {
     if (unreadOnly) params.append("unreadOnly", "true");
     if (type) params.append("type", type);
 
-    const response = await fetch(`/api/notifications?${params.toString()}`);
+    const response = await apiFetch(`/api/notifications?${params.toString()}`);
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
@@ -20,7 +21,7 @@ export const notificationClient = {
   },
 
   async markAsRead(notificationId: string) {
-    const response = await fetch(`/api/notifications/${notificationId}`, {
+    const response = await apiFetch(`/api/notifications/${notificationId}`, {
       method: "PATCH",
     });
 
@@ -33,7 +34,7 @@ export const notificationClient = {
   },
 
   async markAllAsRead() {
-    const response = await fetch("/api/notifications", {
+    const response = await apiFetch("/api/notifications", {
       method: "PATCH",
     });
 
@@ -46,7 +47,7 @@ export const notificationClient = {
   },
 
   async delete(notificationId: string) {
-    const response = await fetch(`/api/notifications/${notificationId}`, {
+    const response = await apiFetch(`/api/notifications/${notificationId}`, {
       method: "DELETE",
     });
 

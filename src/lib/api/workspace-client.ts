@@ -1,5 +1,6 @@
 import type { WorkspaceFilters, WorkspaceSortParams } from "@/types/filters";
 import type { PaginationParams } from "@/types";
+import { apiFetch } from "@/lib/api/api-fetch";
 
 export const workspaceClient = {
   async getAll(
@@ -16,7 +17,7 @@ export const workspaceClient = {
     if (filters?.ownerPubkey) params.append("owned", "true");
     if (filters?.search) params.append("search", filters.search);
 
-    const response = await fetch(`/api/workspaces?${params.toString()}`);
+    const response = await apiFetch(`/api/workspaces?${params.toString()}`);
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
@@ -28,7 +29,7 @@ export const workspaceClient = {
   },
 
   async getById(id: string) {
-    const response = await fetch(`/api/workspaces/${id}`);
+    const response = await apiFetch(`/api/workspaces/${id}`);
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
@@ -56,7 +57,7 @@ export const workspaceClient = {
   },
 
   async getMembersByWorkspaceId(workspaceId: string) {
-    const response = await fetch(`/api/workspaces/${workspaceId}/members`);
+    const response = await apiFetch(`/api/workspaces/${workspaceId}/members`);
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
@@ -68,7 +69,7 @@ export const workspaceClient = {
   },
 
   async getUserRole(workspaceId: string, userPubkey: string) {
-    const response = await fetch(`/api/workspaces/${workspaceId}/members`);
+    const response = await apiFetch(`/api/workspaces/${workspaceId}/members`);
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
@@ -81,7 +82,7 @@ export const workspaceClient = {
   },
 
   async getBudget(workspaceId: string) {
-    const response = await fetch(`/api/workspaces/${workspaceId}/budget`);
+    const response = await apiFetch(`/api/workspaces/${workspaceId}/budget`);
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
@@ -99,7 +100,7 @@ export const workspaceClient = {
     if (pagination?.pageSize) params.append("perPage", pagination.pageSize.toString());
     if (type) params.append("type", type);
 
-    const response = await fetch(
+    const response = await apiFetch(
       `/api/workspaces/${workspaceId}/transactions?${params.toString()}`
     );
 
@@ -119,7 +120,9 @@ export const workspaceClient = {
     if (pagination?.pageSize) params.append("perPage", pagination.pageSize.toString());
     if (action) params.append("action", action);
 
-    const response = await fetch(`/api/workspaces/${workspaceId}/activities?${params.toString()}`);
+    const response = await apiFetch(
+      `/api/workspaces/${workspaceId}/activities?${params.toString()}`
+    );
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
