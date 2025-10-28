@@ -1,5 +1,6 @@
 import type { BountyFilters, BountySortParams } from "@/types/filters";
 import type { PaginationParams } from "@/types";
+import { apiFetch } from "@/lib/api/api-fetch";
 
 export const bountyClient = {
   async getAll(filters?: BountyFilters, pagination?: PaginationParams, sort?: BountySortParams) {
@@ -15,7 +16,7 @@ export const bountyClient = {
     if (filters?.creatorPubkey) params.append("creatorPubkey", filters.creatorPubkey);
     if (filters?.search) params.append("search", filters.search);
 
-    const response = await fetch(`/api/bounties?${params.toString()}`);
+    const response = await apiFetch(`/api/bounties?${params.toString()}`);
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
@@ -27,7 +28,7 @@ export const bountyClient = {
   },
 
   async getById(id: string) {
-    const response = await fetch(`/api/bounties/${id}`);
+    const response = await apiFetch(`/api/bounties/${id}`);
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
@@ -63,7 +64,7 @@ export const bountyClient = {
   },
 
   async getProofsByBountyId(bountyId: string) {
-    const response = await fetch(`/api/bounties/${bountyId}/proofs`);
+    const response = await apiFetch(`/api/bounties/${bountyId}/proofs`);
 
     if (!response.ok) {
       throw new Error("Failed to fetch proofs");
@@ -73,7 +74,7 @@ export const bountyClient = {
   },
 
   async getProofById(proofId: string, bountyId: string) {
-    const response = await fetch(`/api/bounties/${bountyId}/proofs/${proofId}`);
+    const response = await apiFetch(`/api/bounties/${bountyId}/proofs/${proofId}`);
 
     if (!response.ok) {
       throw new Error("Failed to fetch proof");
