@@ -67,6 +67,40 @@ import { logError } from "@/lib/errors/logger";
  */
 export async function GET() {
   try {
+    if (process.env.NODE_ENV === "development" && process.env.NEXT_PUBLIC_MOCK_USER_PUBKEY) {
+      const mockPubkey = process.env.NEXT_PUBLIC_MOCK_USER_PUBKEY;
+      const user = await db.user.findUnique({
+        where: { pubkey: mockPubkey },
+        select: {
+          id: true,
+          pubkey: true,
+          username: true,
+          alias: true,
+          description: true,
+          avatarUrl: true,
+          githubUsername: true,
+          githubVerified: true,
+          twitterUsername: true,
+          twitterVerified: true,
+          createdAt: true,
+          lastLogin: true,
+        },
+      });
+      if (!user) {
+        return apiError(
+          {
+            code: ErrorCode.NOT_FOUND,
+            message: "Mock user not found",
+          },
+          404
+        );
+      }
+      return apiSuccess({
+        authenticated: true,
+        user,
+      });
+    }
+
     const session = await getSessionFromCookies();
 
     if (!session) {

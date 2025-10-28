@@ -83,16 +83,11 @@ export function useAuth() {
   const logoutMutation = useMutation({
     mutationFn: logout,
     onSuccess: () => {
-      // Immediately clear the user data from cache
       queryClient.setQueryData(["auth", "session"], null);
-      // Invalidate and refetch all queries to ensure fresh data
       queryClient.invalidateQueries();
-      // Clear all cached data
       queryClient.clear();
       toast.success("Logged out successfully");
-      // Use replace to prevent going back to authenticated pages
       router.replace("/");
-      // Force a hard refresh after a short delay to ensure all state is cleared
       setTimeout(() => {
         window.location.href = "/";
       }, 100);
@@ -101,6 +96,28 @@ export function useAuth() {
       toast.error(error.message || "Failed to logout");
     },
   });
+
+  if (
+    typeof window !== "undefined" &&
+    process.env.NODE_ENV === "development" &&
+    process.env.NEXT_PUBLIC_MOCK_USER_PUBKEY
+  ) {
+    return {
+      user: {
+        id: "mock-alice-id",
+        pubkey: process.env.NEXT_PUBLIC_MOCK_USER_PUBKEY,
+        username: "Alice",
+        alias: null,
+        avatarUrl: null,
+      },
+      isAuthenticated: true,
+      isLoading: false,
+      error: null,
+      logout: () => logoutMutation.mutate(),
+      isLoggingOut: logoutMutation.isPending,
+      refetch,
+    };
+  }
 
   return {
     user,
