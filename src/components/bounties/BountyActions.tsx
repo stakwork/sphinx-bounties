@@ -9,6 +9,7 @@ import { BountyStatus } from "@/types/enums";
 import type { BountyDetail } from "@/types";
 import { Loader2, Edit, Upload, CheckCircle, DollarSign } from "lucide-react";
 import Link from "next/link";
+import { apiFetch } from "@/lib/api/api-fetch";
 
 interface BountyActionsProps {
   bounty: BountyDetail;
@@ -23,24 +24,15 @@ export function BountyActions({ bounty }: BountyActionsProps) {
   const claimMutation = useMutation({
     mutationFn: async () => {
       if (!user) throw new Error("Not authenticated");
-
-      const response = await fetch(
-        `/api/workspaces/${bounty.workspace.id}/bounties/${bounty.id}/claim`,
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          credentials: "include",
-          body: JSON.stringify({}),
-        }
-      );
-
+      const response = await apiFetch(`/api/bounties/${bounty.id}/assign`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ assigneePubkey: user.pubkey }),
+      });
       if (!response.ok) {
         const error = await response.json();
         throw new Error(error.error?.message || "Failed to claim bounty");
       }
-
       return await response.json();
     },
     onMutate: async () => {
@@ -91,23 +83,14 @@ export function BountyActions({ bounty }: BountyActionsProps) {
 
   const unclaimMutation = useMutation({
     mutationFn: async () => {
-      const response = await fetch(
-        `/api/workspaces/${bounty.workspace.id}/bounties/${bounty.id}/unclaim`,
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          credentials: "include",
-          body: JSON.stringify({}),
-        }
-      );
-
+      const response = await apiFetch(`/api/bounties/${bounty.id}/assign`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+      });
       if (!response.ok) {
         const error = await response.json();
         throw new Error(error.error?.message || "Failed to unclaim bounty");
       }
-
       return await response.json();
     },
     onSuccess: () => {
