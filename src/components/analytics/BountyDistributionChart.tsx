@@ -11,10 +11,12 @@ interface BountyDistributionChartProps {
   };
 }
 
+import { colors } from "@/config/colors";
+
 const COLORS = {
-  open: "#3b82f6",
-  assigned: "#f59e0b",
-  completed: "#10b981",
+  open: colors.blue[600],
+  assigned: colors.yellow[600],
+  completed: colors.green[600],
 };
 
 export function BountyDistributionChart({ data }: BountyDistributionChartProps) {
