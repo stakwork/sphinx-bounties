@@ -128,7 +128,7 @@ async function main() {
   await db.workspaceMember.createMany({
     data: [
       { workspaceId: workspace2.id, userPubkey: TEST_USERS[1].pubkey, role: "OWNER" },
-      { workspaceId: workspace2.id, userPubkey: TEST_USERS[0].pubkey, role: "CONTRIBUTOR" },
+      { workspaceId: workspace2.id, userPubkey: TEST_USERS[0].pubkey, role: "ADMIN" },
       { workspaceId: workspace2.id, userPubkey: TEST_USERS[4].pubkey, role: "VIEWER" },
     ],
   });
@@ -157,6 +157,7 @@ async function main() {
     data: [
       { workspaceId: workspace3.id, userPubkey: TEST_USERS[2].pubkey, role: "OWNER" },
       { workspaceId: workspace3.id, userPubkey: TEST_USERS[3].pubkey, role: "CONTRIBUTOR" },
+      { workspaceId: workspace3.id, userPubkey: TEST_USERS[0].pubkey, role: "ADMIN" },
     ],
   });
 
