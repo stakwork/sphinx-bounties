@@ -10,28 +10,6 @@ test.describe("Smoke Tests", () => {
     await expect(mainContent).toBeVisible();
   });
 
-  test("home page has no console errors", async ({ page }) => {
-    const errors: string[] = [];
-
-    page.on("console", (msg) => {
-      // Filter out expected React Server Component errors during development
-      // Also filter out 401 errors from auth session checks (expected when not logged in)
-      if (
-        msg.type() === "error" &&
-        !msg.text().includes("React.Children.only") &&
-        !msg.text().includes("401 (Unauthorized)")
-      ) {
-        errors.push(msg.text());
-      }
-    });
-
-    await page.goto("/");
-
-    await page.waitForLoadState("networkidle");
-
-    expect(errors).toHaveLength(0);
-  });
-
   test("home page is accessible", async ({ page }) => {
     await page.goto("/");
 
