@@ -179,7 +179,7 @@ async function main() {
       creatorPubkey: TEST_USERS[0].pubkey,
       title: "Build Lightning Invoice QR Code Component",
       description:
-        "Create a React component that displays Lightning invoices as scannable QR codes with copy functionality.",
+        "Create a React component that displays Lightning invoices as scannable QR codes with copy functionality. This component should be visually appealing, easy to integrate, and optimized for both desktop and mobile experiences. Consider accessibility and responsiveness as top priorities, ensuring that users on any device can easily scan the QR code or copy the invoice string.\n\nThe component will be used in various payment flows, so it should support custom styling and theming. Include clear visual feedback for copy actions, error states for invalid invoices, and optional branding support. The final deliverable should be production-ready, well-tested, and documented for use by other teams.",
       deliverables:
         "- React component with TypeScript\n- QR code generation\n- Copy to clipboard button\n- Mobile responsive\n- Unit tests",
       amount: 25000,
@@ -194,7 +194,7 @@ async function main() {
       assigneePubkey: TEST_USERS[1].pubkey,
       title: "Implement Payment Verification Service",
       description:
-        "Backend service to verify Lightning Network payment confirmations and update payment status.",
+        "Backend service to verify Lightning Network payment confirmations and update payment status. The service should listen for payment events from an LND node, validate the authenticity of each payment, and update the corresponding records in the database. It must handle edge cases such as duplicate notifications, delayed settlements, and failed payments gracefully, ensuring data consistency at all times.\n\nRobust error handling and retry logic are essential, as is clear logging for monitoring and debugging. The service should be designed for scalability, with configuration options for different environments. Integration tests should cover all major flows, and the codebase should be easy to maintain and extend for future Lightning features.",
       deliverables:
         "- Node.js service\n- LND integration\n- Payment webhook handling\n- Error handling & retry logic\n- Integration tests",
       amount: 50000,
