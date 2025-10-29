@@ -1,6 +1,7 @@
 import type { WorkspaceFilters, WorkspaceSortParams } from "@/types/filters";
 import type { PaginationParams } from "@/types";
 import { apiFetch } from "@/lib/api/api-fetch";
+import { API_ROUTES } from "@/constants/api";
 
 export const workspaceClient = {
   async getAll(
@@ -17,7 +18,7 @@ export const workspaceClient = {
     if (filters?.ownerPubkey) params.append("owned", "true");
     if (filters?.search) params.append("search", filters.search);
 
-    const response = await apiFetch(`/api/workspaces?${params.toString()}`);
+    const response = await apiFetch(`${API_ROUTES.WORKSPACES.BASE}?${params.toString()}`);
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
@@ -29,7 +30,7 @@ export const workspaceClient = {
   },
 
   async getById(id: string) {
-    const response = await apiFetch(`/api/workspaces/${id}`);
+    const response = await apiFetch(API_ROUTES.WORKSPACES.BY_ID(id));
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
@@ -57,7 +58,7 @@ export const workspaceClient = {
   },
 
   async getMembersByWorkspaceId(workspaceId: string) {
-    const response = await apiFetch(`/api/workspaces/${workspaceId}/members`);
+    const response = await apiFetch(API_ROUTES.WORKSPACES.MEMBERS(workspaceId));
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
@@ -69,7 +70,7 @@ export const workspaceClient = {
   },
 
   async getUserRole(workspaceId: string, userPubkey: string) {
-    const response = await apiFetch(`/api/workspaces/${workspaceId}/members`);
+    const response = await apiFetch(API_ROUTES.WORKSPACES.MEMBERS(workspaceId));
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
@@ -82,7 +83,7 @@ export const workspaceClient = {
   },
 
   async getBudget(workspaceId: string) {
-    const response = await apiFetch(`/api/workspaces/${workspaceId}/budget`);
+    const response = await apiFetch(`${API_ROUTES.WORKSPACES.BY_ID(workspaceId)}/budget`);
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
@@ -101,7 +102,7 @@ export const workspaceClient = {
     if (type) params.append("type", type);
 
     const response = await apiFetch(
-      `/api/workspaces/${workspaceId}/transactions?${params.toString()}`
+      `${API_ROUTES.WORKSPACES.BY_ID(workspaceId)}/transactions?${params.toString()}`
     );
 
     if (!response.ok) {
@@ -121,7 +122,7 @@ export const workspaceClient = {
     if (action) params.append("action", action);
 
     const response = await apiFetch(
-      `/api/workspaces/${workspaceId}/activities?${params.toString()}`
+      `${API_ROUTES.WORKSPACES.BY_ID(workspaceId)}/activities?${params.toString()}`
     );
 
     if (!response.ok) {
