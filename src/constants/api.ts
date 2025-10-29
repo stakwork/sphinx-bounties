@@ -29,6 +29,9 @@ export const API_ROUTES = {
     INVITES: (id: string) => `/api/workspaces/${id}/invites`,
   },
   PAYMENTS: {
+    BASE: "/api/payments",
+    BY_ID: (id: string) => `/api/payments/${id}`,
+    INVOICE: (id: string) => `/api/payments/${id}/invoice`,
     WEBHOOK: "/api/payments/webhook",
   },
   NOTIFICATIONS: {
