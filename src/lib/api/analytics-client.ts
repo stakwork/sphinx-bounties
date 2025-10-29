@@ -1,4 +1,5 @@
 import { apiFetch } from "@/lib/api/api-fetch";
+import { API_ROUTES } from "@/constants/api";
 export interface UserStats {
   totalEarned: string;
   bountiesCompleted: number;
@@ -45,7 +46,7 @@ export interface WorkspaceStats {
 
 export const analyticsClient = {
   async getUserStats(pubkey: string): Promise<UserStats> {
-    const response = await apiFetch(`/api/users/${pubkey}/stats`);
+    const response = await apiFetch(API_ROUTES.USERS.STATS(pubkey));
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
@@ -57,7 +58,7 @@ export const analyticsClient = {
   },
 
   async getWorkspaceStats(workspaceId: string): Promise<WorkspaceStats> {
-    const response = await apiFetch(`/api/admin/workspaces/${workspaceId}/stats`);
+    const response = await apiFetch(`${API_ROUTES.ADMIN.WORKSPACES}/${workspaceId}/stats`);
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
