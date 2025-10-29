@@ -4,9 +4,11 @@ export const WORKSPACE_HEADER_NAME = "x-workspace-id";
 
 export const COOKIE_MAX_AGE = 7 * 24 * 60 * 60;
 
+import { API_ROUTES } from "@/constants/api";
+
 export const PUBLIC_ROUTES = ["/", "/login", "/bounties", "/workspaces", "/people", "/leaderboard"];
 
-export const AUTH_ROUTES = ["/api/auth/challenge", "/api/auth/verify"];
+export const AUTH_ROUTES = [API_ROUTES.AUTH.CHALLENGE, API_ROUTES.AUTH.VERIFY];
 
 export const PROTECTED_ROUTES = ["/bounties/new", "/workspaces/new", "/settings", "/admin"];
 
