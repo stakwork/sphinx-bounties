@@ -1,10 +1,10 @@
 export const API_ROUTES = {
   AUTH: {
-    LOGIN: "/api/auth/login",
-    LOGOUT: "/api/auth/logout",
-    REGISTER: "/api/auth/register",
+    CHALLENGE: "/api/auth/challenge",
     VERIFY: "/api/auth/verify",
-    REFRESH: "/api/auth/refresh",
+    SESSION: "/api/auth/session",
+    LOGOUT: "/api/auth/logout",
+    DEV_LOGIN: "/api/auth/dev-login",
   },
   USERS: {
     BASE: "/api/users",
@@ -37,8 +37,9 @@ export const API_ROUTES = {
   NOTIFICATIONS: {
     BASE: "/api/notifications",
     BY_ID: (id: string) => `/api/notifications/${id}`,
-    READ: (id: string) => `/api/notifications/${id}/read`,
-    READ_ALL: "/api/notifications/read-all",
+    // API implements PATCH /api/notifications to mark all as read
+    READ: (id: string) => `/api/notifications/${id}`,
+    READ_ALL: "/api/notifications",
   },
   ADMIN: {
     USERS: "/api/admin/users",

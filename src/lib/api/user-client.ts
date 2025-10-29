@@ -1,6 +1,7 @@
 import type { UserFilters, UserSortParams } from "@/types/filters";
 import type { PaginationParams } from "@/types";
 import { apiFetch } from "@/lib/api/api-fetch";
+import { API_ROUTES } from "@/constants/api";
 
 export const userClient = {
   async getAll(filters?: UserFilters, pagination?: PaginationParams, sort?: UserSortParams) {
@@ -16,7 +17,7 @@ export const userClient = {
     if (filters?.twitterVerified !== undefined)
       params.append("twitterVerified", filters.twitterVerified.toString());
 
-    const response = await apiFetch(`/api/users?${params.toString()}`);
+    const response = await apiFetch(`${API_ROUTES.USERS.BASE}?${params.toString()}`);
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
@@ -28,7 +29,7 @@ export const userClient = {
   },
 
   async getByPubkey(pubkey: string) {
-    const response = await apiFetch(`/api/users/${pubkey}`);
+    const response = await apiFetch(API_ROUTES.USERS.BY_ID(pubkey));
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
@@ -40,7 +41,9 @@ export const userClient = {
   },
 
   async getByUsername(username: string) {
-    const response = await apiFetch(`/api/users?username=${username}`);
+    const response = await apiFetch(
+      `${API_ROUTES.USERS.BASE}?username=${encodeURIComponent(username)}`
+    );
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
@@ -71,7 +74,9 @@ export const userClient = {
     const params = new URLSearchParams({ username });
     if (excludePubkey) params.append("excludePubkey", excludePubkey);
 
-    const response = await apiFetch(`/api/users/username/available?${params.toString()}`);
+    const response = await apiFetch(
+      `${API_ROUTES.USERS.BASE}/username/available?${params.toString()}`
+    );
 
     if (!response.ok) {
       return false;
@@ -82,7 +87,7 @@ export const userClient = {
   },
 
   async getStats(pubkey: string) {
-    const response = await apiFetch(`/api/users/${pubkey}/stats`);
+    const response = await apiFetch(API_ROUTES.USERS.STATS(pubkey));
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
@@ -105,7 +110,9 @@ export const userClient = {
     if (status) params.append("status", status);
     if (active !== undefined) params.append("active", active.toString());
 
-    const response = await apiFetch(`/api/users/${pubkey}/bounties/assigned?${params.toString()}`);
+    const response = await apiFetch(
+      `${API_ROUTES.USERS.BY_ID(pubkey)}/bounties/assigned?${params.toString()}`
+    );
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
@@ -122,7 +129,9 @@ export const userClient = {
     if (pagination?.pageSize) params.append("limit", pagination.pageSize.toString());
     if (status) params.append("status", status);
 
-    const response = await apiFetch(`/api/users/${pubkey}/bounties/created?${params.toString()}`);
+    const response = await apiFetch(
+      `${API_ROUTES.USERS.BY_ID(pubkey)}/bounties/created?${params.toString()}`
+    );
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
