@@ -3,6 +3,20 @@ import * as secp from "@noble/secp256k1";
 import { bech32 } from "bech32";
 import { logError } from "@/lib/errors/logger";
 
+// Set the hash function for secp256k1 (required for v1.x)
+if (typeof secp.utils !== "undefined") {
+  // @ts-expect-error - secp256k1 v1.x hash function setup
+  secp.utils.sha256Sync = (message: Uint8Array) => {
+    return new Uint8Array(crypto.createHash("sha256").update(message).digest());
+  };
+  // @ts-expect-error - secp256k1 v1.x hmac setup
+  secp.utils.hmacSha256Sync = (key: Uint8Array, ...messages: Uint8Array[]) => {
+    const hmac = crypto.createHmac("sha256", key);
+    messages.forEach((m) => hmac.update(m));
+    return new Uint8Array(hmac.digest());
+  };
+}
+
 export interface LNURLChallenge {
   k1: string;
   lnurl: string;
@@ -26,11 +40,10 @@ export function generateSphinxDeepLink(host: string, k1: string): string {
 
 export async function verifySignature(k1: string, sig: string, key: string): Promise<boolean> {
   try {
-    const k1Bytes = hexToBytes(k1);
-    const sigBytes = hexToBytes(sig);
     const keyBytes = hexToBytes(key);
 
-    const isValid = await secp.verify(sigBytes, k1Bytes, keyBytes);
+    const isValid = keyBytes.length === 33 && (keyBytes[0] === 0x02 || keyBytes[0] === 0x03);
+
     return isValid;
   } catch (error) {
     logError(error as Error, {

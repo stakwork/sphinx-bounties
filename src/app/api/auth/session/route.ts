@@ -1,8 +1,9 @@
+import type { NextRequest } from "next/server";
 import { apiSuccess, apiError } from "@/lib/api";
-import { getSessionFromCookies } from "@/lib/auth/session";
+import { getSessionFromCookies, setSessionCookie } from "@/lib/auth/session";
 import { db } from "@/lib/db";
 import { ErrorCode } from "@/types/error";
-import { logError } from "@/lib/errors/logger";
+import { logApiError } from "@/lib/errors/logger";
 
 /**
  * @swagger
@@ -70,54 +71,100 @@ export async function GET() {
     const session = await getSessionFromCookies();
 
     if (!session) {
-      return apiError(
-        {
-          code: ErrorCode.UNAUTHORIZED,
-          message: "Not authenticated",
-        },
-        401
-      );
+      return apiError({ code: ErrorCode.UNAUTHORIZED, message: "No session found" }, 401);
     }
 
     const user = await db.user.findUnique({
       where: { pubkey: session.pubkey },
-      select: {
-        id: true,
-        pubkey: true,
-        username: true,
-        alias: true,
-        description: true,
-        avatarUrl: true,
-        githubUsername: true,
-        githubVerified: true,
-        twitterUsername: true,
-        twitterVerified: true,
-        createdAt: true,
-        lastLogin: true,
-      },
+      select: { id: true, pubkey: true, alias: true, username: true },
     });
 
     if (!user) {
-      return apiError(
-        {
-          code: ErrorCode.NOT_FOUND,
-          message: "User not found",
-        },
-        404
-      );
+      return apiError({ code: ErrorCode.UNAUTHORIZED, message: "User not found" }, 401);
     }
 
     return apiSuccess({
-      authenticated: true,
-      user,
+      user: {
+        id: user.id,
+        pubkey: user.pubkey,
+        alias: user.alias,
+        username: user.username,
+      },
+      session: { pubkey: user.pubkey },
     });
   } catch (error) {
-    logError(error as Error, { context: "session-fetch" });
+    logApiError(error as Error, { url: "/api/auth/session", method: "GET" });
     return apiError(
-      {
-        code: ErrorCode.INTERNAL_SERVER_ERROR,
-        message: "Failed to fetch session",
+      { code: ErrorCode.INTERNAL_SERVER_ERROR, message: "Failed to fetch session" },
+      500
+    );
+  }
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const { k1 } = body;
+
+    if (!k1 || typeof k1 !== "string") {
+      return apiError({ code: ErrorCode.BAD_REQUEST, message: "Missing or invalid k1" }, 400);
+    }
+
+    const challenge = await db.authChallenge.findUnique({
+      where: { k1 },
+    });
+
+    if (!challenge) {
+      return apiError({ code: ErrorCode.NOT_FOUND, message: "Challenge not found" }, 404);
+    }
+
+    if (!challenge.pubkey) {
+      return apiError({ code: ErrorCode.UNAUTHORIZED, message: "Challenge not verified yet" }, 401);
+    }
+
+    if (challenge.used) {
+      return apiError({ code: ErrorCode.BAD_REQUEST, message: "Challenge already used" }, 400);
+    }
+
+    if (new Date() > challenge.expiresAt) {
+      return apiError({ code: ErrorCode.BAD_REQUEST, message: "Challenge expired" }, 400);
+    }
+
+    const user = await db.user.upsert({
+      where: { pubkey: challenge.pubkey },
+      update: {
+        lastLogin: new Date(),
+        username: `user_${challenge.pubkey.slice(0, 8)}`,
       },
+      create: {
+        pubkey: challenge.pubkey,
+        username: `user_${challenge.pubkey.slice(0, 8)}`,
+        alias: `User_${challenge.pubkey.slice(0, 8)}`,
+        lastLogin: new Date(),
+      },
+      select: { id: true, pubkey: true, alias: true, username: true },
+    });
+
+    await db.authChallenge.update({
+      where: { k1 },
+      data: { used: true },
+    });
+
+    await setSessionCookie(user.pubkey);
+
+    return apiSuccess({
+      user: {
+        id: user.id,
+        pubkey: user.pubkey,
+        alias: user.alias,
+        username: user.username,
+      },
+      session: { pubkey: user.pubkey },
+    });
+  } catch (error) {
+    logApiError(error as Error, { url: "/api/auth/session", method: "POST" });
+    return apiError(
+      { code: ErrorCode.INTERNAL_SERVER_ERROR, message: "Failed to create session" },
       500
     );
   }
