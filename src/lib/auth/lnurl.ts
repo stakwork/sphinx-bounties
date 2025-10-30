@@ -1,5 +1,6 @@
 import crypto from "crypto";
 import * as secp from "@noble/secp256k1";
+import { bech32 } from "bech32";
 import { logError } from "@/lib/errors/logger";
 
 export interface LNURLChallenge {
@@ -13,8 +14,14 @@ export function generateChallenge(): string {
 }
 
 export function encodeLnurl(url: string): string {
-  const base64 = Buffer.from(url).toString("base64url");
-  return base64;
+  const words = bech32.toWords(Buffer.from(url, "utf8"));
+  const encoded = bech32.encode("lnurl", words, 2000);
+  return encoded.toUpperCase();
+}
+
+export function generateSphinxDeepLink(host: string, k1: string): string {
+  const timestamp = Date.now();
+  return `sphinx.chat://?action=auth&host=${host}&challenge=${k1}&ts=${timestamp}`;
 }
 
 export async function verifySignature(k1: string, sig: string, key: string): Promise<boolean> {

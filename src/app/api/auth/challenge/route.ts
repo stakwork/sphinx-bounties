@@ -1,6 +1,6 @@
 import type { NextRequest } from "next/server";
 import { apiSuccess, apiError } from "@/lib/api";
-import { generateChallenge, encodeLnurl } from "@/lib/auth/lnurl";
+import { generateChallenge, encodeLnurl, generateSphinxDeepLink } from "@/lib/auth/lnurl";
 import { db } from "@/lib/db";
 import { env } from "@/lib/env";
 import { ErrorCode } from "@/types/error";
@@ -61,11 +61,13 @@ export async function POST(request: NextRequest) {
 
     const callbackUrl = `${protocol}://${host}/api/auth/verify?tag=login&k1=${k1}&action=login`;
     const lnurl = encodeLnurl(callbackUrl);
+    const sphinxDeepLink = generateSphinxDeepLink(host, k1);
 
     return apiSuccess(
       {
         k1,
         lnurl,
+        sphinxDeepLink,
         expiresAt: expiresAt.toISOString(),
       },
       { requestId: request.headers.get("x-request-id") ?? undefined }
