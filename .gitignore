@@ -48,3 +48,5 @@ next-env.d.ts
 .ai/*.local.md
 .ai/*.local.*
 .cursorrules.local
+
+docs/*.md
