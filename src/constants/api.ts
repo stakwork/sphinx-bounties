@@ -44,6 +44,8 @@ export const API_ROUTES = {
   ADMIN: {
     WORKSPACES: "/api/admin/workspaces",
     WORKSPACES_STATS: (id: string) => `/api/admin/workspaces/${id}/stats`,
+    ANALYTICS: "/api/admin/analytics",
+    TRANSACTIONS: "/api/admin/transactions",
   },
 } as const;
 
