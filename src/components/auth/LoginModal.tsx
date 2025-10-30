@@ -65,23 +65,29 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
   }, [isOpen, challenge, isGenerating, generateChallenge]);
 
   useEffect(() => {
-    if (challenge?.k1 && !isVerifying) {
-      // Start polling after a short delay to let user see the QR code first
+    if (challenge?.k1 && !isVerifying && !verificationData) {
       const timer = setTimeout(() => {
         startVerification(challenge.k1);
       }, 1000);
 
       return () => clearTimeout(timer);
     }
-  }, [challenge, isVerifying, startVerification]);
+  }, [challenge?.k1, isVerifying, verificationData, startVerification]);
 
   useEffect(() => {
     if (verificationData) {
       onSuccess?.();
+      reset();
       onClose();
       router.push("/bounties");
     }
-  }, [verificationData, onSuccess, onClose, router]);
+  }, [verificationData, onSuccess, onClose, router, reset]);
+
+  useEffect(() => {
+    return () => {
+      reset();
+    };
+  }, [reset]);
 
   const handleClose = () => {
     reset();
@@ -155,7 +161,7 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
             <div className="relative flex flex-col items-center space-y-4">
               <div className="relative p-4 bg-white rounded-2xl shadow-lg ring-1 ring-primary-100 animate-pulse-soft">
                 <QRCodeSVG
-                  value={challenge.lnurl}
+                  value={challenge.sphinxDeepLink}
                   size={240}
                   level="M"
                   includeMargin={false}
@@ -216,7 +222,7 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
           <div className="flex flex-col items-center space-y-3 w-full">
             <Button
               onClick={handleLoginWithSphinx}
-              disabled={isGenerating || isVerifying || !challenge}
+              disabled={isGenerating || !challenge}
               className="w-full bg-primary-600 hover:bg-primary-700 text-white font-medium py-6 rounded-xl shadow-md hover:shadow-lg transition-all duration-200"
             >
               Login with Sphinx
@@ -225,7 +231,7 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
 
             <Button
               onClick={handleLoginWithLNAUTH}
-              disabled={isGenerating || isVerifying || !challenge}
+              disabled={isGenerating || !challenge}
               variant="outline"
               className="w-full border-2 border-primary-200 hover:border-primary-300 hover:bg-primary-50 text-primary-700 font-medium py-6 rounded-xl transition-all duration-200"
             >

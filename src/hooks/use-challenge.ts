@@ -65,15 +65,28 @@ async function pollVerification(k1: string, maxAttempts = 60, signal?: AbortSign
     }
 
     try {
-      const response = await fetch("/api/auth/session", {
+      const statusResponse = await fetch(`/api/auth/challenge/${k1}/status`, {
         credentials: "include",
         signal,
       });
 
-      if (response.ok) {
-        const result: VerifyResponse = await response.json();
-        if (result.success && result.data) {
-          return result.data;
+      if (statusResponse.ok) {
+        const statusResult = await statusResponse.json();
+        if (statusResult.success && statusResult.data?.authenticated) {
+          const sessionResponse = await fetch("/api/auth/session", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify({ k1 }),
+            signal,
+          });
+
+          if (sessionResponse.ok) {
+            const sessionResult: VerifyResponse = await sessionResponse.json();
+            if (sessionResult.success && sessionResult.data) {
+              return sessionResult.data;
+            }
+          }
         }
       }
     } catch (error) {
@@ -103,6 +116,12 @@ export function useChallenge() {
     mutationFn: (k1: string) => {
       abortControllerRef.current = new AbortController();
       return pollVerification(k1, 60, abortControllerRef.current.signal);
+    },
+    onSuccess: () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+        abortControllerRef.current = null;
+      }
     },
     onError: (error: Error) => {
       const message = error.message || "Authentication failed";

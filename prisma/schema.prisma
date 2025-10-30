@@ -458,6 +458,7 @@ model WorkspaceActivity {
 model AuthChallenge {
   id        String   @id @default(cuid())
   k1        String   @unique @db.VarChar(64)
+  pubkey    String?  @db.VarChar(66)
   createdAt DateTime @default(now())
   expiresAt DateTime
   used      Boolean  @default(false)
