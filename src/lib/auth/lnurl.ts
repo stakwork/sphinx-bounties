@@ -3,13 +3,10 @@ import * as secp from "@noble/secp256k1";
 import { bech32 } from "bech32";
 import { logError } from "@/lib/errors/logger";
 
-// Set the hash function for secp256k1 (required for v1.x)
 if (typeof secp.utils !== "undefined") {
-  // @ts-expect-error - secp256k1 v1.x hash function setup
   secp.utils.sha256Sync = (message: Uint8Array) => {
     return new Uint8Array(crypto.createHash("sha256").update(message).digest());
   };
-  // @ts-expect-error - secp256k1 v1.x hmac setup
   secp.utils.hmacSha256Sync = (key: Uint8Array, ...messages: Uint8Array[]) => {
     const hmac = crypto.createHmac("sha256", key);
     messages.forEach((m) => hmac.update(m));
