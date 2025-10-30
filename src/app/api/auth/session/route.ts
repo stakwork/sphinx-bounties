@@ -67,39 +67,6 @@ import { logError } from "@/lib/errors/logger";
  */
 export async function GET() {
   try {
-    if (process.env.NODE_ENV === "development") {
-      const user = await db.user.findUnique({
-        where: { pubkey: "02a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2" },
-        select: {
-          id: true,
-          pubkey: true,
-          username: true,
-          alias: true,
-          description: true,
-          avatarUrl: true,
-          githubUsername: true,
-          githubVerified: true,
-          twitterUsername: true,
-          twitterVerified: true,
-          createdAt: true,
-          lastLogin: true,
-        },
-      });
-      if (!user) {
-        return apiError(
-          {
-            code: ErrorCode.NOT_FOUND,
-            message: "Mock user not found",
-          },
-          404
-        );
-      }
-      return apiSuccess({
-        authenticated: true,
-        user,
-      });
-    }
-
     const session = await getSessionFromCookies();
 
     if (!session) {

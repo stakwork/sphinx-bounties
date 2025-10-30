@@ -43,6 +43,7 @@
     "@t3-oss/env-nextjs": "^0.13.8",
     "@tanstack/react-query": "^5.90.5",
     "@tanstack/react-query-devtools": "^5.90.2",
+    "bech32": "^2.0.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "jose": "^6.1.0",

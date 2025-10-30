@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { Loader2, ExternalLink, Zap } from "lucide-react";
+import { Loader2, ExternalLink, Zap, AlertCircle, RefreshCw } from "lucide-react";
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -51,7 +51,11 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
     isVerifying,
     startVerification,
     verificationData,
+    error,
+    hasError,
+    isTimeout,
     reset,
+    retry,
   } = useChallenge();
 
   useEffect(() => {
@@ -85,6 +89,12 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
   };
 
   const handleLoginWithSphinx = () => {
+    if (challenge?.sphinxDeepLink) {
+      window.location.href = challenge.sphinxDeepLink;
+    }
+  };
+
+  const handleLoginWithLNAUTH = () => {
     if (challenge?.lnurl) {
       window.location.href = challenge.lnurl;
     }
@@ -173,6 +183,33 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
                   <span className="font-medium">Scan with Sphinx to continue</span>
                 )}
               </div>
+
+              {hasError && (
+                <div className="w-full mt-4 p-4 bg-red-50 border border-red-200 rounded-xl">
+                  <div className="flex flex-col items-center gap-3">
+                    <AlertCircle className="h-5 w-5 text-red-600" />
+                    <div className="text-center">
+                      <p className="text-sm font-medium text-red-900">
+                        {isTimeout ? "Authentication Timeout" : "Authentication Failed"}
+                      </p>
+                      <p className="text-xs text-red-700 mt-1">
+                        {isTimeout
+                          ? "No response received after 2 minutes. Please try again."
+                          : error?.message || "Something went wrong. Please try again."}
+                      </p>
+                    </div>
+                    <Button
+                      onClick={retry}
+                      size="sm"
+                      variant="outline"
+                      className="border-red-300 hover:bg-red-100 text-red-700"
+                    >
+                      <RefreshCw className="h-4 w-4 mr-2" />
+                      Try Again
+                    </Button>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
@@ -187,7 +224,7 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
             </Button>
 
             <Button
-              onClick={handleLoginWithSphinx}
+              onClick={handleLoginWithLNAUTH}
               disabled={isGenerating || isVerifying || !challenge}
               variant="outline"
               className="w-full border-2 border-primary-200 hover:border-primary-300 hover:bg-primary-50 text-primary-700 font-medium py-6 rounded-xl transition-all duration-200"
