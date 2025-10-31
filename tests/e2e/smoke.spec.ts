@@ -1,6 +1,17 @@
 import { test, expect } from "@playwright/test";
 
 test.describe("Smoke Tests", () => {
+  test.beforeEach(async ({ context }) => {
+    await context.addCookies([
+      {
+        name: "gate-access",
+        value: "true",
+        domain: "localhost",
+        path: "/",
+      },
+    ]);
+  });
+
   test("home page loads successfully", async ({ page }) => {
     await page.goto("/");
 
