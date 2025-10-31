@@ -7,8 +7,8 @@ import { ErrorCode } from "@/types/error";
 import { logApiError } from "@/lib/errors/logger";
 
 const sphinxVerifySchema = z.object({
-  sig: z.string().min(1, "Signature is required"),
-  key: z.string().regex(/^[0-9a-f]{66}$/i, "Invalid public key format"),
+  verification_signature: z.string().min(1, "Signature is required"),
+  pubkey: z.string().regex(/^[0-9a-f]{66}$/i, "Invalid public key format"),
 });
 
 export async function POST(
@@ -17,37 +17,35 @@ export async function POST(
 ) {
   try {
     const { challenge } = await params;
-    const { searchParams } = new URL(request.url);
 
-    let sig = searchParams.get("sig");
-    let key = searchParams.get("key");
+    let verification_signature: string | null = null;
+    let pubkey: string | null = null;
 
-    if (!sig || !key) {
-      try {
-        const body = await request.json();
-        sig = body.verification_signature || body.sig || sig;
-        key = body.pubkey || body.key || key;
-      } catch {
-        const contentType = request.headers.get("content-type");
-        if (contentType?.includes("application/x-www-form-urlencoded")) {
-          const formData = await request.formData();
-          sig = formData.get("sig")?.toString() || sig;
-          key = formData.get("key")?.toString() || key;
-        }
-      }
-    }
-
-    if (!sig || !key) {
+    try {
+      const body = await request.json();
+      verification_signature = body.verification_signature || body.sig || null;
+      pubkey = body.pubkey || body.key || null;
+    } catch {
       return apiError(
         {
           code: ErrorCode.VALIDATION_ERROR,
-          message: "Missing sig or key parameters",
+          message: "Invalid request body",
         },
         400
       );
     }
 
-    const validation = sphinxVerifySchema.safeParse({ sig, key });
+    if (!verification_signature || !pubkey) {
+      return apiError(
+        {
+          code: ErrorCode.VALIDATION_ERROR,
+          message: "Missing verification_signature or pubkey",
+        },
+        400
+      );
+    }
+
+    const validation = sphinxVerifySchema.safeParse({ verification_signature, pubkey });
     if (!validation.success) {
       return apiError(
         {
@@ -58,7 +56,7 @@ export async function POST(
       );
     }
 
-    const { sig: validSig, key: validKey } = validation.data;
+    const { verification_signature: validSig } = validation.data;
 
     const authChallenge = await db.authChallenge.findUnique({
       where: { k1: challenge },
@@ -94,9 +92,9 @@ export async function POST(
       );
     }
 
-    const isValid = await verifySignature(challenge, validSig, validKey);
+    const verified = await verifySignature(challenge, validSig);
 
-    if (!isValid) {
+    if (!verified) {
       return apiError(
         {
           code: ErrorCode.INVALID_CREDENTIALS,
@@ -106,11 +104,14 @@ export async function POST(
       );
     }
 
+    // Use the recovered pubkey from the signature (this is the actual signing key)
+    const recoveredPubkey = verified.pubkey;
+
     const user = await db.user.upsert({
-      where: { pubkey: validKey },
+      where: { pubkey: recoveredPubkey },
       create: {
-        pubkey: validKey,
-        username: `user_${validKey.substring(0, 8)}`,
+        pubkey: recoveredPubkey,
+        username: `user_${recoveredPubkey.substring(0, 8)}`,
         lastLogin: new Date(),
       },
       update: {
@@ -120,7 +121,7 @@ export async function POST(
 
     await db.authChallenge.update({
       where: { k1: challenge },
-      data: { pubkey: validKey },
+      data: { pubkey: recoveredPubkey },
     });
 
     return apiSuccess({

@@ -8,7 +8,7 @@ import { API_ROUTES } from "@/constants/api";
 
 export const PUBLIC_ROUTES = ["/", "/login", "/bounties", "/workspaces", "/people", "/leaderboard"];
 
-export const AUTH_ROUTES = [API_ROUTES.AUTH.CHALLENGE, API_ROUTES.AUTH.VERIFY];
+export const AUTH_ROUTES = [API_ROUTES.AUTH.CHALLENGE];
 
 export const PROTECTED_ROUTES = ["/bounties/new", "/workspaces/new", "/settings", "/admin"];
 

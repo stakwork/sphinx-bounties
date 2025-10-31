@@ -1,7 +1,6 @@
 export const API_ROUTES = {
   AUTH: {
     CHALLENGE: "/api/auth/challenge",
-    VERIFY: "/api/auth/verify",
     SESSION: "/api/auth/session",
     LOGOUT: "/api/auth/logout",
     DEV_LOGIN: "/api/auth/dev-login",
