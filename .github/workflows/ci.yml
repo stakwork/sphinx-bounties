@@ -67,7 +67,7 @@ jobs:
       - name: Build project
         env:
           SKIP_ENV_VALIDATION: 1
-        run: npm run build
+        run: npm run build:dev
 
   test:
     name: Unit Tests
