@@ -1,5 +1,6 @@
-import { apiSuccess, apiError } from "@/lib/api";
-import { clearSessionCookie } from "@/lib/auth/session";
+import { NextResponse } from "next/server";
+import { apiError } from "@/lib/api";
+import { AUTH_COOKIE_NAME } from "@/lib/auth/constants";
 import { ErrorCode } from "@/types/error";
 import { logError } from "@/lib/errors/logger";
 
@@ -30,9 +31,21 @@ import { logError } from "@/lib/errors/logger";
  */
 export async function POST() {
   try {
-    clearSessionCookie();
+    const response = NextResponse.json({
+      success: true,
+      data: { message: "Logged out successfully" },
+      meta: { timestamp: new Date().toISOString() },
+    });
 
-    return apiSuccess({ message: "Logged out successfully" });
+    response.cookies.set(AUTH_COOKIE_NAME, "", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 0,
+      path: "/",
+    });
+
+    return response;
   } catch (error) {
     logError(error as Error, { context: "logout" });
     return apiError(
