@@ -14,6 +14,7 @@ export const mockUser = (overrides?: Partial<User>): User => {
     avatarUrl: overrides?.avatarUrl || null,
     contactKey: overrides?.contactKey || null,
     routeHint: overrides?.routeHint || null,
+    priceToMeet: overrides?.priceToMeet || null,
     githubUsername: overrides?.githubUsername || null,
     githubVerified: overrides?.githubVerified || false,
     twitterUsername: overrides?.twitterUsername || null,

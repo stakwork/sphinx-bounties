@@ -1,14 +1,17 @@
 import type { NextRequest } from "next/server";
 import { z } from "zod";
 import { apiSuccess, apiError } from "@/lib/api";
-import { verifySignature } from "@/lib/auth/lnurl";
+import { verifySphinxToken } from "@/lib/auth/lnurl";
 import { db } from "@/lib/db";
 import { ErrorCode } from "@/types/error";
 import { logApiError } from "@/lib/errors/logger";
 
 const sphinxVerifySchema = z.object({
-  verification_signature: z.string().min(1, "Signature is required"),
   pubkey: z.string().regex(/^[0-9a-f]{66}$/i, "Invalid public key format"),
+  alias: z.string().optional().nullable(),
+  photo_url: z.string().url().optional().nullable(),
+  route_hint: z.string().optional().nullable(),
+  price_to_meet: z.number().optional().nullable(),
 });
 
 export async function POST(
@@ -18,13 +21,21 @@ export async function POST(
   try {
     const { challenge } = await params;
 
-    let verification_signature: string | null = null;
-    let pubkey: string | null = null;
+    const token = request.nextUrl.searchParams.get("token");
 
+    if (!token) {
+      return apiError(
+        {
+          code: ErrorCode.VALIDATION_ERROR,
+          message: "Missing token parameter",
+        },
+        400
+      );
+    }
+
+    let body;
     try {
-      const body = await request.json();
-      verification_signature = body.verification_signature || body.sig || null;
-      pubkey = body.pubkey || body.key || null;
+      body = await request.json();
     } catch {
       return apiError(
         {
@@ -35,17 +46,26 @@ export async function POST(
       );
     }
 
-    if (!verification_signature || !pubkey) {
+    const { pubkey, alias, photo_url, route_hint, price_to_meet } = body;
+
+    if (!pubkey) {
       return apiError(
         {
           code: ErrorCode.VALIDATION_ERROR,
-          message: "Missing verification_signature or pubkey",
+          message: "Missing pubkey in request body",
         },
         400
       );
     }
 
-    const validation = sphinxVerifySchema.safeParse({ verification_signature, pubkey });
+    const validation = sphinxVerifySchema.safeParse({
+      pubkey,
+      alias,
+      photo_url,
+      route_hint,
+      price_to_meet,
+    });
+
     if (!validation.success) {
       return apiError(
         {
@@ -55,8 +75,6 @@ export async function POST(
         400
       );
     }
-
-    const { verification_signature: validSig } = validation.data;
 
     const authChallenge = await db.authChallenge.findUnique({
       where: { k1: challenge },
@@ -92,36 +110,41 @@ export async function POST(
       );
     }
 
-    const verified = await verifySignature(challenge, validSig);
+    const isValid = await verifySphinxToken(token, pubkey, true);
 
-    if (!verified) {
+    if (!isValid) {
       return apiError(
         {
           code: ErrorCode.INVALID_CREDENTIALS,
-          message: "Invalid signature",
+          message: "Invalid token signature",
         },
         401
       );
     }
 
-    // Use the recovered pubkey from the signature (this is the actual signing key)
-    const recoveredPubkey = verified.pubkey;
-
     const user = await db.user.upsert({
-      where: { pubkey: recoveredPubkey },
+      where: { pubkey },
       create: {
-        pubkey: recoveredPubkey,
-        username: `user_${recoveredPubkey.substring(0, 8)}`,
+        pubkey,
+        username: alias || `user_${pubkey.substring(0, 8)}`,
+        alias: alias || null,
+        avatarUrl: photo_url || null,
+        routeHint: route_hint || null,
+        priceToMeet: price_to_meet || null,
         lastLogin: new Date(),
       },
       update: {
+        alias: alias || undefined,
+        avatarUrl: photo_url || undefined,
+        routeHint: route_hint || undefined,
+        priceToMeet: price_to_meet || undefined,
         lastLogin: new Date(),
       },
     });
 
     await db.authChallenge.update({
       where: { k1: challenge },
-      data: { pubkey: recoveredPubkey },
+      data: { pubkey, used: true },
     });
 
     return apiSuccess({
