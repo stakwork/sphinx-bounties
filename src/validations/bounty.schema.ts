@@ -257,3 +257,18 @@ export type ProcessPaymentInput = z.infer<typeof processPaymentSchema>;
 export type UpdatePaymentStatusInput = z.infer<typeof updatePaymentStatusSchema>;
 export type CreateCommentInput = z.infer<typeof createCommentSchema>;
 export type UpdateCommentInput = z.infer<typeof updateCommentSchema>;
+
+// Bounty Request schemas
+export const createBountyRequestSchema = z.object({
+  message: z.string().max(1000, "Message must not exceed 1000 characters").trim().optional(),
+});
+
+export const reviewBountyRequestSchema = z.object({
+  action: z.enum(["approve", "reject"], {
+    message: "Action must be either 'approve' or 'reject'",
+  }),
+  reviewNote: z.string().max(500, "Review note must not exceed 500 characters").trim().optional(),
+});
+
+export type CreateBountyRequestInput = z.infer<typeof createBountyRequestSchema>;
+export type ReviewBountyRequestInput = z.infer<typeof reviewBountyRequestSchema>;
