@@ -10,6 +10,7 @@ import type { BountyDetail } from "@/types";
 import { Loader2, Edit, Upload, CheckCircle, DollarSign } from "lucide-react";
 import Link from "next/link";
 import { apiFetch } from "@/lib/api/api-fetch";
+import { API_ROUTES } from "@/constants";
 
 interface BountyActionsProps {
   bounty: BountyDetail;
@@ -24,7 +25,7 @@ export function BountyActions({ bounty }: BountyActionsProps) {
   const claimMutation = useMutation({
     mutationFn: async () => {
       if (!user) throw new Error("Not authenticated");
-      const response = await apiFetch(`/api/bounties/${bounty.id}/assign`, {
+      const response = await apiFetch(API_ROUTES.BOUNTIES.ASSIGN(bounty.id), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ assigneePubkey: user.pubkey }),
@@ -83,7 +84,7 @@ export function BountyActions({ bounty }: BountyActionsProps) {
 
   const unclaimMutation = useMutation({
     mutationFn: async () => {
-      const response = await apiFetch(`/api/bounties/${bounty.id}/assign`, {
+      const response = await apiFetch(API_ROUTES.BOUNTIES.UNASSIGN(bounty.id), {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
       });
@@ -127,12 +128,11 @@ export function BountyActions({ bounty }: BountyActionsProps) {
 
   const completeMutation = useMutation({
     mutationFn: async () => {
-      const response = await fetch(
-        `/api/workspaces/${bounty.workspace.id}/bounties/${bounty.id}/complete`,
+      const response = await apiFetch(
+        API_ROUTES.WORKSPACES.COMPLETE_BOUNTY(bounty.workspace.id, bounty.id),
         {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
-          credentials: "include",
         }
       );
 
@@ -156,12 +156,11 @@ export function BountyActions({ bounty }: BountyActionsProps) {
 
   const markPaidMutation = useMutation({
     mutationFn: async () => {
-      const response = await fetch(
-        `/api/workspaces/${bounty.workspace.id}/bounties/${bounty.id}/mark-paid`,
+      const response = await apiFetch(
+        API_ROUTES.WORKSPACES.MARK_PAID(bounty.workspace.id, bounty.id),
         {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
-          credentials: "include",
         }
       );
 
