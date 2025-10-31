@@ -76,7 +76,7 @@ export async function GET() {
 
     const user = await db.user.findUnique({
       where: { pubkey: session.pubkey },
-      select: { id: true, pubkey: true, alias: true, username: true },
+      select: { id: true, pubkey: true, alias: true, username: true, avatarUrl: true },
     });
 
     if (!user) {
@@ -90,6 +90,7 @@ export async function GET() {
         pubkey: user.pubkey,
         alias: user.alias,
         username: user.username,
+        avatarUrl: user.avatarUrl,
       },
     });
   } catch (error) {
@@ -122,33 +123,18 @@ export async function POST(request: NextRequest) {
       return apiError({ code: ErrorCode.UNAUTHORIZED, message: "Challenge not verified yet" }, 401);
     }
 
-    if (challenge.used) {
-      return apiError({ code: ErrorCode.BAD_REQUEST, message: "Challenge already used" }, 400);
-    }
-
     if (new Date() > challenge.expiresAt) {
       return apiError({ code: ErrorCode.BAD_REQUEST, message: "Challenge expired" }, 400);
     }
 
-    const user = await db.user.upsert({
+    const user = await db.user.findUnique({
       where: { pubkey: challenge.pubkey },
-      update: {
-        lastLogin: new Date(),
-        username: `user_${challenge.pubkey.slice(0, 8)}`,
-      },
-      create: {
-        pubkey: challenge.pubkey,
-        username: `user_${challenge.pubkey.slice(0, 8)}`,
-        alias: `User_${challenge.pubkey.slice(0, 8)}`,
-        lastLogin: new Date(),
-      },
-      select: { id: true, pubkey: true, alias: true, username: true },
+      select: { id: true, pubkey: true, alias: true, username: true, avatarUrl: true },
     });
 
-    await db.authChallenge.update({
-      where: { k1 },
-      data: { used: true },
-    });
+    if (!user) {
+      return apiError({ code: ErrorCode.NOT_FOUND, message: "User not found" }, 404);
+    }
 
     await setSessionCookie(user.pubkey);
 
@@ -159,6 +145,7 @@ export async function POST(request: NextRequest) {
         pubkey: user.pubkey,
         alias: user.alias,
         username: user.username,
+        avatarUrl: user.avatarUrl,
       },
     });
   } catch (error) {
