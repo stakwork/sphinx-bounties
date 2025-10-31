@@ -119,12 +119,28 @@ export async function verifySphinxToken(
 
     if (checkTimestamp) {
       const now = Math.floor(Date.now() / 1000);
+      const diff = now - timestamp;
 
       if (timestamp > now) {
+        logError(new Error("Token timestamp is in the future"), {
+          context: "timestamp-validation",
+          timestamp,
+          now,
+          diff,
+          claimedPubkey,
+        });
         return false;
       }
 
       if (timestamp < now - 300) {
+        logError(new Error("Token timestamp is too old"), {
+          context: "timestamp-validation",
+          timestamp,
+          now,
+          diff,
+          maxAge: 300,
+          claimedPubkey,
+        });
         return false;
       }
     }

@@ -15,7 +15,6 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       where: { k1 },
       select: {
         pubkey: true,
-        used: true,
         expiresAt: true,
       },
     });

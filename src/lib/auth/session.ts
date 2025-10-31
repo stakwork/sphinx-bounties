@@ -19,14 +19,15 @@ export async function setSessionCookie(pubkey: string): Promise<string> {
   return token;
 }
 
-export async function clearSessionCookie(): Promise<void> {
-  const cookieStore = await cookies();
-  cookieStore.delete(AUTH_COOKIE_NAME);
-}
+export async function getSession(request?: NextRequest): Promise<Session | null> {
+  let token: string | undefined;
 
-export async function getSessionFromCookies(): Promise<Session | null> {
-  const cookieStore = await cookies();
-  const token = cookieStore.get(AUTH_COOKIE_NAME)?.value;
+  if (request) {
+    token = request.cookies.get(AUTH_COOKIE_NAME)?.value;
+  } else {
+    const cookieStore = await cookies();
+    token = cookieStore.get(AUTH_COOKIE_NAME)?.value;
+  }
 
   if (!token) return null;
 
@@ -39,15 +40,5 @@ export async function getSessionFromCookies(): Promise<Session | null> {
   };
 }
 
-export async function verifySession(request: NextRequest): Promise<Session | null> {
-  const token = request.cookies.get(AUTH_COOKIE_NAME)?.value;
-  if (!token) return null;
-
-  const payload = await verifyJWT(token);
-  if (!payload) return null;
-
-  return {
-    pubkey: payload.pubkey,
-    expiresAt: new Date(payload.exp * 1000),
-  };
-}
+export const getSessionFromCookies = () => getSession();
+export const verifySession = (request: NextRequest) => getSession(request);

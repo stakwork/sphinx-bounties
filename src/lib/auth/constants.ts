@@ -1,8 +1,10 @@
+import { env } from "@/lib/env";
+
 export const AUTH_COOKIE_NAME = "sphinx_session";
 export const AUTH_HEADER_NAME = "x-user-pubkey";
 export const WORKSPACE_HEADER_NAME = "x-workspace-id";
 
-export const COOKIE_MAX_AGE = 7 * 24 * 60 * 60;
+export const COOKIE_MAX_AGE = env.JWT_EXPIRY_HOURS;
 
 import { API_ROUTES } from "@/constants/api";
 

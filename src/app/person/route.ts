@@ -7,9 +7,9 @@ import { logApiError } from "@/lib/errors/logger";
 
 const sphinxPersonSchema = z.object({
   pubkey: z.string().regex(/^[0-9a-f]{66}$/i, "Invalid public key format"),
-  route_hint: z.string().optional().nullable(),
   alias: z.string().optional().nullable(),
-  image_url: z.string().url().optional().nullable(),
+  photo_url: z.string().url().optional().nullable(),
+  route_hint: z.string().optional().nullable(),
   price_to_meet: z.number().optional().nullable(),
 });
 
@@ -28,39 +28,19 @@ async function handlePersonRequest(request: NextRequest) {
       );
     }
 
-    const pubkey = body.owner_pubkey || body.pubkey || null;
-    const alias = body.owner_alias || body.alias || null;
-    const route_hint = body.owner_route_hint || body.route_hint || null;
-    const image_url = body.img || body.image_url || body.photo_url || null;
-    const price_to_meet = body.price_to_meet || null;
-
-    if (!pubkey) {
-      return apiError(
-        {
-          code: ErrorCode.VALIDATION_ERROR,
-          message: "Missing pubkey parameter",
-        },
-        400
-      );
-    }
-
-    const validation = sphinxPersonSchema.safeParse({
-      pubkey,
-      alias,
-      route_hint,
-      image_url,
-      price_to_meet,
-    });
+    const validation = sphinxPersonSchema.safeParse(body);
 
     if (!validation.success) {
       return apiError(
         {
           code: ErrorCode.VALIDATION_ERROR,
-          message: validation.error.issues[0]?.message || "Invalid pubkey",
+          message: validation.error.issues[0]?.message || "Invalid request data",
         },
         400
       );
     }
+
+    const { pubkey, alias, photo_url, route_hint, price_to_meet } = validation.data;
 
     const user = await db.user.upsert({
       where: { pubkey },
@@ -69,29 +49,26 @@ async function handlePersonRequest(request: NextRequest) {
         username: alias || `user_${pubkey.slice(0, 8)}`,
         alias: alias || null,
         routeHint: route_hint || null,
-        avatarUrl: image_url || null,
+        avatarUrl: photo_url || null,
         priceToMeet: price_to_meet || null,
         lastLogin: new Date(),
       },
       update: {
         alias: alias || undefined,
         routeHint: route_hint || undefined,
-        avatarUrl: image_url || undefined,
+        avatarUrl: photo_url || undefined,
         priceToMeet: price_to_meet || undefined,
         lastLogin: new Date(),
       },
     });
 
     return apiSuccess({
-      success: true,
-      response: {
-        id: user.id,
-        pubkey: user.pubkey,
-        owner_alias: user.alias || user.username,
-        photo_url: user.avatarUrl || "",
-        description: user.description || "",
-        price_to_meet: user.priceToMeet || 0,
-      },
+      id: user.id,
+      pubkey: user.pubkey,
+      owner_alias: user.alias || user.username,
+      photo_url: user.avatarUrl || "",
+      description: user.description || "",
+      price_to_meet: user.priceToMeet || 0,
     });
   } catch (error) {
     logApiError(error as Error, {
@@ -109,9 +86,5 @@ async function handlePersonRequest(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  return handlePersonRequest(request);
-}
-
-export async function GET(request: NextRequest) {
   return handlePersonRequest(request);
 }
