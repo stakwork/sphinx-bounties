@@ -1,4 +1,9 @@
-import type { BountyStatus, ProgrammingLanguage } from "./enums";
+import type {
+  BountyStatus,
+  ProgrammingLanguage,
+  BountyRequestStatus,
+  BountyActivityAction,
+} from "./enums";
 import type { ApiResponse, PaginationMeta } from "./api";
 
 export interface BountiesResponse {
@@ -121,6 +126,7 @@ export interface BountyDetail {
       avatarUrl: string | null;
     };
   }>;
+  requests?: BountyRequest[];
 }
 
 export interface ClaimBountyResponse {
@@ -319,4 +325,77 @@ export interface UpdateCommentResponse {
 
 export interface DeleteCommentResponse {
   message: string;
+}
+
+export interface BountyRequest {
+  id: string;
+  bountyId: string;
+  requesterPubkey: string;
+  status: BountyRequestStatus;
+  message: string | null;
+  reviewedBy: string | null;
+  reviewedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+  requester: {
+    pubkey: string;
+    username: string;
+    alias: string | null;
+    avatarUrl: string | null;
+  };
+  reviewer: {
+    pubkey: string;
+    username: string;
+    alias: string | null;
+  } | null;
+}
+
+export interface CreateBountyRequestResponse {
+  message: string;
+  request: {
+    id: string;
+    bountyId: string;
+    status: BountyRequestStatus;
+    message: string | null;
+    createdAt: string;
+  };
+}
+
+export interface ListBountyRequestsResponse {
+  requests: BountyRequest[];
+  pagination: {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  };
+}
+
+export interface ReviewBountyRequestResponse {
+  message: string;
+  request: {
+    id: string;
+    status: BountyRequestStatus;
+    reviewedBy: string;
+    reviewedAt: string;
+  };
+}
+
+export interface DeleteBountyRequestResponse {
+  message: string;
+}
+
+export interface BountyActivity {
+  id: string;
+  bountyId: string;
+  userPubkey: string;
+  action: BountyActivityAction;
+  details: Record<string, unknown> | null;
+  timestamp: string;
+  user: {
+    pubkey: string;
+    username: string;
+    alias: string | null;
+    avatarUrl: string | null;
+  };
 }
