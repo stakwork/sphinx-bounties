@@ -16,6 +16,9 @@ export const API_ROUTES = {
     BY_ID: (id: string) => `/api/bounties/${id}`,
     ASSIGN: (id: string) => `/api/bounties/${id}/assign`,
     UNASSIGN: (id: string) => `/api/bounties/${id}/assign`,
+    REQUESTS: (id: string) => `/api/bounties/${id}/requests`,
+    REQUEST_BY_ID: (bountyId: string, requestId: string) =>
+      `/api/bounties/${bountyId}/requests/${requestId}`,
     COMMENTS: (id: string) => `/api/bounties/${id}/comments`,
     COMMENT_BY_ID: (bountyId: string, commentId: string) =>
       `/api/bounties/${bountyId}/comments/${commentId}`,
