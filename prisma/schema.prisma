@@ -42,6 +42,15 @@ enum BountyActivityAction {
   COMPLETED
   PAID
   CANCELLED
+  REQUESTED
+  REQUEST_APPROVED
+  REQUEST_REJECTED
+}
+
+enum BountyRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
 }
 
 enum ProgrammingLanguage {
@@ -153,6 +162,8 @@ model User {
   reviewedProofs      BountyProof[]       @relation("ProofReviewer")
   bountyActivities    BountyActivity[]    @relation("BountyActivityUser")
   bountyComments      BountyComment[]     @relation("BountyCommentAuthor")
+  bountyRequests      BountyRequest[]     @relation("BountyRequester")
+  reviewedRequests    BountyRequest[]     @relation("BountyRequestReviewer")
   transactionsFrom    Transaction[]       @relation("TransactionFromUser")
   transactionsTo      Transaction[]       @relation("TransactionToUser")
   createdCodes        ConnectionCode[]    @relation("ConnectionCodeCreator")
@@ -239,9 +250,10 @@ model Bounty {
   workspace    Workspace        @relation("WorkspaceBounties", fields: [workspaceId], references: [id], onDelete: Restrict)
   creator      User             @relation("BountyCreator", fields: [creatorPubkey], references: [pubkey], onDelete: Restrict)
   assignee     User?            @relation("BountyAssignee", fields: [assigneePubkey], references: [pubkey], onDelete: Restrict)
-  proofs        BountyProof[]        @relation("BountyProofs")
-  activities    BountyActivity[]     @relation("BountyActivities")
-  comments      BountyComment[]      @relation("BountyComments")
+  requests     BountyRequest[]  @relation("BountyRequests")
+  proofs       BountyProof[]    @relation("BountyProofs")
+  activities   BountyActivity[] @relation("BountyActivities")
+  comments     BountyComment[]  @relation("BountyComments")
   transactions Transaction[]    @relation("BountyTransactions")
 
   @@index([workspaceId])
@@ -310,6 +322,28 @@ model BountyComment {
   @@index([bountyId, createdAt(sort: Desc)])
   @@index([deletedAt])
   @@map("bounty_comments")
+}
+
+model BountyRequest {
+  id              String              @id @default(cuid())
+  bountyId        String
+  requesterPubkey String              @db.VarChar(66)
+  status          BountyRequestStatus @default(PENDING)
+  message         String?             @db.Text
+  reviewedBy      String?             @db.VarChar(66)
+  reviewedAt      DateTime?
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+
+  bounty    Bounty @relation("BountyRequests", fields: [bountyId], references: [id], onDelete: Cascade)
+  requester User   @relation("BountyRequester", fields: [requesterPubkey], references: [pubkey], onDelete: Cascade)
+  reviewer  User?  @relation("BountyRequestReviewer", fields: [reviewedBy], references: [pubkey], onDelete: Restrict)
+
+  @@unique([bountyId, requesterPubkey])
+  @@index([bountyId])
+  @@index([requesterPubkey])
+  @@index([status])
+  @@map("bounty_requests")
 }
 
 model WorkspaceBudget {
