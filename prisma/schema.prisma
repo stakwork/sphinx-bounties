@@ -135,6 +135,7 @@ model User {
   avatarUrl       String?   @db.VarChar(2048)
   contactKey      String?   @db.VarChar(66)
   routeHint       String?   @db.Text
+  priceToMeet     Int?
   githubUsername  String?   @db.VarChar(50)
   githubVerified  Boolean   @default(false)
   twitterUsername String?   @db.VarChar(50)

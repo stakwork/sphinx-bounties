@@ -7,15 +7,17 @@ import { logApiError } from "@/lib/errors/logger";
 
 const sphinxPersonSchema = z.object({
   pubkey: z.string().regex(/^[0-9a-f]{66}$/i, "Invalid public key format"),
+  route_hint: z.string().optional().nullable(),
+  alias: z.string().optional().nullable(),
+  image_url: z.string().url().optional().nullable(),
+  price_to_meet: z.number().optional().nullable(),
 });
 
 async function handlePersonRequest(request: NextRequest) {
   try {
-    let pubkey: string | null = null;
-
+    let body;
     try {
-      const body = await request.json();
-      pubkey = body.owner_pubkey || body.pubkey || body.key || null;
+      body = await request.json();
     } catch {
       return apiError(
         {
@@ -25,6 +27,12 @@ async function handlePersonRequest(request: NextRequest) {
         400
       );
     }
+
+    const pubkey = body.owner_pubkey || body.pubkey || null;
+    const alias = body.owner_alias || body.alias || null;
+    const route_hint = body.owner_route_hint || body.route_hint || null;
+    const image_url = body.img || body.image_url || body.photo_url || null;
+    const price_to_meet = body.price_to_meet || null;
 
     if (!pubkey) {
       return apiError(
@@ -36,7 +44,14 @@ async function handlePersonRequest(request: NextRequest) {
       );
     }
 
-    const validation = sphinxPersonSchema.safeParse({ pubkey });
+    const validation = sphinxPersonSchema.safeParse({
+      pubkey,
+      alias,
+      route_hint,
+      image_url,
+      price_to_meet,
+    });
+
     if (!validation.success) {
       return apiError(
         {
@@ -47,28 +62,36 @@ async function handlePersonRequest(request: NextRequest) {
       );
     }
 
-    const { pubkey: validPubkey } = validation.data;
-
     const user = await db.user.upsert({
-      where: { pubkey: validPubkey },
+      where: { pubkey },
       create: {
-        pubkey: validPubkey,
-        username: `user_${validPubkey.substring(0, 8)}`,
+        pubkey,
+        username: alias || `user_${pubkey.slice(0, 8)}`,
+        alias: alias || null,
+        routeHint: route_hint || null,
+        avatarUrl: image_url || null,
+        priceToMeet: price_to_meet || null,
         lastLogin: new Date(),
       },
       update: {
+        alias: alias || undefined,
+        routeHint: route_hint || undefined,
+        avatarUrl: image_url || undefined,
+        priceToMeet: price_to_meet || undefined,
         lastLogin: new Date(),
       },
     });
 
     return apiSuccess({
-      id: user.id,
-      pubkey: user.pubkey,
-      owner_alias: user.alias || user.username,
-      owner_pubkey: user.pubkey,
-      alias: user.alias || user.username,
-      photo_url: user.avatarUrl || "",
-      description: user.description || "",
+      success: true,
+      response: {
+        id: user.id,
+        pubkey: user.pubkey,
+        owner_alias: user.alias || user.username,
+        photo_url: user.avatarUrl || "",
+        description: user.description || "",
+        price_to_meet: user.priceToMeet || 0,
+      },
     });
   } catch (error) {
     logApiError(error as Error, {
