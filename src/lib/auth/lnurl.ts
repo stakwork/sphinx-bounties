@@ -1,18 +1,9 @@
 import crypto from "crypto";
-import * as secp from "@noble/secp256k1";
 import { bech32 } from "bech32";
+import { sha256 } from "@noble/hashes/sha256";
+import { bytesToHex } from "@noble/hashes/utils";
+import * as secp from "@noble/secp256k1";
 import { logError } from "@/lib/errors/logger";
-
-if (typeof secp.utils !== "undefined") {
-  secp.utils.sha256Sync = (message: Uint8Array) => {
-    return new Uint8Array(crypto.createHash("sha256").update(message).digest());
-  };
-  secp.utils.hmacSha256Sync = (key: Uint8Array, ...messages: Uint8Array[]) => {
-    const hmac = crypto.createHmac("sha256", key);
-    messages.forEach((m) => hmac.update(m));
-    return new Uint8Array(hmac.digest());
-  };
-}
 
 export interface LNURLChallenge {
   k1: string;
@@ -35,29 +26,107 @@ export function generateSphinxDeepLink(host: string, k1: string): string {
   return `sphinx.chat://?action=auth&host=${host}&challenge=${k1}&ts=${timestamp}`;
 }
 
-export async function verifySignature(k1: string, sig: string, key: string): Promise<boolean> {
+interface RecoveredSignature {
+  pubkey: string;
+  timestamp: number;
+}
+
+export async function recoverPubkeyFromSignature(
+  base64Sig: string
+): Promise<RecoveredSignature | null> {
   try {
-    const keyBytes = hexToBytes(key);
+    const sigBytes = Buffer.from(base64Sig, "base64");
 
-    const isValid = keyBytes.length === 33 && (keyBytes[0] === 0x02 || keyBytes[0] === 0x03);
+    if (sigBytes.length !== 65) {
+      return null;
+    }
 
-    return isValid;
+    const recoveryFlag = sigBytes[0];
+    const recoveryId = (recoveryFlag - 27) & 3;
+
+    if (recoveryId < 0 || recoveryId > 3) {
+      return null;
+    }
+
+    const signature = sigBytes.slice(1, 65);
+
+    const now = Math.floor(Date.now() / 1000);
+    const timestampsToTry = [now];
+    for (let offset = 1; offset <= 300; offset++) {
+      timestampsToTry.push(now - offset);
+      timestampsToTry.push(now + offset);
+    }
+
+    for (const timestamp of timestampsToTry) {
+      try {
+        const message = createLightningMessage(timestamp);
+        const messageHash = doubleSha256(message);
+
+        const sig = secp.Signature.fromCompact(signature).addRecoveryBit(recoveryId);
+        const recoveredPoint = sig.recoverPublicKey(messageHash);
+        const recoveredPubkey = recoveredPoint.toRawBytes(true);
+
+        if (
+          recoveredPubkey.length === 33 &&
+          (recoveredPubkey[0] === 0x02 || recoveredPubkey[0] === 0x03)
+        ) {
+          const pubkeyHex = bytesToHex(recoveredPubkey);
+
+          if (timestamp > now + 60) {
+            continue;
+          }
+
+          if (timestamp < now - 300) {
+            continue;
+          }
+
+          return { pubkey: pubkeyHex, timestamp };
+        }
+      } catch {
+        continue;
+      }
+    }
+
+    return null;
   } catch (error) {
     logError(error as Error, {
-      context: "lnurl-signature-verification",
-      k1Length: k1.length,
-      sigLength: sig.length,
-      keyLength: key.length,
+      context: "signature-recovery",
+      sigLength: base64Sig.length,
     });
-    return false;
+    return null;
   }
 }
 
-function hexToBytes(hex: string): Uint8Array {
-  const cleaned = hex.replace(/^0x/, "");
-  const bytes = new Uint8Array(cleaned.length / 2);
-  for (let i = 0; i < cleaned.length; i += 2) {
-    bytes[i / 2] = parseInt(cleaned.substring(i, i + 2), 16);
+function createLightningMessage(timestamp: number): Uint8Array {
+  const prefix = Buffer.from("Lightning Signed Message:");
+  const timestampBuffer = Buffer.alloc(8);
+  timestampBuffer.writeBigUInt64BE(BigInt(timestamp));
+  return new Uint8Array(Buffer.concat([prefix, timestampBuffer]));
+}
+
+function doubleSha256(message: Uint8Array): Uint8Array {
+  const hash1 = sha256(message);
+  const hash2 = sha256(hash1);
+  return hash2;
+}
+
+export async function verifySignature(
+  _k1: string,
+  base64Sig: string
+): Promise<RecoveredSignature | null> {
+  try {
+    const recovered = await recoverPubkeyFromSignature(base64Sig);
+
+    if (!recovered) {
+      return null;
+    }
+
+    return recovered;
+  } catch (error) {
+    logError(error as Error, {
+      context: "lnurl-signature-verification",
+      sigLength: base64Sig.length,
+    });
+    return null;
   }
-  return bytes;
 }

@@ -84,13 +84,13 @@ export async function GET() {
     }
 
     return apiSuccess({
+      authenticated: true,
       user: {
         id: user.id,
         pubkey: user.pubkey,
         alias: user.alias,
         username: user.username,
       },
-      session: { pubkey: user.pubkey },
     });
   } catch (error) {
     logApiError(error as Error, { url: "/api/auth/session", method: "GET" });
@@ -153,13 +153,13 @@ export async function POST(request: NextRequest) {
     await setSessionCookie(user.pubkey);
 
     return apiSuccess({
+      authenticated: true,
       user: {
         id: user.id,
         pubkey: user.pubkey,
         alias: user.alias,
         username: user.username,
       },
-      session: { pubkey: user.pubkey },
     });
   } catch (error) {
     logApiError(error as Error, { url: "/api/auth/session", method: "POST" });

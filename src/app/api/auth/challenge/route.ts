@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    const callbackUrl = `${protocol}://${host}/api/auth/verify?tag=login&k1=${k1}&action=login`;
+    const callbackUrl = `${protocol}://${host}/verify/${k1}`;
     const lnurl = encodeLnurl(callbackUrl);
     const sphinxDeepLink = generateSphinxDeepLink(host, k1);
 

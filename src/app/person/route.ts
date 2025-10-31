@@ -11,27 +11,22 @@ const sphinxPersonSchema = z.object({
 
 async function handlePersonRequest(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url);
+    let pubkey: string | null = null;
 
-    let pubkey = searchParams.get("pubkey") || searchParams.get("key");
-
-    if (!pubkey) {
-      try {
-        const body = await request.json();
-        pubkey = body.owner_pubkey || body.pubkey || body.key;
-      } catch {
-        const contentType = request.headers.get("content-type");
-        if (contentType?.includes("application/x-www-form-urlencoded")) {
-          const formData = await request.formData();
-          const formPubkey = formData.get("pubkey")?.toString();
-          const formKey = formData.get("key")?.toString();
-          pubkey = formPubkey || formKey || null;
-        }
-      }
+    try {
+      const body = await request.json();
+      pubkey = body.owner_pubkey || body.pubkey || body.key || null;
+    } catch {
+      return apiError(
+        {
+          code: ErrorCode.VALIDATION_ERROR,
+          message: "Invalid request body",
+        },
+        400
+      );
     }
 
     if (!pubkey) {
-      console.error("Missing pubkey after all attempts");
       return apiError(
         {
           code: ErrorCode.VALIDATION_ERROR,

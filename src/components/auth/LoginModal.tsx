@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import { QRCodeSVG } from "qrcode.react";
 import Image from "next/image";
 import { toast } from "sonner";
@@ -43,6 +44,7 @@ const DEV_USERS = [
 
 export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [isDevLoggingIn, setIsDevLoggingIn] = useState(false);
   const {
     challenge,
@@ -76,12 +78,15 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
 
   useEffect(() => {
     if (verificationData) {
+      // Invalidate session cache to trigger re-fetch
+      queryClient.invalidateQueries({ queryKey: ["auth", "session"] });
+      toast.success("Successfully authenticated!");
       onSuccess?.();
       reset();
       onClose();
       router.push("/bounties");
     }
-  }, [verificationData, onSuccess, onClose, router, reset]);
+  }, [verificationData, queryClient, onSuccess, onClose, router, reset]);
 
   useEffect(() => {
     return () => {

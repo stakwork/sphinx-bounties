@@ -1,4 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
+import { useCallback, useRef } from "react";
 import { toast } from "sonner";
 
 interface ChallengeResponse {
@@ -100,7 +101,7 @@ async function pollVerification(k1: string, maxAttempts = 60, signal?: AbortSign
 }
 
 export function useChallenge() {
-  const abortControllerRef = { current: null as AbortController | null };
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   const challengeMutation = useMutation({
     mutationFn: generateChallenge,
@@ -131,26 +132,43 @@ export function useChallenge() {
     },
   });
 
-  const reset = () => {
+  const reset = useCallback(() => {
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
       abortControllerRef.current = null;
     }
     challengeMutation.reset();
     verifyMutation.reset();
-  };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  const retry = () => {
-    reset();
+  const retry = useCallback(() => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
+    }
+    challengeMutation.reset();
+    verifyMutation.reset();
     challengeMutation.mutate();
-  };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handleGenerateChallenge = useCallback(() => {
+    challengeMutation.mutate();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handleStartVerification = useCallback((k1: string) => {
+    verifyMutation.mutate(k1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return {
     challenge: challengeMutation.data,
     isGenerating: challengeMutation.isPending,
-    generateChallenge: () => challengeMutation.mutate(),
+    generateChallenge: handleGenerateChallenge,
     isVerifying: verifyMutation.isPending,
-    startVerification: (k1: string) => verifyMutation.mutate(k1),
+    startVerification: handleStartVerification,
     verificationData: verifyMutation.data,
     error: challengeMutation.error || verifyMutation.error,
     hasError: !!(challengeMutation.error || verifyMutation.error),
