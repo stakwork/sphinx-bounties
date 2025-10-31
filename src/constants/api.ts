@@ -14,17 +14,36 @@ export const API_ROUTES = {
   BOUNTIES: {
     BASE: "/api/bounties",
     BY_ID: (id: string) => `/api/bounties/${id}`,
-    CLAIM: (id: string) => `/api/bounties/${id}/claim`,
-    UNCLAIM: (id: string) => `/api/bounties/${id}/unclaim`,
-    COMPLETE: (id: string) => `/api/bounties/${id}/complete`,
-    VERIFY: (id: string) => `/api/bounties/${id}/verify`,
+    ASSIGN: (id: string) => `/api/bounties/${id}/assign`,
+    UNASSIGN: (id: string) => `/api/bounties/${id}/assign`,
     COMMENTS: (id: string) => `/api/bounties/${id}/comments`,
+    COMMENT_BY_ID: (bountyId: string, commentId: string) =>
+      `/api/bounties/${bountyId}/comments/${commentId}`,
+    PROOFS: (id: string) => `/api/bounties/${id}/proofs`,
+    PROOF_BY_ID: (bountyId: string, proofId: string) =>
+      `/api/bounties/${bountyId}/proofs/${proofId}`,
+    TIMING: (id: string) => `/api/bounties/${id}/timing`,
+    TIMING_START: (id: string) => `/api/bounties/${id}/timing/start`,
+    TIMING_CLOSE: (id: string) => `/api/bounties/${id}/timing/close`,
+    PAYMENT: (id: string) => `/api/bounties/${id}/payment`,
+    PAYMENT_STATUS: (id: string) => `/api/bounties/${id}/payment/status`,
   },
   WORKSPACES: {
     BASE: "/api/workspaces",
     BY_ID: (id: string) => `/api/workspaces/${id}`,
     MEMBERS: (id: string) => `/api/workspaces/${id}/members`,
     BOUNTIES: (id: string) => `/api/workspaces/${id}/bounties`,
+    BOUNTY_BY_ID: (workspaceId: string, bountyId: string) =>
+      `/api/workspaces/${workspaceId}/bounties/${bountyId}`,
+    COMPLETE_BOUNTY: (workspaceId: string, bountyId: string) =>
+      `/api/workspaces/${workspaceId}/bounties/${bountyId}/complete`,
+    CANCEL_BOUNTY: (workspaceId: string, bountyId: string) =>
+      `/api/workspaces/${workspaceId}/bounties/${bountyId}/cancel`,
+    MARK_PAID: (workspaceId: string, bountyId: string) =>
+      `/api/workspaces/${workspaceId}/bounties/${bountyId}/mark-paid`,
+    BUDGET: (id: string) => `/api/workspaces/${id}/budget`,
+    TRANSACTIONS: (id: string) => `/api/workspaces/${id}/transactions`,
+    ACTIVITIES: (id: string) => `/api/workspaces/${id}/activities`,
     INVITES: (id: string) => `/api/workspaces/${id}/invites`,
   },
   PAYMENTS: {

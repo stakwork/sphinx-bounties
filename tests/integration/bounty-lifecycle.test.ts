@@ -13,8 +13,7 @@ import {
   generateTestPubkey,
   parseResponse,
 } from "../utils";
-import { PATCH as ClaimPatch } from "@/app/api/workspaces/[id]/bounties/[bountyId]/claim/route";
-import { PATCH as UnclaimPatch } from "@/app/api/workspaces/[id]/bounties/[bountyId]/unclaim/route";
+import { POST as AssignPost } from "@/app/api/bounties/[id]/assign/route";
 import { PATCH as UpdatePatch } from "@/app/api/workspaces/[id]/bounties/[bountyId]/route";
 import { PATCH as CompletePatch } from "@/app/api/workspaces/[id]/bounties/[bountyId]/complete/route";
 import { PATCH as CancelPatch } from "@/app/api/workspaces/[id]/bounties/[bountyId]/cancel/route";
@@ -131,289 +130,6 @@ describe("Bounty Lifecycle Integration Tests", () => {
       status: BountyStatus.OPEN,
     });
     bountyId = bounty.id;
-  });
-
-  describe("Claim Bounty", () => {
-    it("should allow contributor to claim an open bounty", async () => {
-      const request = createAuthedRequest(
-        `http://localhost/api/workspaces/${workspaceId}/bounties/${bountyId}/claim`,
-        contributorPubkey,
-        {
-          method: "PATCH",
-          body: JSON.stringify({
-            bountyId,
-            message: "I'd like to work on this bounty",
-          }),
-        }
-      );
-
-      const response = await ClaimPatch(request, {
-        params: Promise.resolve({ id: workspaceId, bountyId }),
-      });
-
-      expect(response.status).toBe(200);
-
-      const data = await parseResponse(response);
-      expect(data).toMatchObject({
-        success: true,
-        data: {
-          message: expect.stringContaining("claimed"),
-        },
-      });
-
-      // Verify bounty was updated
-      const updatedBounty = await db.bounty.findUnique({
-        where: { id: bountyId },
-      });
-
-      expect(updatedBounty?.status).toBe(BountyStatus.ASSIGNED);
-      expect(updatedBounty?.assigneePubkey).toBe(contributorPubkey);
-      expect(updatedBounty?.assignedAt).toBeTruthy();
-
-      // Verify activity was logged
-      const activity = await db.bountyActivity.findFirst({
-        where: {
-          bountyId,
-          action: BountyActivityAction.ASSIGNED,
-        },
-      });
-
-      expect(activity).toBeTruthy();
-      expect(activity?.userPubkey).toBe(contributorPubkey);
-    });
-
-    it("should not allow claiming already assigned bounty", async () => {
-      // First claim - assign bounty to viewer
-      await db.bounty.update({
-        where: { id: bountyId },
-        data: {
-          status: BountyStatus.ASSIGNED,
-          assigneePubkey: viewerPubkey,
-          assignedAt: new Date(),
-        },
-      });
-
-      // Try to claim as contributor (different user with contributor permissions)
-      const request = createAuthedRequest(
-        `http://localhost/api/workspaces/${workspaceId}/bounties/${bountyId}/claim`,
-        contributorPubkey,
-        {
-          method: "PATCH",
-          body: JSON.stringify({ bountyId }),
-        }
-      );
-
-      const response = await ClaimPatch(request, {
-        params: Promise.resolve({ id: workspaceId, bountyId }),
-      });
-
-      expect(response.status).toBe(400);
-
-      const data = await parseResponse(response);
-      expect(data).toMatchObject({
-        success: false,
-        error: {
-          code: "BOUNTY_ALREADY_ASSIGNED",
-        },
-      });
-    });
-
-    it("should not allow viewer role to claim bounty", async () => {
-      const request = createAuthedRequest(
-        `http://localhost/api/workspaces/${workspaceId}/bounties/${bountyId}/claim`,
-        viewerPubkey,
-        {
-          method: "PATCH",
-          body: JSON.stringify({ bountyId }),
-        }
-      );
-
-      const response = await ClaimPatch(request, {
-        params: Promise.resolve({ id: workspaceId, bountyId }),
-      });
-
-      expect(response.status).toBe(403);
-
-      const data = await parseResponse(response);
-      expect(data).toMatchObject({
-        success: false,
-        error: {
-          code: "FORBIDDEN",
-        },
-      });
-    });
-
-    it("should not allow claiming non-open bounty", async () => {
-      await db.bounty.update({
-        where: { id: bountyId },
-        data: { status: BountyStatus.COMPLETED },
-      });
-
-      const request = createAuthedRequest(
-        `http://localhost/api/workspaces/${workspaceId}/bounties/${bountyId}/claim`,
-        contributorPubkey,
-        {
-          method: "PATCH",
-          body: JSON.stringify({ bountyId }),
-        }
-      );
-
-      const response = await ClaimPatch(request, {
-        params: Promise.resolve({ id: workspaceId, bountyId }),
-      });
-
-      expect(response.status).toBe(400);
-
-      const data = await parseResponse(response);
-      expect(data).toMatchObject({
-        success: false,
-        error: {
-          code: "INVALID_STATUS",
-        },
-      });
-    });
-  });
-
-  describe("Unclaim Bounty", () => {
-    beforeEach(async () => {
-      // Set bounty to assigned state
-      await db.bounty.update({
-        where: { id: bountyId },
-        data: {
-          status: BountyStatus.ASSIGNED,
-          assigneePubkey: contributorPubkey,
-          assignedAt: new Date(),
-        },
-      });
-    });
-
-    it("should allow assignee to unclaim their bounty", async () => {
-      const request = createAuthedRequest(
-        `http://localhost/api/workspaces/${workspaceId}/bounties/${bountyId}/unclaim`,
-        contributorPubkey,
-        {
-          method: "PATCH",
-          body: JSON.stringify({
-            bountyId,
-            reason: "Need more time to prepare",
-          }),
-        }
-      );
-
-      const response = await UnclaimPatch(request, {
-        params: Promise.resolve({ id: workspaceId, bountyId }),
-      });
-
-      expect(response.status).toBe(200);
-
-      const data = await parseResponse(response);
-      expect(data).toMatchObject({
-        success: true,
-        data: {
-          message: expect.stringContaining("unclaimed"),
-        },
-      });
-
-      // Verify bounty was updated
-      const updatedBounty = await db.bounty.findUnique({
-        where: { id: bountyId },
-      });
-
-      expect(updatedBounty?.status).toBe(BountyStatus.OPEN);
-      expect(updatedBounty?.assigneePubkey).toBeNull();
-      expect(updatedBounty?.assignedAt).toBeNull();
-
-      // Verify activity was logged
-      const activity = await db.bountyActivity.findFirst({
-        where: {
-          bountyId,
-          action: BountyActivityAction.UNASSIGNED,
-        },
-      });
-
-      expect(activity).toBeTruthy();
-    });
-
-    it("should allow admin to force unclaim bounty", async () => {
-      const request = createAuthedRequest(
-        `http://localhost/api/workspaces/${workspaceId}/bounties/${bountyId}/unclaim`,
-        ownerPubkey,
-        {
-          method: "PATCH",
-          body: JSON.stringify({
-            bountyId,
-            reason: "Contributor is not responsive",
-          }),
-        }
-      );
-
-      const response = await UnclaimPatch(request, {
-        params: Promise.resolve({ id: workspaceId, bountyId }),
-      });
-
-      expect(response.status).toBe(200);
-
-      // Verify activity includes force flag
-      const activity = await db.bountyActivity.findFirst({
-        where: {
-          bountyId,
-          action: BountyActivityAction.UNASSIGNED,
-        },
-      });
-
-      expect(activity?.details).toMatchObject({
-        forcedBy: ownerPubkey,
-      });
-    });
-
-    it("should not allow non-assignee, non-admin to unclaim", async () => {
-      const request = createAuthedRequest(
-        `http://localhost/api/workspaces/${workspaceId}/bounties/${bountyId}/unclaim`,
-        viewerPubkey,
-        {
-          method: "PATCH",
-          body: JSON.stringify({
-            bountyId,
-            reason: "Test reason",
-          }),
-        }
-      );
-
-      const response = await UnclaimPatch(request, {
-        params: Promise.resolve({ id: workspaceId, bountyId }),
-      });
-
-      expect(response.status).toBe(403);
-    });
-
-    it("should not allow unclaiming non-assigned bounty", async () => {
-      await db.bounty.update({
-        where: { id: bountyId },
-        data: {
-          status: BountyStatus.OPEN,
-          assigneePubkey: null,
-          assignedAt: null,
-        },
-      });
-
-      const request = createAuthedRequest(
-        `http://localhost/api/workspaces/${workspaceId}/bounties/${bountyId}/unclaim`,
-        contributorPubkey,
-        {
-          method: "PATCH",
-          body: JSON.stringify({
-            bountyId,
-            reason: "Test reason",
-          }),
-        }
-      );
-
-      const response = await UnclaimPatch(request, {
-        params: Promise.resolve({ id: workspaceId, bountyId }),
-      });
-
-      expect(response.status).toBe(400);
-    });
   });
 
   describe("Update Bounty", () => {
@@ -855,57 +571,24 @@ describe("Bounty Lifecycle Integration Tests", () => {
   });
 
   describe("Full Lifecycle Flow", () => {
-    it("should handle complete bounty lifecycle: claim -> unclaim -> claim -> update -> complete -> cannot cancel", async () => {
-      // 1. Claim bounty
-      let request = createAuthedRequest(
-        `http://localhost/api/workspaces/${workspaceId}/bounties/${bountyId}/claim`,
-        contributorPubkey,
+    it("should handle complete bounty lifecycle: assign -> update -> complete -> cannot cancel", async () => {
+      // 1. Admin assigns bounty to contributor
+      const assignRequest = createAuthedRequest(
+        `http://localhost/api/bounties/${bountyId}/assign`,
+        ownerPubkey,
         {
-          method: "PATCH",
-          body: JSON.stringify({ bountyId }),
+          method: "POST",
+          body: JSON.stringify({ assigneePubkey: contributorPubkey }),
         }
       );
 
-      let response = await ClaimPatch(request, {
-        params: Promise.resolve({ id: workspaceId, bountyId }),
+      const assignResponse = await AssignPost(assignRequest, {
+        params: Promise.resolve({ id: bountyId }),
       });
-      expect(response.status).toBe(200);
+      expect(assignResponse.status).toBe(200);
 
-      // 2. Unclaim bounty
-      request = createAuthedRequest(
-        `http://localhost/api/workspaces/${workspaceId}/bounties/${bountyId}/unclaim`,
-        contributorPubkey,
-        {
-          method: "PATCH",
-          body: JSON.stringify({
-            bountyId,
-            reason: "Need to reconsider timeline",
-          }),
-        }
-      );
-
-      response = await UnclaimPatch(request, {
-        params: Promise.resolve({ id: workspaceId, bountyId }),
-      });
-      expect(response.status).toBe(200);
-
-      // 3. Claim again
-      request = createAuthedRequest(
-        `http://localhost/api/workspaces/${workspaceId}/bounties/${bountyId}/claim`,
-        contributorPubkey,
-        {
-          method: "PATCH",
-          body: JSON.stringify({ bountyId }),
-        }
-      );
-
-      response = await ClaimPatch(request, {
-        params: Promise.resolve({ id: workspaceId, bountyId }),
-      });
-      expect(response.status).toBe(200);
-
-      // 4. Update bounty
-      request = createAuthedRequest(
+      // 2. Update bounty
+      const updateRequest = createAuthedRequest(
         `http://localhost/api/workspaces/${workspaceId}/bounties/${bountyId}`,
         ownerPubkey,
         {
@@ -917,12 +600,12 @@ describe("Bounty Lifecycle Integration Tests", () => {
         }
       );
 
-      response = await UpdatePatch(request, {
+      const updateResponse = await UpdatePatch(updateRequest, {
         params: Promise.resolve({ id: workspaceId, bountyId }),
       });
-      expect(response.status).toBe(200);
+      expect(updateResponse.status).toBe(200);
 
-      // 5. Move to IN_REVIEW with accepted proof
+      // 3. Move to IN_REVIEW with accepted proof
       await db.bounty.update({
         where: { id: bountyId },
         data: { status: BountyStatus.IN_REVIEW },
@@ -940,8 +623,8 @@ describe("Bounty Lifecycle Integration Tests", () => {
         },
       });
 
-      // 6. Complete bounty
-      request = createAuthedRequest(
+      // 4. Complete bounty
+      const completeRequest = createAuthedRequest(
         `http://localhost/api/workspaces/${workspaceId}/bounties/${bountyId}/complete`,
         ownerPubkey,
         {
@@ -950,13 +633,13 @@ describe("Bounty Lifecycle Integration Tests", () => {
         }
       );
 
-      response = await CompletePatch(request, {
+      const completeResponse = await CompletePatch(completeRequest, {
         params: Promise.resolve({ id: workspaceId, bountyId }),
       });
-      expect(response.status).toBe(200);
+      expect(completeResponse.status).toBe(200);
 
-      // 7. Try to cancel (should fail)
-      request = createAuthedRequest(
+      // 5. Try to cancel (should fail)
+      const cancelRequest = createAuthedRequest(
         `http://localhost/api/workspaces/${workspaceId}/bounties/${bountyId}/cancel`,
         ownerPubkey,
         {
@@ -968,10 +651,10 @@ describe("Bounty Lifecycle Integration Tests", () => {
         }
       );
 
-      response = await CancelPatch(request, {
+      const cancelResponse = await CancelPatch(cancelRequest, {
         params: Promise.resolve({ id: workspaceId, bountyId }),
       });
-      expect(response.status).toBe(400);
+      expect(cancelResponse.status).toBe(400);
 
       // Verify final state
       const finalBounty = await db.bounty.findUnique({
@@ -990,7 +673,6 @@ describe("Bounty Lifecycle Integration Tests", () => {
 
       const actionTypes = activities.map((a) => a.action);
       expect(actionTypes).toContain(BountyActivityAction.ASSIGNED);
-      expect(actionTypes).toContain(BountyActivityAction.UNASSIGNED);
       expect(actionTypes).toContain(BountyActivityAction.UPDATED);
       expect(actionTypes).toContain(BountyActivityAction.COMPLETED);
     });

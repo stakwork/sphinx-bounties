@@ -14,6 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/hooks";
 import { AlertCircle } from "lucide-react";
+import { API_ROUTES } from "@/constants";
 
 interface Workspace {
   id: string;
@@ -29,7 +30,7 @@ export default function NewBountyPage() {
   const { data: workspacesData, isLoading } = useQuery({
     queryKey: ["user-workspaces", user?.pubkey],
     queryFn: async () => {
-      const response = await fetch("/api/workspaces");
+      const response = await fetch(API_ROUTES.WORKSPACES.BASE);
       if (!response.ok) throw new Error("Failed to fetch workspaces");
       const result = await response.json();
       return result.data as Workspace[];
