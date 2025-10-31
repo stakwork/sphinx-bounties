@@ -1,0 +1,32 @@
+# Dependencies
+node_modules
+.pnp
+.pnp.js
+
+# Testing
+coverage
+.nyc_output
+test-results
+playwright-report
+
+# Local env files
+.env*.local
+.env
+
+# Docker
+docker-compose.yml
+docker-compose.dev.yml
+Dockerfile
+Dockerfile.dev
+
+# Documentation
+docs
+
+# IDE
+.vscode
+.idea
+
+# OS
+.DS_Store
+*.swp
+*.swo
