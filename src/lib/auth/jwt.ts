@@ -32,12 +32,3 @@ export async function verifyJWT(token: string): Promise<JWTPayload | null> {
     return null;
   }
 }
-
-export function decodeJWT(token: string): JWTPayload | null {
-  try {
-    const [, payload] = token.split(".");
-    return JSON.parse(atob(payload));
-  } catch {
-    return null;
-  }
-}
