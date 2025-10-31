@@ -16,6 +16,25 @@ export async function middleware(request: NextRequest) {
 
   response.headers.set("x-request-id", crypto.randomUUID());
 
+  const isVerifyGate = pathname === "/api/auth/verify-gate";
+  const isNextAsset = pathname.startsWith("/_next");
+  const isFavicon = pathname.startsWith("/favicon");
+  const isSphinxIcon = pathname.startsWith("/sphinx_icon");
+
+  if (isVerifyGate || isNextAsset || isFavicon || isSphinxIcon) {
+    return response;
+  }
+
+  const hasGateAccess = request.cookies.has("gate-access");
+
+  if (!hasGateAccess) {
+    if (pathname === "/") {
+      response.headers.set("x-gate-required", "true");
+      return response;
+    }
+    return NextResponse.redirect(new URL("/", request.url));
+  }
+
   if (isAuthRoute(pathname)) {
     return response;
   }
