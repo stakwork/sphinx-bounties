@@ -1,11 +1,13 @@
 "use client";
 
 import { useGetBounty } from "@/hooks/queries/use-bounty-queries";
+import { usePermissions } from "@/hooks";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StatusBadge, CurrencyDisplay, AvatarWithFallback } from "@/components/common";
 import { BountyActions } from "./BountyActions";
 import { BountyComments } from "./BountyComments";
 import { BountyProofs } from "./BountyProofs";
+import { BountyRequestsList } from "./BountyRequestsList";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, Clock, Building2 } from "lucide-react";
 
@@ -15,6 +17,7 @@ interface BountyDetailProps {
 
 export function BountyDetail({ bountyId }: BountyDetailProps) {
   const { data: bounty, isLoading, error } = useGetBounty(bountyId);
+  const { isAdmin } = usePermissions(bounty?.workspace.id || "");
 
   if (isLoading) {
     return (
@@ -139,6 +142,13 @@ export function BountyDetail({ bountyId }: BountyDetailProps) {
         {/* Action Buttons */}
         <BountyActions bounty={bounty} />
       </div>
+
+      {/* Work Requests Section (Admin Only) */}
+      {isAdmin && (
+        <div className="pt-6 border-t border-neutral-200">
+          <BountyRequestsList bounty={bounty} />
+        </div>
+      )}
 
       {/* Proof Submissions Section */}
       <div className="pt-6 border-t border-neutral-200">
