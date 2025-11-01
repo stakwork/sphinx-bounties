@@ -16,12 +16,12 @@ export const createWorkspaceSchema = z.object({
     .string()
     .trim()
     .optional()
-    .transform((val) => (val === "" ? undefined : val))
+    .transform((val) => (val === "" || !val ? undefined : val))
     .pipe(
       z
         .string()
-        .min(10, "Description must be at least 10 characters")
-        .max(120, "Description must not exceed 120 characters")
+        .min(3, "Description must be at least 3 characters")
+        .max(500, "Description must not exceed 500 characters")
         .optional()
     ),
 
@@ -29,12 +29,12 @@ export const createWorkspaceSchema = z.object({
     .string()
     .trim()
     .optional()
-    .transform((val) => (val === "" ? undefined : val))
+    .transform((val) => (val === "" || !val ? undefined : val))
     .pipe(
       z
         .string()
-        .min(20, "Mission must be at least 20 characters")
-        .max(500, "Mission must not exceed 500 characters")
+        .min(3, "Mission must be at least 3 characters")
+        .max(1000, "Mission must not exceed 1000 characters")
         .optional()
     ),
 
@@ -56,12 +56,15 @@ export const createWorkspaceSchema = z.object({
     .string()
     .trim()
     .optional()
-    .transform((val) => (val === "" ? undefined : val))
+    .transform((val) => (val === "" || !val ? undefined : val))
     .pipe(
       z
         .string()
         .url("Must be a valid URL")
-        .regex(/^https:\/\/github\.com\/[\w-]+\/?$/, "Must be a valid GitHub organization URL")
+        .regex(
+          /^https:\/\/github\.com\/[\w-]+(\/[\w-]+)?\/?$/,
+          "Must be a valid GitHub URL (e.g., https://github.com/user or https://github.com/user/repo)"
+        )
         .max(2048, "URL too long")
         .optional()
     ),

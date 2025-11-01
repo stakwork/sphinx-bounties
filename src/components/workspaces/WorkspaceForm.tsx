@@ -115,7 +115,7 @@ export function WorkspaceForm({ workspace, onSuccess }: WorkspaceFormProps) {
           disabled={isLoading}
         />
         <p className="text-xs text-neutral-500">
-          Describe what your workspace is about (up to 500 characters)
+          Optional: Describe what your workspace is about (3-500 characters if provided)
         </p>
       </div>
 
@@ -132,7 +132,7 @@ export function WorkspaceForm({ workspace, onSuccess }: WorkspaceFormProps) {
           disabled={isLoading}
         />
         <p className="text-xs text-neutral-500">
-          Share your workspace&apos;s mission and goals (up to 1000 characters)
+          Optional: Share your workspace&apos;s mission and goals (3-1000 characters if provided)
         </p>
       </div>
 
@@ -160,11 +160,11 @@ export function WorkspaceForm({ workspace, onSuccess }: WorkspaceFormProps) {
           type="url"
           value={githubUrl}
           onChange={(e) => setGithubUrl(e.target.value)}
-          placeholder="https://github.com/yourusername/repo"
+          placeholder="https://github.com/username or https://github.com/username/repo"
           disabled={isLoading}
         />
         <p className="text-xs text-neutral-500">
-          Optional: Link to your GitHub repository or organization
+          Optional: Link to your GitHub user, organization, or repository
         </p>
       </div>
 

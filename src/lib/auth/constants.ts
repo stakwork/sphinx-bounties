@@ -12,7 +12,7 @@ export const PUBLIC_ROUTES = ["/", "/login", "/bounties", "/workspaces", "/peopl
 
 export const AUTH_ROUTES = [API_ROUTES.AUTH.CHALLENGE];
 
-export const PROTECTED_ROUTES = ["/bounties/new", "/workspaces/new", "/settings", "/admin"];
+export const PROTECTED_ROUTES = ["/bounties/new", "/settings", "/admin"];
 
 export const WORKSPACE_ROUTES_PATTERN = /^\/workspaces\/[^\/]+\/(edit|settings)/;
 export const BOUNTY_EDIT_PATTERN = /^\/bounties\/[^\/]+\/edit/;
