@@ -135,7 +135,6 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
         : null;
 
     return apiSuccess({
-      message: "Timing closed successfully",
       bountyId: updated.id,
       workStartedAt: updated.workStartedAt?.toISOString(),
       workClosedAt: updated.workClosedAt?.toISOString(),

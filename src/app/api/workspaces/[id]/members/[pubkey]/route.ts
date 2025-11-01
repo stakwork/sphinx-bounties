@@ -230,18 +230,16 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     });
 
     const response: UpdateMemberResponse = {
-      member: {
-        id: updatedMember.id,
-        workspaceId: updatedMember.workspaceId,
-        userPubkey: updatedMember.userPubkey,
-        role: updatedMember.role,
-        joinedAt: updatedMember.joinedAt.toISOString(),
-        user: {
-          pubkey: updatedMember.user.pubkey,
-          username: updatedMember.user.username,
-          alias: updatedMember.user.alias,
-          avatarUrl: updatedMember.user.avatarUrl,
-        },
+      id: updatedMember.id,
+      workspaceId: updatedMember.workspaceId,
+      userPubkey: updatedMember.userPubkey,
+      role: updatedMember.role,
+      joinedAt: updatedMember.joinedAt.toISOString(),
+      user: {
+        pubkey: updatedMember.user.pubkey,
+        username: updatedMember.user.username,
+        alias: updatedMember.user.alias,
+        avatarUrl: updatedMember.user.avatarUrl,
       },
     };
 

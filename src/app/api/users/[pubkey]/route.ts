@@ -5,7 +5,7 @@ import { logApiError } from "@/lib/errors/logger";
 import { ErrorCode } from "@/types/error";
 import { ERROR_MESSAGES } from "@/lib/error-constants";
 import { updateProfileSchema } from "@/validations/user.schema";
-import type { UserProfileResponse, UpdateUserResponse } from "@/types/user";
+import type { UserProfileResponse } from "@/types/user";
 import { BountyStatus } from "@prisma/client";
 
 /**
@@ -173,27 +173,25 @@ export async function GET(
     const totalEarned = user.assignedBounties.reduce((sum, bounty) => sum + bounty.amount, 0);
 
     const response: UserProfileResponse = {
-      user: {
-        pubkey: user.pubkey,
-        username: user.username,
-        alias: user.alias,
-        description: user.description,
-        avatarUrl: user.avatarUrl,
-        contactKey: user.contactKey,
-        routeHint: user.routeHint,
-        githubUsername: user.githubVerified ? user.githubUsername : null,
-        githubVerified: user.githubVerified,
-        twitterUsername: user.twitterVerified ? user.twitterUsername : null,
-        twitterVerified: user.twitterVerified,
-        createdAt: user.createdAt.toISOString(),
-        lastLogin: user.lastLogin?.toISOString() || null,
-        stats: {
-          totalEarned: totalEarned.toString(),
-          bountiesCompleted: bountiesCompletedCount,
-          bountiesCreated: user.createdBounties.length,
-          activeBounties: activeBountiesCount,
-          workspacesCount: user.memberships.length,
-        },
+      pubkey: user.pubkey,
+      username: user.username,
+      alias: user.alias,
+      description: user.description,
+      avatarUrl: user.avatarUrl,
+      contactKey: user.contactKey,
+      routeHint: user.routeHint,
+      githubUsername: user.githubVerified ? user.githubUsername : null,
+      githubVerified: user.githubVerified,
+      twitterUsername: user.twitterVerified ? user.twitterUsername : null,
+      twitterVerified: user.twitterVerified,
+      createdAt: user.createdAt.toISOString(),
+      lastLogin: user.lastLogin?.toISOString() || null,
+      stats: {
+        totalEarned: totalEarned.toString(),
+        bountiesCompleted: bountiesCompletedCount,
+        bountiesCreated: user.createdBounties.length,
+        activeBounties: activeBountiesCount,
+        workspacesCount: user.memberships.length,
       },
     };
 
@@ -304,12 +302,7 @@ export async function PATCH(
       },
     });
 
-    const response: UpdateUserResponse = {
-      message: "Profile updated successfully",
-      user: updatedUser,
-    };
-
-    return apiSuccess(response);
+    return apiSuccess(updatedUser);
   } catch (error) {
     logApiError(error as Error, {
       url: `/api/users/${pubkey}`,

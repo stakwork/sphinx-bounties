@@ -271,7 +271,7 @@ export function useAddMember() {
       }
 
       const result = await response.json();
-      return result.data.member;
+      return result.data;
     },
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: workspaceKeys.detail(variables.workspaceId) });
@@ -321,7 +321,7 @@ export function useUpdateMemberRole() {
       }
 
       const result = await response.json();
-      return result.data.member;
+      return result.data;
     },
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: workspaceKeys.detail(variables.workspaceId) });

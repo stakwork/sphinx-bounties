@@ -74,9 +74,9 @@ describe("Member Management Integration", () => {
       const result = await response.json();
 
       expect(response.status).toBe(200);
-      expect(result.data.members).toHaveLength(3);
-      expect(result.data.members[0].role).toBe(WorkspaceRole.OWNER);
-      expect(result.data.members[0].user).toBeDefined();
+      expect(result.data).toHaveLength(3);
+      expect(result.data[0].role).toBe(WorkspaceRole.OWNER);
+      expect(result.data[0].user).toBeDefined();
     });
 
     it("requires authentication", async () => {
@@ -114,9 +114,9 @@ describe("Member Management Integration", () => {
       const result = await response.json();
 
       expect(response.status).toBe(201);
-      expect(result.data.member.userPubkey).toBe(newUserPubkey);
-      expect(result.data.member.role).toBe(WorkspaceRole.CONTRIBUTOR);
-      expect(result.data.member.user).toBeDefined();
+      expect(result.data.userPubkey).toBe(newUserPubkey);
+      expect(result.data.role).toBe(WorkspaceRole.CONTRIBUTOR);
+      expect(result.data.user).toBeDefined();
     });
 
     it("adds member as admin", async () => {
@@ -234,7 +234,7 @@ describe("Member Management Integration", () => {
       const result = await response.json();
 
       expect(response.status).toBe(200);
-      expect(result.data.member.role).toBe(WorkspaceRole.ADMIN);
+      expect(result.data.role).toBe(WorkspaceRole.ADMIN);
     });
 
     it("prevents removing last owner", async () => {

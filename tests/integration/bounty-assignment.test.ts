@@ -134,9 +134,8 @@ describe("Bounty Assignment Integration Tests", () => {
       }
       expect(response.status).toBe(200);
       expect(data.success).toBe(true);
-      expect(data.data.message).toBe("Bounty assigned successfully");
-      expect(data.data.assignee.pubkey).toBe(hunterPubkey);
-      expect(data.data.assignee.username).toBe("assign_hunter");
+      expect(data.data.pubkey).toBe(hunterPubkey);
+      expect(data.data.username).toBe("assign_hunter");
 
       // Verify bounty was assigned in database
       const updatedBounty = await db.bounty.findUnique({

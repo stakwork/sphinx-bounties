@@ -107,17 +107,11 @@ export interface DeleteWorkspaceResponse {
   message: string;
 }
 
-export interface ListMembersResponse {
-  members: WorkspaceMember[];
-}
+export type ListMembersResponse = WorkspaceMember[];
 
-export interface AddMemberResponse {
-  member: WorkspaceMember;
-}
+export type AddMemberResponse = WorkspaceMember;
 
-export interface UpdateMemberResponse {
-  member: WorkspaceMember;
-}
+export type UpdateMemberResponse = WorkspaceMember;
 
 export interface RemoveMemberResponse {
   message: string;

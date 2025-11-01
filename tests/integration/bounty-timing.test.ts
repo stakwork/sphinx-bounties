@@ -229,7 +229,6 @@ describe("Bounty Timing Integration Tests", () => {
       expect(response.status).toBe(200);
       const data: any = await parseResponse(response);
       expect(data.success).toBe(true);
-      expect(data.data.message).toBe("Timing started successfully");
       expect(data.data.bountyId).toBe(bountyId);
       expect(data.data.workStartedAt).toBeTruthy();
 
@@ -356,7 +355,6 @@ describe("Bounty Timing Integration Tests", () => {
       expect(response.status).toBe(200);
       const data: any = await parseResponse(response);
       expect(data.success).toBe(true);
-      expect(data.data.message).toBe("Timing closed successfully");
       expect(data.data.bountyId).toBe(bountyId);
       expect(data.data.workStartedAt).toBeTruthy();
       expect(data.data.workClosedAt).toBeTruthy();

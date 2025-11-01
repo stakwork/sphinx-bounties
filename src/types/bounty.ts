@@ -138,25 +138,27 @@ export interface UnclaimBountyResponse {
 }
 
 export interface UpdateBountyResponse {
-  message: string;
-  bounty: {
-    id: string;
-    title: string;
-    description: string;
-    deliverables: string;
-    amount: string;
-    status: string;
-    tags: string[];
-    codingLanguages: string[];
-    estimatedHours: number | null;
-    estimatedCompletionDate: string | null;
-    githubIssueUrl: string | null;
-    loomVideoUrl: string | null;
-  };
+  id: string;
+  title: string;
+  description: string;
+  deliverables: string;
+  amount: string;
+  status: string;
+  tags: string[];
+  codingLanguages: string[];
+  estimatedHours: number | null;
+  estimatedCompletionDate: string | null;
+  githubIssueUrl: string | null;
+  loomVideoUrl: string | null;
 }
 
-export interface CompleteBountyResponse {
+export interface DeleteBountyResponse {
   message: string;
+}
+
+export interface AssignBountyResponse {
+  pubkey: string;
+  username: string;
 }
 
 export interface CancelBountyResponse {
@@ -188,15 +190,12 @@ export interface BountyProof {
 }
 
 export interface SubmitProofResponse {
-  message: string;
-  proof: {
-    id: string;
-    bountyId: string;
-    proofUrl: string;
-    description: string;
-    status: string;
-    createdAt: string;
-  };
+  id: string;
+  bountyId: string;
+  proofUrl: string;
+  description: string;
+  status: string;
+  createdAt: string;
 }
 
 export interface ListProofsResponse {
@@ -210,16 +209,13 @@ export interface ListProofsResponse {
 }
 
 export interface ReviewProofResponse {
-  message: string;
-  proof: {
-    id: string;
-    status: string;
-    reviewNotes: string | null;
-    reviewedAt: string;
-    reviewedBy: {
-      pubkey: string;
-      username: string;
-    };
+  id: string;
+  status: string;
+  reviewNotes: string | null;
+  reviewedAt: string;
+  reviewedBy: {
+    pubkey: string;
+    username: string;
   };
 }
 
@@ -372,13 +368,10 @@ export interface ListBountyRequestsResponse {
 }
 
 export interface ReviewBountyRequestResponse {
-  message: string;
-  request: {
-    id: string;
-    status: BountyRequestStatus;
-    reviewedBy: string;
-    reviewedAt: string;
-  };
+  id: string;
+  status: BountyRequestStatus;
+  reviewedBy: string;
+  reviewedAt: string;
 }
 
 export interface DeleteBountyRequestResponse {

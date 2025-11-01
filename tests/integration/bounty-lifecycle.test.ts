@@ -158,12 +158,9 @@ describe("Bounty Lifecycle Integration Tests", () => {
       expect(data).toMatchObject({
         success: true,
         data: {
-          message: expect.stringContaining("updated"),
-          bounty: {
-            id: bountyId,
-            title: "Updated Bounty Title",
-            amount: "75000",
-          },
+          id: bountyId,
+          title: "Updated Bounty Title",
+          amount: "75000",
         },
       });
 

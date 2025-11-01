@@ -21,23 +21,18 @@ export interface UserProfile {
   };
 }
 
-export interface UserProfileResponse {
-  user: UserProfile;
-}
+export type UserProfileResponse = UserProfile;
 
 export interface UpdateUserResponse {
-  message: string;
-  user: {
-    pubkey: string;
-    username: string;
-    alias: string | null;
-    description: string | null;
-    avatarUrl: string | null;
-    contactKey: string | null;
-    routeHint: string | null;
-    githubUsername: string | null;
-    twitterUsername: string | null;
-  };
+  pubkey: string;
+  username: string;
+  alias: string | null;
+  description: string | null;
+  avatarUrl: string | null;
+  contactKey: string | null;
+  routeHint: string | null;
+  githubUsername: string | null;
+  twitterUsername: string | null;
 }
 
 export interface UserStats {

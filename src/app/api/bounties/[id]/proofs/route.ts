@@ -332,15 +332,12 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     });
 
     const response: SubmitProofResponse = {
-      message: "Proof submitted successfully",
-      proof: {
-        id: proof.id,
-        bountyId: proof.bountyId,
-        proofUrl: proof.proofUrl,
-        description: proof.description,
-        status: proof.status,
-        createdAt: proof.createdAt.toISOString(),
-      },
+      id: proof.id,
+      bountyId: proof.bountyId,
+      proofUrl: proof.proofUrl,
+      description: proof.description,
+      status: proof.status,
+      createdAt: proof.createdAt.toISOString(),
     };
 
     return apiCreated(response);

@@ -170,13 +170,10 @@ describe("Bounty Proofs Integration Tests", () => {
       expect(data).toMatchObject({
         success: true,
         data: {
-          message: expect.stringContaining("submitted"),
-          proof: {
-            id: expect.any(String),
-            bountyId,
-            proofUrl: "https://github.com/test/repo/pull/123",
-            status: ProofStatus.PENDING,
-          },
+          id: expect.any(String),
+          bountyId,
+          proofUrl: "https://github.com/test/repo/pull/123",
+          status: "PENDING",
         },
       });
 
@@ -439,12 +436,9 @@ describe("Bounty Proofs Integration Tests", () => {
       expect(data).toMatchObject({
         success: true,
         data: {
-          message: expect.stringContaining("approved"),
-          proof: {
-            id: proofId,
-            status: ProofStatus.ACCEPTED,
-            reviewNotes: "Great work! The implementation looks solid.",
-          },
+          id: proofId,
+          status: "ACCEPTED",
+          reviewNotes: "Great work! The implementation looks solid.",
         },
       });
 
@@ -481,12 +475,9 @@ describe("Bounty Proofs Integration Tests", () => {
       expect(data).toMatchObject({
         success: true,
         data: {
-          message: expect.stringContaining("rejected"),
-          proof: {
-            id: proofId,
-            status: ProofStatus.REJECTED,
-            reviewNotes: expect.stringContaining("test coverage"),
-          },
+          id: proofId,
+          status: "REJECTED",
+          reviewNotes: expect.stringContaining("test coverage"),
         },
       });
     });
@@ -639,7 +630,7 @@ describe("Bounty Proofs Integration Tests", () => {
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const submitData1 = (await parseResponse(submitResponse1)) as any;
-      const proof1Id = submitData1.data.proof.id;
+      const proof1Id = submitData1.data.id;
 
       // Verify bounty is IN_REVIEW
       const bounty = await db.bounty.findUnique({ where: { id: bountyId } });
@@ -684,7 +675,7 @@ describe("Bounty Proofs Integration Tests", () => {
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const submitData2 = (await parseResponse(submitResponse2)) as any;
-      const proof2Id = submitData2.data.proof.id;
+      const proof2Id = submitData2.data.id;
 
       // Step 4: Approve proof
       const approveRequest = createAuthedRequest(
