@@ -37,13 +37,17 @@ export default function NotificationsPage() {
   const [filterUnread, setFilterUnread] = useState<boolean | undefined>(undefined);
   const [filterType, setFilterType] = useState<string | undefined>(undefined);
 
-  const { data, isLoading } = useGetNotifications({ page, pageSize: 20 }, filterUnread, filterType);
+  const { data: response, isLoading } = useGetNotifications(
+    { page, pageSize: 20 },
+    filterUnread,
+    filterType
+  );
   const markAsRead = useMarkAsRead();
   const markAllAsRead = useMarkAllAsRead();
   const deleteNotification = useDeleteNotification();
 
-  const notifications = (data?.data || []) as Notification[];
-  const pagination = data?.pagination;
+  const notifications = (response?.data || []) as Notification[];
+  const pagination = response?.meta?.pagination;
   const hasUnread = notifications.some((n) => !n.read);
 
   const handleMarkAsRead = (notificationId: string) => {

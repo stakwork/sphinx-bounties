@@ -1,5 +1,14 @@
 import { apiFetch } from "@/lib/api/api-fetch";
 import { API_ROUTES } from "@/constants/api";
+
+/**
+ * Analytics API Client
+ *
+ * All methods return data unwrapped from ApiResponse<T>.data
+ * The API returns: { success: true, data: T, meta: { timestamp } }
+ * These methods extract and return just the data property.
+ */
+
 export interface UserStats {
   totalEarned: string;
   bountiesCompleted: number;
@@ -45,6 +54,10 @@ export interface WorkspaceStats {
 }
 
 export const analyticsClient = {
+  /**
+   * Get user statistics
+   * @returns UserStats data (unwrapped from ApiResponse.data)
+   */
   async getUserStats(pubkey: string): Promise<UserStats> {
     const response = await apiFetch(API_ROUTES.USERS.STATS(pubkey));
 
@@ -54,9 +67,13 @@ export const analyticsClient = {
     }
 
     const result = await response.json();
-    return result.stats;
+    return result.data;
   },
 
+  /**
+   * Get workspace statistics
+   * @returns WorkspaceStats data (unwrapped from ApiResponse.data)
+   */
   async getWorkspaceStats(workspaceId: string): Promise<WorkspaceStats> {
     const response = await apiFetch(`${API_ROUTES.ADMIN.WORKSPACES}/${workspaceId}/stats`);
 
@@ -66,6 +83,6 @@ export const analyticsClient = {
     }
 
     const result = await response.json();
-    return result;
+    return result.data;
   },
 };

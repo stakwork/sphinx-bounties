@@ -89,9 +89,15 @@ const bountiesQuerySchema = paginationSchema.merge(sortSchema).extend({
  *                 data:
  *                   type: array
  *                   items:
- *                     type: object
- *                 pagination:
- *                   $ref: '#/components/schemas/PaginationMeta'
+ *                     $ref: '#/components/schemas/Bounty'
+ *                 meta:
+ *                   type: object
+ *                   properties:
+ *                     timestamp:
+ *                       type: string
+ *                       format: date-time
+ *                     pagination:
+ *                       $ref: '#/components/schemas/PaginationMeta'
  *   post:
  *     tags: [Bounties]
  *     summary: Create bounty

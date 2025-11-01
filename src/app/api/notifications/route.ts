@@ -48,6 +48,25 @@ const listNotificationsSchema = z.object({
  *     responses:
  *       200:
  *         description: Paginated list of notifications
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Notification'
+ *                 meta:
+ *                   type: object
+ *                   properties:
+ *                     timestamp:
+ *                       type: string
+ *                       format: date-time
+ *                     pagination:
+ *                       $ref: '#/components/schemas/PaginationMeta'
  *       401:
  *         description: Unauthorized
  *   patch:

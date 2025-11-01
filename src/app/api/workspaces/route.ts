@@ -57,6 +57,25 @@ import type { WorkspaceListItem, CreateWorkspaceResponse } from "@/types/workspa
  *     responses:
  *       200:
  *         description: Paginated list of workspaces
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/WorkspaceListItem'
+ *                 meta:
+ *                   type: object
+ *                   properties:
+ *                     timestamp:
+ *                       type: string
+ *                       format: date-time
+ *                     pagination:
+ *                       $ref: '#/components/schemas/PaginationMeta'
  *       401:
  *         description: Unauthorized
  *   post:

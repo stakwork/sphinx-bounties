@@ -26,7 +26,10 @@ export default function WorkspacesPage() {
     pageSize,
   };
 
-  const { data, isLoading, error } = useGetWorkspaces(filters, pagination);
+  const { data: response, isLoading, error } = useGetWorkspaces(filters, pagination);
+
+  const workspaces = response?.data || [];
+  const paginationMeta = response?.meta?.pagination;
 
   if (!isAuthenticated) {
     return (
@@ -95,7 +98,7 @@ export default function WorkspacesPage() {
       {/* Content */}
       {!isLoading && (
         <>
-          {(!data || !Array.isArray(data.items) || data.items.length === 0) && (
+          {workspaces.length === 0 && (
             <div className="text-center py-16 border border-dashed border-neutral-300 rounded-lg">
               <Building2 className="h-16 w-16 text-neutral-300 mx-auto mb-4" />
               <h3 className="text-lg font-semibold mb-2">No Workspaces Yet</h3>
@@ -113,16 +116,16 @@ export default function WorkspacesPage() {
             </div>
           )}
 
-          {data && Array.isArray(data.items) && data.items.length > 0 && (
+          {workspaces.length > 0 && (
             <>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {data.items.map((workspace: WorkspaceListItem) => (
+                {workspaces.map((workspace: WorkspaceListItem) => (
                   <WorkspaceCard key={workspace.id} workspace={workspace} />
                 ))}
               </div>
 
               {/* Pagination */}
-              {data.pagination && data.pagination.totalPages > 1 && (
+              {paginationMeta && paginationMeta.totalPages > 1 && (
                 <div className="flex justify-center items-center gap-4 pt-4">
                   <Button
                     variant="outline"
@@ -132,12 +135,12 @@ export default function WorkspacesPage() {
                     Previous
                   </Button>
                   <span className="text-sm text-neutral-600">
-                    Page {data.pagination.page} of {data.pagination.totalPages}
+                    Page {paginationMeta.page} of {paginationMeta.totalPages}
                   </span>
                   <Button
                     variant="outline"
-                    onClick={() => setPage((p) => Math.min(data.pagination.totalPages, p + 1))}
-                    disabled={page === data.pagination.totalPages}
+                    onClick={() => setPage((p) => Math.min(paginationMeta.totalPages, p + 1))}
+                    disabled={page === paginationMeta.totalPages}
                   >
                     Next
                   </Button>

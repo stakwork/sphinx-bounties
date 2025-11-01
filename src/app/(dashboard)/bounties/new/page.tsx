@@ -33,7 +33,7 @@ export default function NewBountyPage() {
       const response = await fetch(API_ROUTES.WORKSPACES.BASE);
       if (!response.ok) throw new Error("Failed to fetch workspaces");
       const result = await response.json();
-      return result.data as Workspace[];
+      return (result.data || []) as Workspace[];
     },
     enabled: !!user,
   });
