@@ -1,16 +1,20 @@
 "use client";
 
+import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { useAuth, usePermissions } from "@/hooks";
-import { BountyStatus } from "@/types/enums";
+import { useMyBountyRequest, useCancelBountyRequest } from "@/hooks/queries";
+import { BountyStatus, BountyRequestStatus } from "@/types/enums";
 import type { BountyDetail } from "@/types";
-import { Loader2, Edit, Upload, CheckCircle, DollarSign } from "lucide-react";
+import { Loader2, Edit, Upload, CheckCircle, DollarSign, Clock, XCircle } from "lucide-react";
 import Link from "next/link";
 import { apiFetch } from "@/lib/api/api-fetch";
 import { API_ROUTES } from "@/constants";
+import { RequestBountyModal } from "./RequestBountyModal";
 
 interface BountyActionsProps {
   bounty: BountyDetail;
@@ -22,95 +26,22 @@ export function BountyActions({ bounty }: BountyActionsProps) {
   const { user } = useAuth();
   const { isAdmin } = usePermissions(bounty.workspace.id);
 
-  const claimMutation = useMutation({
-    mutationFn: async () => {
-      if (!user) throw new Error("Not authenticated");
-      const response = await apiFetch(API_ROUTES.BOUNTIES.ASSIGN(bounty.id), {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ assigneePubkey: user.pubkey }),
-      });
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error?.message || "Failed to claim bounty");
-      }
-      return await response.json();
-    },
-    onMutate: async () => {
-      // Optimistic update
-      await queryClient.cancelQueries({ queryKey: ["bounty", bounty.id] });
-      const previousBounty = queryClient.getQueryData(["bounty", bounty.id]);
+  const [showRequestModal, setShowRequestModal] = useState(false);
 
-      queryClient.setQueryData(["bounty", bounty.id], (old: unknown) => {
-        const oldData = old as { success: boolean; data: BountyDetail } | undefined;
-        if (!oldData) return old;
+  const { data: myRequest } = useMyBountyRequest(bounty.id);
+  const cancelRequestMutation = useCancelBountyRequest();
 
-        return {
-          ...oldData,
-          data: {
-            ...oldData.data,
-            status: BountyStatus.ASSIGNED,
-            assignee: user
-              ? {
-                  pubkey: user.pubkey,
-                  username: user.username,
-                  alias: user.alias,
-                  avatarUrl: user.avatarUrl,
-                  description: null,
-                  githubUsername: null,
-                  twitterUsername: null,
-                }
-              : null,
-            assignedAt: new Date(),
-          },
-        };
-      });
-
-      return { previousBounty };
-    },
-    onSuccess: () => {
-      toast.success("Bounty claimed successfully!");
-      queryClient.invalidateQueries({ queryKey: ["bounty", bounty.id] });
-      queryClient.invalidateQueries({ queryKey: ["bounties"] });
-      router.refresh();
-    },
-    onError: (error: Error, _variables, context) => {
-      toast.error(error.message || "Failed to claim bounty");
-      if (context?.previousBounty) {
-        queryClient.setQueryData(["bounty", bounty.id], context.previousBounty);
-      }
-    },
-  });
-
-  const unclaimMutation = useMutation({
-    mutationFn: async () => {
-      const response = await apiFetch(API_ROUTES.BOUNTIES.UNASSIGN(bounty.id), {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-      });
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error?.message || "Failed to unclaim bounty");
-      }
-      return await response.json();
-    },
-    onSuccess: () => {
-      toast.success("Bounty unclaimed successfully!");
-      queryClient.invalidateQueries({ queryKey: ["bounty", bounty.id] });
-      queryClient.invalidateQueries({ queryKey: ["bounties"] });
-      router.refresh();
-    },
-    onError: (error: Error) => {
-      toast.error(error.message || "Failed to unclaim bounty");
-    },
-  });
-
-  const handleClaim = () => {
-    claimMutation.mutate();
+  const handleRequestToWork = () => {
+    setShowRequestModal(true);
   };
 
-  const handleUnclaim = () => {
-    unclaimMutation.mutate();
+  const handleCancelRequest = () => {
+    if (myRequest?.id) {
+      cancelRequestMutation.mutate({
+        bountyId: bounty.id,
+        requestId: myRequest.id,
+      });
+    }
   };
 
   const handleSubmitProof = () => {
@@ -194,13 +125,16 @@ export function BountyActions({ bounty }: BountyActionsProps) {
     }
   };
 
-  // Check if current user is the assignee
   const isAssignee = user && bounty.assignee && bounty.assignee.pubkey === user.pubkey;
 
-  // Determine which actions to show based on status and permissions
-  const showClaimButton = bounty.status === BountyStatus.OPEN && !bounty.assignee && user;
+  const hasPendingRequest = myRequest?.status === BountyRequestStatus.PENDING;
 
-  const showUnclaimButton = bounty.status === BountyStatus.ASSIGNED && isAssignee;
+  const showRequestButton =
+    bounty.status === BountyStatus.OPEN && user && !bounty.assignee && !myRequest;
+
+  const showCancelRequestButton = bounty.status === BountyStatus.OPEN && hasPendingRequest;
+
+  const showRequestStatusBadge = myRequest && bounty.status === BountyStatus.OPEN;
 
   const showSubmitProofButton = bounty.status === BountyStatus.ASSIGNED && isAssignee;
 
@@ -210,10 +144,10 @@ export function BountyActions({ bounty }: BountyActionsProps) {
 
   const showEditButton = isAdmin && bounty.status !== BountyStatus.PAID;
 
-  // If no actions available, don't render anything
   if (
-    !showClaimButton &&
-    !showUnclaimButton &&
+    !showRequestButton &&
+    !showCancelRequestButton &&
+    !showRequestStatusBadge &&
     !showSubmitProofButton &&
     !showCompleteButton &&
     !showMarkPaidButton &&
@@ -223,36 +157,51 @@ export function BountyActions({ bounty }: BountyActionsProps) {
   }
 
   const isLoading =
-    claimMutation.isPending ||
-    unclaimMutation.isPending ||
-    completeMutation.isPending ||
-    markPaidMutation.isPending;
+    cancelRequestMutation.isPending || completeMutation.isPending || markPaidMutation.isPending;
 
   return (
     <div className="flex items-center gap-3 pt-6 border-t border-neutral-200">
-      {showClaimButton && (
+      {showRequestButton && (
         <Button
-          onClick={handleClaim}
+          onClick={handleRequestToWork}
           disabled={isLoading}
           size="lg"
           className="flex-1 sm:flex-none"
         >
-          {claimMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          Claim Bounty
+          Request to Work
         </Button>
       )}
 
-      {showUnclaimButton && (
+      {showCancelRequestButton && (
         <Button
-          onClick={handleUnclaim}
+          onClick={handleCancelRequest}
           disabled={isLoading}
           variant="outline"
           size="lg"
           className="flex-1 sm:flex-none"
         >
-          {unclaimMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          Unclaim
+          {cancelRequestMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          {!cancelRequestMutation.isPending && <XCircle className="h-4 w-4 mr-2" />}
+          Cancel Request
         </Button>
+      )}
+
+      {showRequestStatusBadge && myRequest && (
+        <Badge
+          variant={
+            myRequest.status === BountyRequestStatus.PENDING
+              ? "default"
+              : myRequest.status === BountyRequestStatus.APPROVED
+                ? "secondary"
+                : "destructive"
+          }
+          className="flex items-center gap-1.5 px-3 py-1.5"
+        >
+          <Clock className="h-3.5 w-3.5" />
+          {myRequest.status === BountyRequestStatus.PENDING && "Request Pending"}
+          {myRequest.status === BountyRequestStatus.APPROVED && "Request Approved"}
+          {myRequest.status === BountyRequestStatus.REJECTED && "Request Rejected"}
+        </Badge>
       )}
 
       {showSubmitProofButton && (
@@ -302,6 +251,13 @@ export function BountyActions({ bounty }: BountyActionsProps) {
           </Button>
         </Link>
       )}
+
+      <RequestBountyModal
+        open={showRequestModal}
+        onOpenChange={setShowRequestModal}
+        bountyId={bounty.id}
+        bountyTitle={bounty.title}
+      />
     </div>
   );
 }
