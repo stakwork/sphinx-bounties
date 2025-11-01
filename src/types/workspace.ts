@@ -70,41 +70,37 @@ export interface WorkspaceDetailsResponse {
 }
 
 export interface CreateWorkspaceResponse {
-  workspace: {
-    id: string;
-    name: string;
-    description: string | null;
-    mission: string | null;
-    avatarUrl: string | null;
-    websiteUrl: string | null;
-    githubUrl: string | null;
-    ownerPubkey: string;
-    createdAt: string;
-    updatedAt: string;
-    role: string;
-    joinedAt: string;
-    memberCount: number;
-    bountyCount: number;
-    budget: WorkspaceBudget | null;
-  };
+  id: string;
+  name: string;
+  description: string | null;
+  mission: string | null;
+  avatarUrl: string | null;
+  websiteUrl: string | null;
+  githubUrl: string | null;
+  ownerPubkey: string;
+  createdAt: string;
+  updatedAt: string;
+  role: string;
+  joinedAt: string;
+  memberCount: number;
+  bountyCount: number;
+  budget: WorkspaceBudget | null;
 }
 
 export interface UpdateWorkspaceResponse {
-  workspace: {
-    id: string;
-    name: string;
-    description: string | null;
-    mission: string | null;
-    avatarUrl: string | null;
-    websiteUrl: string | null;
-    githubUrl: string | null;
-    ownerPubkey: string;
-    createdAt: string;
-    updatedAt: string;
-    role: string;
-    joinedAt: string;
-    budget: WorkspaceBudget | null;
-  };
+  id: string;
+  name: string;
+  description: string | null;
+  mission: string | null;
+  avatarUrl: string | null;
+  websiteUrl: string | null;
+  githubUrl: string | null;
+  ownerPubkey: string;
+  createdAt: string;
+  updatedAt: string;
+  role: string;
+  joinedAt: string;
+  budget: WorkspaceBudget | null;
 }
 
 export interface DeleteWorkspaceResponse {

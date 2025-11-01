@@ -72,20 +72,20 @@ describe("Workspace CRUD Integration", () => {
 
       expect(response.status).toBe(201);
       expect(data.success).toBe(true);
-      expect(data.data.workspace.name).toBe(workspaceName);
-      expect(data.data.workspace.description).toBe("Test workspace description");
-      expect(data.data.workspace.ownerPubkey).toBe(testPubkey);
+      expect(data.data.name).toBe(workspaceName);
+      expect(data.data.description).toBe("Test workspace description");
+      expect(data.data.ownerPubkey).toBe(testPubkey);
 
-      expect(data.data.workspace.budget).toBeDefined();
-      expect(data.data.workspace.budget.totalBudget).toBe("0");
-      expect(data.data.workspace.budget.availableBudget).toBe("0");
+      expect(data.data.budget).toBeDefined();
+      expect(data.data.budget.totalBudget).toBe("0");
+      expect(data.data.budget.availableBudget).toBe("0");
 
-      expect(data.data.workspace.role).toBe(WorkspaceRole.OWNER);
-      expect(data.data.workspace.memberCount).toBe(1);
-      expect(data.data.workspace.bountyCount).toBe(0);
+      expect(data.data.role).toBe(WorkspaceRole.OWNER);
+      expect(data.data.memberCount).toBe(1);
+      expect(data.data.bountyCount).toBe(0);
 
       const workspace = await db.workspace.findUnique({
-        where: { id: data.data.workspace.id },
+        where: { id: data.data.id },
         include: {
           budget: true,
           members: true,

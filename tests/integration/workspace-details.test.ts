@@ -49,7 +49,7 @@ describe("Workspace Details Integration", () => {
       const result = await response.json();
 
       expect(response.status).toBe(200);
-      expect(result.data.workspace).toMatchObject({
+      expect(result.data).toMatchObject({
         id: workspaceId,
         name: "Test Workspace",
         description: "Test description",
@@ -57,9 +57,9 @@ describe("Workspace Details Integration", () => {
         memberCount: 1,
         bountyCount: 0,
       });
-      expect(result.data.workspace.budget).toBeDefined();
-      expect(result.data.workspace.members).toHaveLength(1);
-      expect(result.data.workspace.members[0].user).toBeDefined();
+      expect(result.data.budget).toBeDefined();
+      expect(result.data.members).toHaveLength(1);
+      expect(result.data.members[0].user).toBeDefined();
     });
 
     it("requires authentication", async () => {
@@ -107,8 +107,8 @@ describe("Workspace Details Integration", () => {
       const result = await response.json();
 
       expect(response.status).toBe(200);
-      expect(result.data.workspace.name).toBe("Updated Workspace");
-      expect(result.data.workspace.description).toBe("Updated description");
+      expect(result.data.name).toBe("Updated Workspace");
+      expect(result.data.description).toBe("Updated description");
     });
 
     it("allows partial updates", async () => {
@@ -124,8 +124,8 @@ describe("Workspace Details Integration", () => {
       const result = await response.json();
 
       expect(response.status).toBe(200);
-      expect(result.data.workspace.mission).toBe("New mission statement for the workspace");
-      expect(result.data.workspace.name).toBe("Updated Workspace");
+      expect(result.data.mission).toBe("New mission statement for the workspace");
+      expect(result.data.name).toBe("Updated Workspace");
     });
 
     it("requires authentication", async () => {
