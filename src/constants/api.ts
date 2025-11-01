@@ -68,6 +68,7 @@ export const API_ROUTES = {
     ANALYTICS: "/api/admin/analytics",
     TRANSACTIONS: "/api/admin/transactions",
   },
+  LEADERBOARD: "/api/leaderboard",
 } as const;
 
 export const ROUTES = {

@@ -1,10 +1,11 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { userClient } from "@/lib/api/user-client";
+import { apiFetch } from "@/lib/api/api-fetch";
+import { API_ROUTES } from "@/constants/api";
 import type { UserFilters, UserSortParams } from "@/types/filters";
 import type { PaginationParams } from "@/types";
 import {
   createUserAction,
-  updateProfileAction,
   updateSocialLinksAction,
   updateNotificationSettingsAction,
   deleteUserAction,
@@ -126,9 +127,35 @@ export function useUpdateProfile() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ pubkey, formData }: { pubkey: string; formData: FormData }) => {
-      const result = await updateProfileAction(pubkey, formData);
-      return result.data;
+    mutationFn: async ({
+      pubkey,
+      data,
+    }: {
+      pubkey: string;
+      data: {
+        username?: string;
+        alias?: string;
+        description?: string;
+        avatarUrl?: string;
+        contactKey?: string;
+        routeHint?: string;
+        githubUsername?: string;
+        twitterUsername?: string;
+      };
+    }) => {
+      const response = await apiFetch(API_ROUTES.USERS.BY_ID(pubkey), {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Failed to update profile");
+      }
+
+      const result = await response.json();
+      return result.data.user;
     },
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: userKeys.detail(variables.pubkey) });

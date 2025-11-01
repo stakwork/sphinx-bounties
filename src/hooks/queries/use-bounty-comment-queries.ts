@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { API_ROUTES } from "@/constants/api";
 import type { PaginationParams } from "@/types";
 import { showSuccess, showError } from "@/lib/toast";
 
@@ -15,7 +16,7 @@ async function getComments(bountyId: string, pagination?: PaginationParams) {
   if (pagination?.page) params.append("page", pagination.page.toString());
   if (pagination?.pageSize) params.append("limit", pagination.pageSize.toString());
 
-  const response = await fetch(`/api/bounties/${bountyId}/comments?${params.toString()}`);
+  const response = await fetch(`${API_ROUTES.BOUNTIES.COMMENTS(bountyId)}?${params.toString()}`);
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
@@ -27,7 +28,7 @@ async function getComments(bountyId: string, pagination?: PaginationParams) {
 }
 
 async function createComment(bountyId: string, content: string) {
-  const response = await fetch(`/api/bounties/${bountyId}/comments`, {
+  const response = await fetch(API_ROUTES.BOUNTIES.COMMENTS(bountyId), {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -45,7 +46,7 @@ async function createComment(bountyId: string, content: string) {
 }
 
 async function updateComment(bountyId: string, commentId: string, content: string) {
-  const response = await fetch(`/api/bounties/${bountyId}/comments/${commentId}`, {
+  const response = await fetch(API_ROUTES.BOUNTIES.COMMENT_BY_ID(bountyId, commentId), {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",
@@ -63,7 +64,7 @@ async function updateComment(bountyId: string, commentId: string, content: strin
 }
 
 async function deleteComment(bountyId: string, commentId: string) {
-  const response = await fetch(`/api/bounties/${bountyId}/comments/${commentId}`, {
+  const response = await fetch(API_ROUTES.BOUNTIES.COMMENT_BY_ID(bountyId, commentId), {
     method: "DELETE",
   });
 

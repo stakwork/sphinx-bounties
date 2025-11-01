@@ -44,14 +44,11 @@ export function UpdateMemberRoleDialog({
       return;
     }
 
-    const formData = new FormData();
-    formData.append("role", selectedRole);
-
     try {
       await updateMemberRole.mutateAsync({
         workspaceId,
-        memberId: member.id,
-        formData,
+        userPubkey: member.userPubkey,
+        data: { role: selectedRole },
       });
       onOpenChange(false);
     } catch (_error) {

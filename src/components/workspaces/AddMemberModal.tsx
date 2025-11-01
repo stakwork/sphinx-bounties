@@ -40,12 +40,14 @@ export function AddMemberModal({ workspaceId, open, onOpenChange }: AddMemberMod
       return;
     }
 
-    const formData = new FormData();
-    formData.append("userPubkey", userPubkey.trim());
-    formData.append("role", role);
-
     try {
-      await addMember.mutateAsync({ workspaceId, formData });
+      await addMember.mutateAsync({
+        workspaceId,
+        data: {
+          userPubkey: userPubkey.trim(),
+          role,
+        },
+      });
       setUserPubkey("");
       setRole("CONTRIBUTOR");
       onOpenChange(false);
