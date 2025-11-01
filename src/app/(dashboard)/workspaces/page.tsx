@@ -15,7 +15,7 @@ export default function WorkspacesPage() {
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const limit = 12;
+  const pageSize = 12;
 
   const filters = {
     search: search || undefined,
@@ -23,7 +23,7 @@ export default function WorkspacesPage() {
 
   const pagination = {
     page,
-    limit,
+    pageSize,
   };
 
   const { data, isLoading, error } = useGetWorkspaces(filters, pagination);

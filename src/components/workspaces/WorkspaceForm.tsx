@@ -51,10 +51,10 @@ export function WorkspaceForm({ workspace, onSuccess }: WorkspaceFormProps) {
       name: name.trim(),
     };
 
-    if (description.trim()) data.description = description.trim();
-    if (mission.trim()) data.mission = mission.trim();
-    if (websiteUrl.trim()) data.websiteUrl = websiteUrl.trim();
-    if (githubUrl.trim()) data.githubUrl = githubUrl.trim();
+    if (description) data.description = description.trim();
+    if (mission) data.mission = mission.trim();
+    if (websiteUrl) data.websiteUrl = websiteUrl.trim();
+    if (githubUrl) data.githubUrl = githubUrl.trim();
 
     if (isEditing && workspace) {
       await updateMutation.mutateAsync(

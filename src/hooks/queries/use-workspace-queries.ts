@@ -131,8 +131,18 @@ export function useCreateWorkspace() {
       });
 
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || "Failed to create workspace");
+        const error = await response
+          .json()
+          .catch(() => ({ message: "Failed to create workspace" }));
+        console.error("Create workspace error:", error);
+        if (error.error?.details) {
+          const details = error.error.details;
+          throw new Error(
+            error.error.message || error.message || "Validation failed: " + JSON.stringify(details)
+          );
+        }
+
+        throw new Error(error.error?.message || error.message || "Failed to create workspace");
       }
 
       const result = await response.json();

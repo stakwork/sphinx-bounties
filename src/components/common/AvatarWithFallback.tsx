@@ -35,7 +35,7 @@ export function AvatarWithFallback({
   };
 
   const getFallbackText = () => {
-    const text = fallbackText || alt;
+    const text = fallbackText || alt || "??";
     const words = text.trim().split(/\s+/);
 
     if (words.length >= 2) {
@@ -45,7 +45,7 @@ export function AvatarWithFallback({
   };
 
   const getGradientClass = () => {
-    const text = fallbackText || alt;
+    const text = fallbackText || alt || "default";
     let hash = 0;
     for (let i = 0; i < text.length; i++) {
       hash = text.charCodeAt(i) + ((hash << 5) - hash);

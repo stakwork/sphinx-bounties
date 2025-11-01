@@ -14,41 +14,57 @@ export const createWorkspaceSchema = z.object({
 
   description: z
     .string()
-    .min(10, "Description must be at least 10 characters")
-    .max(120, "Description must not exceed 120 characters")
     .trim()
     .optional()
-    .or(z.literal("")),
+    .transform((val) => (val === "" ? undefined : val))
+    .pipe(
+      z
+        .string()
+        .min(10, "Description must be at least 10 characters")
+        .max(120, "Description must not exceed 120 characters")
+        .optional()
+    ),
 
   mission: z
     .string()
-    .min(20, "Mission must be at least 20 characters")
-    .max(500, "Mission must not exceed 500 characters")
     .trim()
     .optional()
-    .or(z.literal("")),
+    .transform((val) => (val === "" ? undefined : val))
+    .pipe(
+      z
+        .string()
+        .min(20, "Mission must be at least 20 characters")
+        .max(500, "Mission must not exceed 500 characters")
+        .optional()
+    ),
 
   avatarUrl: z
     .string()
-    .url("Must be a valid URL")
-    .max(2048, "URL too long")
+    .trim()
     .optional()
-    .or(z.literal("")),
+    .transform((val) => (val === "" ? undefined : val))
+    .pipe(z.string().url("Must be a valid URL").max(2048, "URL too long").optional()),
 
   websiteUrl: z
     .string()
-    .url("Must be a valid URL")
-    .max(2048, "URL too long")
+    .trim()
     .optional()
-    .or(z.literal("")),
+    .transform((val) => (val === "" ? undefined : val))
+    .pipe(z.string().url("Must be a valid URL").max(2048, "URL too long").optional()),
 
   githubUrl: z
     .string()
-    .url("Must be a valid URL")
-    .regex(/^https:\/\/github\.com\/[\w-]+\/?$/, "Must be a valid GitHub organization URL")
-    .max(2048, "URL too long")
+    .trim()
     .optional()
-    .or(z.literal("")),
+    .transform((val) => (val === "" ? undefined : val))
+    .pipe(
+      z
+        .string()
+        .url("Must be a valid URL")
+        .regex(/^https:\/\/github\.com\/[\w-]+\/?$/, "Must be a valid GitHub organization URL")
+        .max(2048, "URL too long")
+        .optional()
+    ),
 });
 
 export const updateWorkspaceSchema = z.object({
