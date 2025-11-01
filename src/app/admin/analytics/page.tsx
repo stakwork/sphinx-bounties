@@ -22,14 +22,12 @@ import {
   TrendingUp,
   Users,
   Briefcase,
-  DollarSign,
   Activity,
   ArrowUp,
   ArrowDown,
   Download,
   Calendar,
   Target,
-  Zap,
   Clock,
   CheckCircle,
   Award,
@@ -45,6 +43,7 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useGetAdminAnalytics } from "@/hooks/queries/use-analytics-queries";
 
 type TimeRange = "7d" | "30d" | "90d" | "all";
 
@@ -54,115 +53,97 @@ interface MetricData {
   trend: "up" | "down";
 }
 
-interface ChartDataPoint {
-  date: string;
-  users: number;
-  bounties: number;
-  workspaces: number;
-  transactions: number;
-  volume: number;
-}
-
 export default function AdminAnalyticsPage() {
   const [timeRange, setTimeRange] = useState<TimeRange>("30d");
-  const isLoading = false;
+  const { data: analyticsData, isLoading } = useGetAdminAnalytics(timeRange);
 
-  // Generate mock analytics data
-  const analyticsData = useMemo(() => {
-    const days = timeRange === "7d" ? 7 : timeRange === "30d" ? 30 : timeRange === "90d" ? 90 : 365;
-    const chartData: ChartDataPoint[] = [];
+  const chartData = useMemo(() => analyticsData?.chartData || [], [analyticsData?.chartData]);
 
-    for (let i = days - 1; i >= 0; i--) {
-      const date = new Date();
-      date.setDate(date.getDate() - i);
-      chartData.push({
-        date: date.toISOString().split("T")[0],
-        users: Math.floor(Math.random() * 50) + 20,
-        bounties: Math.floor(Math.random() * 30) + 10,
-        workspaces: Math.floor(Math.random() * 10) + 5,
-        transactions: Math.floor(Math.random() * 40) + 15,
-        volume: Math.floor(Math.random() * 500000) + 100000,
-      });
+  const metrics = useMemo(() => {
+    if (!chartData.length) {
+      return {
+        totalUsers: 0,
+        totalBounties: 0,
+        totalWorkspaces: 0,
+        userGrowth: 0,
+        bountyGrowth: 0,
+        workspaceGrowth: 0,
+        avgUsersPerDay: 0,
+        avgBountiesPerDay: 0,
+        avgWorkspacesPerDay: 0,
+      };
     }
 
-    return chartData;
-  }, [timeRange]);
+    const totalUsers = chartData.reduce((sum, d) => sum + d.users, 0);
+    const totalBounties = chartData.reduce((sum, d) => sum + d.bounties, 0);
+    const totalWorkspaces = chartData.reduce((sum, d) => sum + d.workspaces, 0);
 
-  // Calculate metrics
-  const metrics = useMemo(() => {
-    const totalUsers = analyticsData.reduce((sum, d) => sum + d.users, 0);
-    const totalBounties = analyticsData.reduce((sum, d) => sum + d.bounties, 0);
-    const totalWorkspaces = analyticsData.reduce((sum, d) => sum + d.workspaces, 0);
-    const totalVolume = analyticsData.reduce((sum, d) => sum + d.volume, 0);
-    const totalTransactions = analyticsData.reduce((sum, d) => sum + d.transactions, 0);
-
-    // Calculate growth (compare first half to second half)
-    const midpoint = Math.floor(analyticsData.length / 2);
-    const firstHalf = analyticsData.slice(0, midpoint);
-    const secondHalf = analyticsData.slice(midpoint);
+    const midpoint = Math.floor(chartData.length / 2);
+    const firstHalf = chartData.slice(0, midpoint);
+    const secondHalf = chartData.slice(midpoint);
 
     const firstHalfUsers = firstHalf.reduce((sum, d) => sum + d.users, 0);
     const secondHalfUsers = secondHalf.reduce((sum, d) => sum + d.users, 0);
-    const userGrowth = ((secondHalfUsers - firstHalfUsers) / firstHalfUsers) * 100;
+    const userGrowth =
+      firstHalfUsers > 0 ? ((secondHalfUsers - firstHalfUsers) / firstHalfUsers) * 100 : 0;
 
     const firstHalfBounties = firstHalf.reduce((sum, d) => sum + d.bounties, 0);
     const secondHalfBounties = secondHalf.reduce((sum, d) => sum + d.bounties, 0);
-    const bountyGrowth = ((secondHalfBounties - firstHalfBounties) / firstHalfBounties) * 100;
+    const bountyGrowth =
+      firstHalfBounties > 0
+        ? ((secondHalfBounties - firstHalfBounties) / firstHalfBounties) * 100
+        : 0;
 
-    const firstHalfVolume = firstHalf.reduce((sum, d) => sum + d.volume, 0);
-    const secondHalfVolume = secondHalf.reduce((sum, d) => sum + d.volume, 0);
-    const volumeGrowth = ((secondHalfVolume - firstHalfVolume) / firstHalfVolume) * 100;
+    const firstHalfWorkspaces = firstHalf.reduce((sum, d) => sum + d.workspaces, 0);
+    const secondHalfWorkspaces = secondHalf.reduce((sum, d) => sum + d.workspaces, 0);
+    const workspaceGrowth =
+      firstHalfWorkspaces > 0
+        ? ((secondHalfWorkspaces - firstHalfWorkspaces) / firstHalfWorkspaces) * 100
+        : 0;
 
     return {
       totalUsers,
       totalBounties,
       totalWorkspaces,
-      totalVolume,
-      totalTransactions,
       userGrowth,
       bountyGrowth,
-      volumeGrowth,
-      avgUsersPerDay: totalUsers / analyticsData.length,
-      avgBountiesPerDay: totalBounties / analyticsData.length,
-      avgVolumePerDay: totalVolume / analyticsData.length,
+      workspaceGrowth,
+      avgUsersPerDay: totalUsers / chartData.length,
+      avgBountiesPerDay: totalBounties / chartData.length,
+      avgWorkspacesPerDay: totalWorkspaces / chartData.length,
     };
-  }, [analyticsData]);
+  }, [chartData]);
 
-  // Top performing data
   const topMetrics = useMemo(() => {
+    if (!chartData.length) {
+      return {
+        mostActiveDay: { date: "", users: 0, bounties: 0, workspaces: 0 },
+        peakBountiesDay: { date: "", users: 0, bounties: 0, workspaces: 0 },
+        peakWorkspacesDay: { date: "", users: 0, bounties: 0, workspaces: 0 },
+      };
+    }
+
     return {
-      mostActiveDay: analyticsData.reduce(
-        (max, d) => (d.users > max.users ? d : max),
-        analyticsData[0]
-      ),
-      highestVolumeDay: analyticsData.reduce(
-        (max, d) => (d.volume > max.volume ? d : max),
-        analyticsData[0]
-      ),
-      peakBountiesDay: analyticsData.reduce(
+      mostActiveDay: chartData.reduce((max, d) => (d.users > max.users ? d : max), chartData[0]),
+      peakBountiesDay: chartData.reduce(
         (max, d) => (d.bounties > max.bounties ? d : max),
-        analyticsData[0]
+        chartData[0]
+      ),
+      peakWorkspacesDay: chartData.reduce(
+        (max, d) => (d.workspaces > max.workspaces ? d : max),
+        chartData[0]
       ),
     };
-  }, [analyticsData]);
+  }, [chartData]);
 
   // Export analytics to CSV
   const exportToCSV = () => {
-    const headers = [
-      "Date",
-      "New Users",
-      "New Bounties",
-      "New Workspaces",
-      "Transactions",
-      "Volume (sats)",
-    ];
-    const rows = analyticsData.map((d) => [
+    const headers = ["Date", "New Users", "New Bounties", "New Workspaces"];
+    const rows = chartData.map((d) => [
       d.date,
       d.users.toString(),
       d.bounties.toString(),
       d.workspaces.toString(),
-      d.transactions.toString(),
-      d.volume.toString(),
     ]);
 
     const csv = [headers, ...rows].map((row) => row.join(",")).join("\n");
@@ -269,15 +250,8 @@ export default function AdminAnalyticsPage() {
                 icon={Briefcase}
                 title="Total Workspaces"
                 value={metrics.totalWorkspaces}
-                change={12.5}
-                trend="up"
-              />
-              <MetricCard
-                icon={DollarSign}
-                title="Total Volume"
-                value={Math.floor(metrics.totalVolume / 1000)}
-                change={metrics.volumeGrowth}
-                trend={metrics.volumeGrowth >= 0 ? "up" : "down"}
+                change={metrics.workspaceGrowth}
+                trend={metrics.workspaceGrowth >= 0 ? "up" : "down"}
               />
             </>
           )}
@@ -294,7 +268,7 @@ export default function AdminAnalyticsPage() {
           </CardHeader>
           <CardContent>
             <div className="h-[300px] flex items-end justify-between gap-1">
-              {analyticsData.slice(-20).map((data, i) => (
+              {chartData.slice(-20).map((data, i) => (
                 <div key={i} className="flex-1 flex flex-col items-center gap-1">
                   <div
                     className="w-full bg-blue-500 rounded-t hover:bg-blue-600 transition-colors cursor-pointer"
@@ -333,7 +307,7 @@ export default function AdminAnalyticsPage() {
           </CardHeader>
           <CardContent>
             <div className="h-[300px] flex items-end justify-between gap-1">
-              {analyticsData.slice(-20).map((data, i) => (
+              {chartData.slice(-20).map((data, i) => (
                 <div key={i} className="flex-1 flex flex-col items-center gap-1">
                   <div
                     className="w-full bg-green-500 rounded-t hover:bg-green-600 transition-colors cursor-pointer"
@@ -364,20 +338,20 @@ export default function AdminAnalyticsPage() {
           </CardContent>
         </Card>
 
-        {/* Transaction Volume Chart */}
+        {/* Workspace Growth Chart */}
         <Card>
           <CardHeader>
-            <CardTitle>Transaction Volume</CardTitle>
-            <CardDescription>Daily transaction volume in sats</CardDescription>
+            <CardTitle>Workspace Growth</CardTitle>
+            <CardDescription>New workspaces created over time</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="h-[300px] flex items-end justify-between gap-1">
-              {analyticsData.slice(-20).map((data, i) => (
+              {chartData.slice(-20).map((data, i) => (
                 <div key={i} className="flex-1 flex flex-col items-center gap-1">
                   <div
-                    className="w-full bg-orange-500 rounded-t hover:bg-orange-600 transition-colors cursor-pointer"
-                    style={{ height: `${(data.volume / 600000) * 100}%`, minHeight: "10px" }}
-                    title={`${data.date}: ${data.volume.toLocaleString()} sats`}
+                    className="w-full bg-purple-500 rounded-t hover:bg-purple-600 transition-colors cursor-pointer"
+                    style={{ height: `${(data.workspaces / 15) * 100}%`, minHeight: "10px" }}
+                    title={`${data.date}: ${data.workspaces} workspaces`}
                   />
                   {i % 5 === 0 && (
                     <span className="text-xs text-muted-foreground rotate-45 origin-left whitespace-nowrap">
@@ -392,12 +366,12 @@ export default function AdminAnalyticsPage() {
             </div>
             <div className="mt-4 flex items-center justify-between text-sm">
               <div>
-                <span className="font-semibold">{Math.floor(metrics.avgVolumePerDay / 1000)}K</span>
-                <span className="text-muted-foreground"> sats avg/day</span>
+                <span className="font-semibold">{metrics.avgWorkspacesPerDay.toFixed(1)}</span>
+                <span className="text-muted-foreground"> avg/day</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-3 h-3 bg-orange-500 rounded" />
-                <span className="text-muted-foreground">Volume (sats)</span>
+                <div className="w-3 h-3 bg-purple-500 rounded" />
+                <span className="text-muted-foreground">Workspaces</span>
               </div>
             </div>
           </CardContent>
@@ -448,15 +422,6 @@ export default function AdminAnalyticsPage() {
                   <div className="bg-purple-500 h-full rounded-full" style={{ width: "45%" }} />
                 </div>
               </div>
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium">Transactions</span>
-                  <span className="text-sm text-muted-foreground">{metrics.totalTransactions}</span>
-                </div>
-                <div className="w-full bg-secondary h-2 rounded-full overflow-hidden">
-                  <div className="bg-orange-500 h-full rounded-full" style={{ width: "78%" }} />
-                </div>
-              </div>
             </div>
           </CardContent>
         </Card>
@@ -489,18 +454,16 @@ export default function AdminAnalyticsPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Zap className="h-5 w-5 text-orange-500" />
-              Highest Volume Day
+              <Briefcase className="h-5 w-5 text-purple-500" />
+              Peak Workspaces Day
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
-              <div className="text-3xl font-bold">
-                {Math.floor(topMetrics.highestVolumeDay.volume / 1000)}K
-              </div>
-              <div className="text-sm text-muted-foreground">sats transacted</div>
+              <div className="text-3xl font-bold">{topMetrics.peakWorkspacesDay.workspaces}</div>
+              <div className="text-sm text-muted-foreground">workspaces created</div>
               <Badge variant="secondary" className="mt-2">
-                {new Date(topMetrics.highestVolumeDay.date).toLocaleDateString("en-US", {
+                {new Date(topMetrics.peakWorkspacesDay.date).toLocaleDateString("en-US", {
                   month: "short",
                   day: "numeric",
                   year: "numeric",
@@ -569,39 +532,6 @@ export default function AdminAnalyticsPage() {
                   <span className="font-medium">Monthly Growth Rate</span>
                 </div>
                 <span className="text-2xl font-bold">+24%</span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Financial Summary</CardTitle>
-            <CardDescription>Transaction and earnings overview</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="font-medium">Total Transactions</span>
-                <span className="text-2xl font-bold">{metrics.totalTransactions}</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="font-medium">Total Volume (sats)</span>
-                <span className="text-2xl font-bold">
-                  {Math.floor(metrics.totalVolume / 1000)}K
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="font-medium">Avg. Transaction Size</span>
-                <span className="text-2xl font-bold">
-                  {Math.floor(metrics.totalVolume / metrics.totalTransactions).toLocaleString()}
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="font-medium">Daily Avg. Volume</span>
-                <span className="text-2xl font-bold">
-                  {Math.floor(metrics.avgVolumePerDay / 1000)}K
-                </span>
               </div>
             </div>
           </CardContent>
