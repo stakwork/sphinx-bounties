@@ -4,14 +4,19 @@ import { verifyJWT, signJWT } from "./jwt";
 import { AUTH_COOKIE_NAME, COOKIE_MAX_AGE } from "./constants";
 import type { Session } from "@/types/auth";
 
-export async function setSessionCookie(pubkey: string): Promise<string> {
+export async function setSessionCookie(pubkey: string, request?: NextRequest): Promise<string> {
   const token = await signJWT({ pubkey });
 
   const cookieStore = await cookies();
+
+  const isNgrok = request?.headers.get("host")?.includes("ngrok") || false;
+  const isProduction = process.env.NODE_ENV === "production";
+  const needsCrossSiteCookies = isNgrok || isProduction;
+
   cookieStore.set(AUTH_COOKIE_NAME, token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
+    secure: needsCrossSiteCookies,
+    sameSite: needsCrossSiteCookies ? "none" : "lax",
     maxAge: COOKIE_MAX_AGE,
     path: "/",
   });

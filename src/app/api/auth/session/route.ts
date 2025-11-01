@@ -136,7 +136,7 @@ export async function POST(request: NextRequest) {
       return apiError({ code: ErrorCode.NOT_FOUND, message: "User not found" }, 404);
     }
 
-    await setSessionCookie(user.pubkey);
+    await setSessionCookie(user.pubkey, request);
 
     return apiSuccess({
       authenticated: true,

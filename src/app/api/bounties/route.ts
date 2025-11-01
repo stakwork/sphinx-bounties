@@ -21,7 +21,7 @@ import { mapBountyStatus, mapProgrammingLanguages } from "@/lib/api/enum-mapper"
 
 const bountiesQuerySchema = paginationSchema.merge(sortSchema).extend({
   status: z.nativeEnum(BountyStatus).optional(),
-  workspaceId: z.string().uuid().optional(),
+  workspaceId: z.string().optional(),
   assigneePubkey: z.string().optional(),
   creatorPubkey: z.string().optional(),
   search: z.string().optional(),
