@@ -13,6 +13,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/hooks";
 import { FileCheck, ExternalLink, Loader2, Upload } from "lucide-react";
 import type { BountyDetail } from "@/types";
+import { API_ROUTES } from "@/constants/api";
 
 interface BountyProofsProps {
   bounty: BountyDetail;
@@ -65,7 +66,7 @@ export function BountyProofs({ bounty }: BountyProofsProps) {
   const { data: proofsData, isLoading } = useQuery({
     queryKey: ["bounty-proofs", bounty.id],
     queryFn: async () => {
-      const response = await fetch(`/api/bounties/${bounty.id}/proofs`);
+      const response = await fetch(`${API_ROUTES.BOUNTIES.PROOFS(bounty.id)}`);
       if (!response.ok) throw new Error("Failed to fetch proofs");
       const result = await response.json();
       return result.data as Proof[];
