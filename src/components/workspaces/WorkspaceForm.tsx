@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useCreateWorkspace, useUpdateWorkspace } from "@/hooks/queries/use-workspace-queries";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { fetchFavicon, isValidUrl } from "@/lib/utils/favicon";
 import { Loader2 } from "lucide-react";
 import type { WorkspaceDetailsResponse } from "@/types";
 
@@ -19,18 +20,32 @@ export function WorkspaceForm({ workspace, onSuccess }: WorkspaceFormProps) {
   const router = useRouter();
   const isEditing = !!workspace;
 
-  // Form state
   const [name, setName] = useState(workspace?.name || "");
   const [description, setDescription] = useState(workspace?.description || "");
   const [mission, setMission] = useState(workspace?.mission || "");
   const [websiteUrl, setWebsiteUrl] = useState(workspace?.websiteUrl || "");
   const [githubUrl, setGithubUrl] = useState(workspace?.githubUrl || "");
+  const [avatarUrl, setAvatarUrl] = useState(workspace?.avatarUrl || "");
 
-  // Mutations
   const createMutation = useCreateWorkspace();
   const updateMutation = useUpdateWorkspace();
 
   const isLoading = createMutation.isPending || updateMutation.isPending;
+
+  // Auto-fetch favicon from website URL (only for new workspaces)
+  useEffect(() => {
+    if (!isEditing && websiteUrl && isValidUrl(websiteUrl)) {
+      const fetchFaviconFromWebsite = async () => {
+        const favicon = await fetchFavicon(websiteUrl);
+        if (favicon) {
+          setAvatarUrl(favicon);
+        }
+      };
+
+      const timeoutId = setTimeout(fetchFaviconFromWebsite, 800);
+      return () => clearTimeout(timeoutId);
+    }
+  }, [websiteUrl, isEditing]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -53,6 +68,7 @@ export function WorkspaceForm({ workspace, onSuccess }: WorkspaceFormProps) {
 
     if (description) data.description = description.trim();
     if (mission) data.mission = mission.trim();
+    if (avatarUrl) data.avatarUrl = avatarUrl.trim();
     if (websiteUrl) data.websiteUrl = websiteUrl.trim();
     if (githubUrl) data.githubUrl = githubUrl.trim();
 

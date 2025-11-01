@@ -7,3 +7,4 @@ export { EmptySearch } from "./empty-search";
 export { StatusBadge } from "./StatusBadge";
 export { AvatarWithFallback } from "./AvatarWithFallback";
 export { CurrencyDisplay } from "./CurrencyDisplay";
+export { ImageUpload } from "./ImageUpload";

@@ -1,8 +1,8 @@
 "use client";
 
-import { use } from "react";
+import { use, useState } from "react";
 import Link from "next/link";
-import { useGetWorkspace } from "@/hooks/queries/use-workspace-queries";
+import { useGetWorkspace, useUpdateWorkspace } from "@/hooks/queries/use-workspace-queries";
 import { useGetBountiesByWorkspace } from "@/hooks/queries/use-bounty-queries";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { AvatarWithFallback, CurrencyDisplay } from "@/components/common";
 import { BountyCard } from "@/components/bounties";
+import { AvatarEditModal } from "@/components/workspaces";
 import { formatDate } from "@/lib/utils/date";
 import {
   AlertCircle,
@@ -21,6 +22,8 @@ import {
   ExternalLink,
   Github,
   Globe,
+  Edit,
+  Clock,
 } from "lucide-react";
 import type { BountyListItem, WorkspaceMember } from "@/types";
 
@@ -32,11 +35,14 @@ export default function WorkspaceDetailPage({
   const params = use(paramsPromise);
   const workspaceId = params.id;
 
+  const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
+
   const { data: workspace, isLoading, error } = useGetWorkspace(workspaceId);
   const { data: bountiesData, isLoading: bountiesLoading } = useGetBountiesByWorkspace(
     workspaceId,
     { page: 1, pageSize: 6 }
   );
+  const updateMutation = useUpdateWorkspace();
 
   if (isLoading) {
     return (
@@ -74,30 +80,74 @@ export default function WorkspaceDetailPage({
 
   const recentBounties = bountiesData?.data?.slice(0, 6) || [];
 
+  const handleAvatarUpdate = async (avatarUrl: string) => {
+    await updateMutation.mutateAsync({
+      id: workspaceId,
+      data: { avatarUrl },
+    });
+  };
+
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-6">
-        <div className="flex items-start gap-4">
-          <AvatarWithFallback src={workspace.avatarUrl} alt={workspace.name} size="xl" />
-          <div className="space-y-2">
-            <div className="flex items-center gap-3">
-              <h1 className="text-3xl font-bold">{workspace.name}</h1>
-              <Badge variant="secondary">{workspace.role}</Badge>
+      <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-6 bg-gradient-to-br from-neutral-50 via-white to-neutral-50 dark:from-neutral-900 dark:via-neutral-950 dark:to-neutral-900 p-6 rounded-2xl border border-neutral-200/50 dark:border-neutral-800/50 shadow-sm backdrop-blur-xl">
+        <div className="flex items-start gap-6">
+          <div className="relative group">
+            <button
+              onClick={() => isAdmin && setIsAvatarModalOpen(true)}
+              className={`relative ${isAdmin ? "cursor-pointer" : "cursor-default"}`}
+              disabled={!isAdmin}
+            >
+              <AvatarWithFallback
+                src={workspace.avatarUrl}
+                alt={workspace.name}
+                fallbackText={workspace.name}
+                size="xl"
+                className="ring-4 ring-white dark:ring-neutral-950 shadow-lg transition-all group-hover:ring-primary-200 dark:group-hover:ring-primary-900"
+              />
+              {isAdmin && (
+                <div className="absolute inset-0 flex items-center justify-center bg-neutral-900/60 backdrop-blur-sm rounded-full opacity-0 group-hover:opacity-100 transition-all">
+                  <Edit className="h-6 w-6 text-white" />
+                </div>
+              )}
+            </button>
+          </div>
+          <div className="space-y-3 flex-1">
+            <div className="flex items-center gap-3 flex-wrap">
+              <h1 className="text-4xl font-bold bg-gradient-to-br from-neutral-900 to-neutral-700 dark:from-neutral-100 dark:to-neutral-300 bg-clip-text text-transparent">
+                {workspace.name}
+              </h1>
+              <Badge variant="secondary" className="text-sm">
+                {workspace.role}
+              </Badge>
+              {isAdmin && (
+                <Link href={`/workspaces/${workspaceId}/edit`}>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="gap-2 text-neutral-600 hover:text-primary-600"
+                  >
+                    <Edit className="h-3.5 w-3.5" />
+                    Edit
+                  </Button>
+                </Link>
+              )}
             </div>
             {workspace.description && (
-              <p className="text-neutral-600 max-w-2xl">{workspace.description}</p>
+              <p className="text-neutral-700 dark:text-neutral-300 max-w-2xl text-lg leading-relaxed">
+                {workspace.description}
+              </p>
             )}
-            <div className="flex items-center gap-4 text-sm text-neutral-500">
+            <div className="flex items-center gap-4 text-sm text-neutral-600 dark:text-neutral-400 flex-wrap">
               {workspace.websiteUrl && (
                 <a
                   href={workspace.websiteUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-1 hover:text-primary-600"
+                  className="flex items-center gap-1.5 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
                 >
                   <Globe className="h-4 w-4" />
-                  Website
+                  <span>Website</span>
                 </a>
               )}
               {workspace.githubUrl && (
@@ -105,32 +155,36 @@ export default function WorkspaceDetailPage({
                   href={workspace.githubUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-1 hover:text-primary-600"
+                  className="flex items-center gap-1.5 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
                 >
                   <Github className="h-4 w-4" />
-                  GitHub
+                  <span>GitHub</span>
                 </a>
               )}
-              <span className="flex items-center gap-1">
+              <span className="flex items-center gap-1.5">
                 <Calendar className="h-4 w-4" />
-                Created {formatDate(workspace.createdAt)}
+                <span>Created {formatDate(workspace.createdAt)}</span>
+              </span>
+              <span className="flex items-center gap-1.5">
+                <Clock className="h-4 w-4" />
+                <span>Updated {formatDate(workspace.updatedAt)}</span>
               </span>
             </div>
           </div>
         </div>
 
         {/* Quick Actions */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 flex-shrink-0">
           <Link href={`/bounties/new?workspace=${workspaceId}`}>
-            <Button size="lg" className="gap-2">
-              <Plus className="h-4 w-4" />
+            <Button size="lg" className="gap-2 shadow-lg shadow-primary-500/20">
+              <Plus className="h-5 w-5" />
               New Bounty
             </Button>
           </Link>
           {isAdmin && (
             <Link href={`/workspaces/${workspaceId}/edit`}>
               <Button variant="outline" size="lg" className="gap-2">
-                <Settings className="h-4 w-4" />
+                <Settings className="h-5 w-5" />
                 Settings
               </Button>
             </Link>
@@ -140,57 +194,87 @@ export default function WorkspaceDetailPage({
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <Card>
+        <Card className="bg-gradient-to-br from-white to-neutral-50 dark:from-neutral-900 dark:to-neutral-950 border-neutral-200/50 dark:border-neutral-800/50 backdrop-blur-xl hover:shadow-lg hover:shadow-primary-500/5 transition-all">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-neutral-600">Active Bounties</CardTitle>
+            <CardTitle className="text-sm font-medium text-neutral-600 dark:text-neutral-400">
+              Active Bounties
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex items-center gap-2">
-              <Target className="h-5 w-5 text-primary-600" />
-              <p className="text-3xl font-bold">{workspace.bountyCount}</p>
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-primary-100 dark:bg-primary-900/30 rounded-lg">
+                <Target className="h-5 w-5 text-primary-600 dark:text-primary-400" />
+              </div>
+              <p className="text-3xl font-bold bg-gradient-to-br from-neutral-900 to-neutral-700 dark:from-neutral-100 dark:to-neutral-300 bg-clip-text text-transparent">
+                {workspace.bountyCount}
+              </p>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="bg-gradient-to-br from-white to-neutral-50 dark:from-neutral-900 dark:to-neutral-950 border-neutral-200/50 dark:border-neutral-800/50 backdrop-blur-xl hover:shadow-lg hover:shadow-secondary-500/5 transition-all">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-neutral-600">Team Members</CardTitle>
+            <CardTitle className="text-sm font-medium text-neutral-600 dark:text-neutral-400">
+              Team Members
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex items-center gap-2">
-              <Users className="h-5 w-5 text-primary-600" />
-              <p className="text-3xl font-bold">{workspace.memberCount}</p>
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-secondary-100 dark:bg-secondary-900/30 rounded-lg">
+                <Users className="h-5 w-5 text-secondary-600 dark:text-secondary-400" />
+              </div>
+              <p className="text-3xl font-bold bg-gradient-to-br from-neutral-900 to-neutral-700 dark:from-neutral-100 dark:to-neutral-300 bg-clip-text text-transparent">
+                {workspace.memberCount}
+              </p>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="bg-gradient-to-br from-white to-neutral-50 dark:from-neutral-900 dark:to-neutral-950 border-neutral-200/50 dark:border-neutral-800/50 backdrop-blur-xl hover:shadow-lg hover:shadow-tertiary-500/5 transition-all">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-neutral-600">Available Budget</CardTitle>
+            <CardTitle className="text-sm font-medium text-neutral-600 dark:text-neutral-400">
+              Available Budget
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <CurrencyDisplay amount={availableBudget} size="lg" className="text-3xl" />
+            <CurrencyDisplay amount={availableBudget} size="lg" className="text-3xl font-bold" />
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="bg-gradient-to-br from-white to-neutral-50 dark:from-neutral-900 dark:to-neutral-950 border-neutral-200/50 dark:border-neutral-800/50 backdrop-blur-xl hover:shadow-lg hover:shadow-accent-500/5 transition-all">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-neutral-600">Activities</CardTitle>
+            <CardTitle className="text-sm font-medium text-neutral-600 dark:text-neutral-400">
+              Activities
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-bold">{workspace.activityCount || 0}</p>
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-accent-100 dark:bg-accent-900/30 rounded-lg">
+                <Calendar className="h-5 w-5 text-accent-600 dark:text-accent-400" />
+              </div>
+              <p className="text-3xl font-bold bg-gradient-to-br from-neutral-900 to-neutral-700 dark:from-neutral-100 dark:to-neutral-300 bg-clip-text text-transparent">
+                {workspace.activityCount || 0}
+              </p>
+            </div>
           </CardContent>
         </Card>
       </div>
 
       {/* Mission Statement */}
       {workspace.mission && (
-        <Card>
+        <Card className="bg-gradient-to-br from-primary-50/50 to-white dark:from-primary-950/20 dark:to-neutral-950 border-primary-200/50 dark:border-primary-900/50 backdrop-blur-xl">
           <CardHeader>
-            <CardTitle>Mission</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <div className="p-2 bg-primary-100 dark:bg-primary-900/30 rounded-lg">
+                <Target className="h-5 w-5 text-primary-600 dark:text-primary-400" />
+              </div>
+              <span>Mission</span>
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-neutral-700 whitespace-pre-wrap">{workspace.mission}</p>
+            <p className="text-neutral-700 dark:text-neutral-300 whitespace-pre-wrap leading-relaxed">
+              {workspace.mission}
+            </p>
           </CardContent>
         </Card>
       )}
@@ -263,6 +347,7 @@ export default function WorkspaceDetailPage({
                     <AvatarWithFallback
                       src={member.user.avatarUrl}
                       alt={member.user.alias || member.user.username}
+                      fallbackText={member.user.alias || member.user.username}
                       size="md"
                     />
                     <div>
@@ -285,6 +370,18 @@ export default function WorkspaceDetailPage({
           </CardContent>
         </Card>
       </div>
+
+      {/* Avatar Edit Modal */}
+      {isAdmin && (
+        <AvatarEditModal
+          open={isAvatarModalOpen}
+          onOpenChange={setIsAvatarModalOpen}
+          currentAvatarUrl={workspace.avatarUrl || undefined}
+          workspaceName={workspace.name}
+          websiteUrl={workspace.websiteUrl || undefined}
+          onSave={handleAvatarUpdate}
+        />
+      )}
     </div>
   );
 }

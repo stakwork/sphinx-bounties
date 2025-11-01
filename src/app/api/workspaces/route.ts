@@ -282,33 +282,31 @@ export async function POST(request: NextRequest) {
     });
 
     const response: CreateWorkspaceResponse = {
-      workspace: {
-        id: workspace.id,
-        name: workspace.name,
-        description: workspace.description,
-        mission: workspace.mission,
-        avatarUrl: workspace.avatarUrl,
-        websiteUrl: workspace.websiteUrl,
-        githubUrl: workspace.githubUrl,
-        ownerPubkey: workspace.ownerPubkey,
-        createdAt: workspace.createdAt.toISOString(),
-        updatedAt: workspace.updatedAt.toISOString(),
-        role: workspace.members[0].role,
-        joinedAt: workspace.members[0].joinedAt.toISOString(),
-        memberCount: 1,
-        bountyCount: 0,
-        budget: workspace.budget
-          ? {
-              id: workspace.budget.id,
-              workspaceId: workspace.budget.workspaceId,
-              totalBudget: workspace.budget.totalBudget.toString(),
-              availableBudget: workspace.budget.availableBudget.toString(),
-              reservedBudget: workspace.budget.reservedBudget.toString(),
-              paidBudget: workspace.budget.paidBudget.toString(),
-              updatedAt: workspace.budget.updatedAt.toISOString(),
-            }
-          : null,
-      },
+      id: workspace.id,
+      name: workspace.name,
+      description: workspace.description,
+      mission: workspace.mission,
+      avatarUrl: workspace.avatarUrl,
+      websiteUrl: workspace.websiteUrl,
+      githubUrl: workspace.githubUrl,
+      ownerPubkey: workspace.ownerPubkey,
+      createdAt: workspace.createdAt.toISOString(),
+      updatedAt: workspace.updatedAt.toISOString(),
+      role: workspace.members[0].role,
+      joinedAt: workspace.members[0].joinedAt.toISOString(),
+      memberCount: 1,
+      bountyCount: 0,
+      budget: workspace.budget
+        ? {
+            id: workspace.budget.id,
+            workspaceId: workspace.budget.workspaceId,
+            totalBudget: workspace.budget.totalBudget.toString(),
+            availableBudget: workspace.budget.availableBudget.toString(),
+            reservedBudget: workspace.budget.reservedBudget.toString(),
+            paidBudget: workspace.budget.paidBudget.toString(),
+            updatedAt: workspace.budget.updatedAt.toISOString(),
+          }
+        : null,
     };
 
     return apiCreated(response);

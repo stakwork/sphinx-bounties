@@ -85,22 +85,30 @@ export const updateWorkspaceSchema = z.object({
     .optional(),
 
   description: z
-    .string()
-    .min(10, "Description must be at least 10 characters")
-    .max(120, "Description must not exceed 120 characters")
-    .trim()
-    .optional()
-    .nullable()
-    .or(z.literal("")),
+    .union([
+      z
+        .string()
+        .min(10, "Description must be at least 10 characters")
+        .max(120, "Description must not exceed 120 characters")
+        .trim(),
+      z.literal(""),
+      z.null(),
+      z.undefined(),
+    ])
+    .optional(),
 
   mission: z
-    .string()
-    .min(20, "Mission must be at least 20 characters")
-    .max(500, "Mission must not exceed 500 characters")
-    .trim()
-    .optional()
-    .nullable()
-    .or(z.literal("")),
+    .union([
+      z
+        .string()
+        .min(20, "Mission must be at least 20 characters")
+        .max(500, "Mission must not exceed 500 characters")
+        .trim(),
+      z.literal(""),
+      z.null(),
+      z.undefined(),
+    ])
+    .optional(),
 
   avatarUrl: z
     .string()

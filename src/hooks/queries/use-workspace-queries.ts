@@ -146,7 +146,7 @@ export function useCreateWorkspace() {
       }
 
       const result = await response.json();
-      return result.data.workspace;
+      return result.data;
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: workspaceKeys.lists() });
@@ -193,7 +193,7 @@ export function useUpdateWorkspace() {
       }
 
       const result = await response.json();
-      return result.data.workspace;
+      return result.data;
     },
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: workspaceKeys.detail(variables.id) });
