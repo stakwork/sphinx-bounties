@@ -9,7 +9,9 @@ import { BountyComments } from "./BountyComments";
 import { BountyProofs } from "./BountyProofs";
 import { BountyRequestsList } from "./BountyRequestsList";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Clock, Building2 } from "lucide-react";
+import React from "react";
+import { Clock, Calendar, Building2 } from "lucide-react";
+import { formatDate } from "@/lib/utils/date";
 
 interface BountyDetailProps {
   bountyId: string;
@@ -63,7 +65,7 @@ export function BountyDetail({ bountyId }: BountyDetailProps) {
           )}
           <div className="flex items-center gap-2">
             <Calendar className="h-4 w-4" />
-            <span>Created {new Date(bounty.createdAt).toLocaleDateString()}</span>
+            <span>Created {formatDate(bounty.createdAt)}</span>
           </div>
         </div>
       </div>

@@ -19,6 +19,7 @@
 
 import { useState, useMemo } from "react";
 import Link from "next/link";
+import { formatDate } from "@/lib/utils/date";
 import {
   Search,
   Filter,
@@ -499,9 +500,7 @@ export default function AdminBountiesPage() {
                         )}
                       </TableCell>
                       <TableCell>
-                        <div className="text-sm">
-                          {new Date(bounty.createdAt).toLocaleDateString()}
-                        </div>
+                        <div className="text-sm">{formatDate(bounty.createdAt)}</div>
                         <div className="text-xs text-muted-foreground">
                           {new Date(bounty.createdAt).toLocaleTimeString()}
                         </div>

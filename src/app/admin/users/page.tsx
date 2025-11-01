@@ -18,6 +18,7 @@
 
 import { useState, useMemo } from "react";
 import Link from "next/link";
+import { formatDate } from "@/lib/utils/date";
 import {
   Search,
   Download,
@@ -487,9 +488,7 @@ export default function AdminUsersPage() {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <div className="text-sm">
-                          {new Date(user.createdAt).toLocaleDateString()}
-                        </div>
+                        <div className="text-sm">{formatDate(user.createdAt)}</div>
                         <div className="text-xs text-muted-foreground">
                           {new Date(user.createdAt).toLocaleTimeString()}
                         </div>

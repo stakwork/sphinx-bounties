@@ -10,6 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { AvatarWithFallback, CurrencyDisplay } from "@/components/common";
 import { BountyCard } from "@/components/bounties";
+import { formatDate } from "@/lib/utils/date";
 import {
   AlertCircle,
   Users,
@@ -112,7 +113,7 @@ export default function WorkspaceDetailPage({
               )}
               <span className="flex items-center gap-1">
                 <Calendar className="h-4 w-4" />
-                Created {new Date(workspace.createdAt).toLocaleDateString()}
+                Created {formatDate(workspace.createdAt)}
               </span>
             </div>
           </div>

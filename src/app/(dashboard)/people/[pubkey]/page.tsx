@@ -8,6 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { AvatarWithFallback } from "@/components/common";
+import { formatDate } from "@/lib/utils/date";
 import {
   AlertCircle,
   Wallet,
@@ -93,7 +94,7 @@ export default function ProfilePage({
                 {user.createdAt && (
                   <Badge variant="outline" className="flex items-center gap-1">
                     <Calendar className="h-3 w-3" />
-                    Joined {new Date(user.createdAt).toLocaleDateString()}
+                    Joined {formatDate(user.createdAt)}
                   </Badge>
                 )}
               </div>
