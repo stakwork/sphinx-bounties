@@ -1,5 +1,5 @@
 import type { NextRequest } from "next/server";
-import { apiSuccess, apiError } from "@/lib/api";
+import { apiSuccess, apiError, apiCreated } from "@/lib/api";
 import { logApiError } from "@/lib/errors/logger";
 import { ErrorCode } from "@/types/error";
 import { db } from "@/lib/db";
@@ -271,25 +271,13 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       return bountyRequest;
     });
 
-    return new Response(
-      JSON.stringify({
-        success: true,
-        data: {
-          message: "Request submitted successfully",
-          request: {
-            id: result.id,
-            bountyId: result.bountyId,
-            status: result.status,
-            message: result.message,
-            createdAt: result.createdAt.toISOString(),
-          },
-        },
-      }),
-      {
-        status: 201,
-        headers: { "Content-Type": "application/json" },
-      }
-    );
+    return apiCreated({
+      id: result.id,
+      bountyId: result.bountyId,
+      status: result.status,
+      message: result.message,
+      createdAt: result.createdAt.toISOString(),
+    });
   } catch (error) {
     logApiError(error as Error, {
       url: `/api/bounties/[id]/requests`,

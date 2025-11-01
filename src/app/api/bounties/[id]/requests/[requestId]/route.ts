@@ -372,18 +372,10 @@ export async function PATCH(
       });
 
       return apiSuccess({
-        message: "Request approved and bounty assigned successfully",
-        request: {
-          id: requestId,
-          status: BountyRequestStatus.APPROVED,
-          reviewedBy: userPubkey,
-          reviewedAt: new Date().toISOString(),
-        },
-        bounty: {
-          id: bountyId,
-          assigneePubkey: bountyRequest.requesterPubkey,
-          status: BountyStatus.ASSIGNED,
-        },
+        id: requestId,
+        status: BountyRequestStatus.APPROVED,
+        reviewedBy: userPubkey,
+        reviewedAt: new Date().toISOString(),
       });
     } else {
       // Reject request
@@ -413,13 +405,10 @@ export async function PATCH(
       });
 
       return apiSuccess({
-        message: "Request rejected successfully",
-        request: {
-          id: requestId,
-          status: BountyRequestStatus.REJECTED,
-          reviewedBy: userPubkey,
-          reviewedAt: new Date().toISOString(),
-        },
+        id: requestId,
+        status: BountyRequestStatus.REJECTED,
+        reviewedBy: userPubkey,
+        reviewedAt: new Date().toISOString(),
       });
     }
   } catch (error) {

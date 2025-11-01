@@ -114,7 +114,6 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     });
 
     return apiSuccess({
-      message: "Timing started successfully",
       bountyId: updated.id,
       workStartedAt: updated.workStartedAt?.toISOString(),
     });

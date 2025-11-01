@@ -249,11 +249,8 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     });
 
     return apiSuccess({
-      message: "Bounty assigned successfully",
-      assignee: {
-        pubkey: assignee.pubkey,
-        username: assignee.username,
-      },
+      pubkey: assignee.pubkey,
+      username: assignee.username,
     });
   } catch (error) {
     logApiError(error as Error, {

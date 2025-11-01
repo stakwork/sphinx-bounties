@@ -204,14 +204,11 @@ export async function PATCH(
     });
 
     const response: ReviewProofResponse = {
-      message: `Proof ${approved ? "approved" : "rejected"} successfully`,
-      proof: {
-        id: updatedProof.id,
-        status: updatedProof.status,
-        reviewNotes: updatedProof.reviewNotes,
-        reviewedAt: updatedProof.reviewedAt!.toISOString(),
-        reviewedBy: updatedProof.reviewer!,
-      },
+      id: updatedProof.id,
+      status: updatedProof.status,
+      reviewNotes: updatedProof.reviewNotes,
+      reviewedAt: updatedProof.reviewedAt!.toISOString(),
+      reviewedBy: updatedProof.reviewer!,
     };
 
     return apiSuccess(response);

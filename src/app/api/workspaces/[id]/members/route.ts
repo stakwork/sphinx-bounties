@@ -134,21 +134,19 @@ export async function GET(request: NextRequest, context: RouteContext) {
       orderBy: [{ role: "asc" }, { joinedAt: "asc" }],
     });
 
-    const response: ListMembersResponse = {
-      members: members.map((m) => ({
-        id: m.id,
-        workspaceId: m.workspaceId,
-        userPubkey: m.userPubkey,
-        role: m.role,
-        joinedAt: m.joinedAt.toISOString(),
-        user: {
-          pubkey: m.user.pubkey,
-          username: m.user.username,
-          alias: m.user.alias,
-          avatarUrl: m.user.avatarUrl,
-        },
-      })),
-    };
+    const response: ListMembersResponse = members.map((m) => ({
+      id: m.id,
+      workspaceId: m.workspaceId,
+      userPubkey: m.userPubkey,
+      role: m.role,
+      joinedAt: m.joinedAt.toISOString(),
+      user: {
+        pubkey: m.user.pubkey,
+        username: m.user.username,
+        alias: m.user.alias,
+        avatarUrl: m.user.avatarUrl,
+      },
+    }));
 
     return apiSuccess(response);
   } catch (error) {
@@ -283,18 +281,16 @@ export async function POST(request: NextRequest, context: RouteContext) {
     });
 
     const response: AddMemberResponse = {
-      member: {
-        id: newMember.id,
-        workspaceId: newMember.workspaceId,
-        userPubkey: newMember.userPubkey,
-        role: newMember.role,
-        joinedAt: newMember.joinedAt.toISOString(),
-        user: {
-          pubkey: newMember.user.pubkey,
-          username: newMember.user.username,
-          alias: newMember.user.alias,
-          avatarUrl: newMember.user.avatarUrl,
-        },
+      id: newMember.id,
+      workspaceId: newMember.workspaceId,
+      userPubkey: newMember.userPubkey,
+      role: newMember.role,
+      joinedAt: newMember.joinedAt.toISOString(),
+      user: {
+        pubkey: newMember.user.pubkey,
+        username: newMember.user.username,
+        alias: newMember.user.alias,
+        avatarUrl: newMember.user.avatarUrl,
       },
     };
 

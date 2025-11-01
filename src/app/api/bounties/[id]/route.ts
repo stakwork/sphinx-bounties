@@ -359,21 +359,18 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     });
 
     const response: UpdateBountyResponse = {
-      message: "Bounty updated successfully",
-      bounty: {
-        id: updatedBounty.id,
-        title: updatedBounty.title,
-        description: updatedBounty.description,
-        deliverables: updatedBounty.deliverables,
-        amount: updatedBounty.amount.toString(),
-        status: updatedBounty.status,
-        tags: updatedBounty.tags,
-        codingLanguages: updatedBounty.codingLanguages,
-        estimatedHours: updatedBounty.estimatedHours,
-        estimatedCompletionDate: updatedBounty.estimatedCompletionDate?.toISOString() || null,
-        githubIssueUrl: updatedBounty.githubIssueUrl,
-        loomVideoUrl: updatedBounty.loomVideoUrl,
-      },
+      id: updatedBounty.id,
+      title: updatedBounty.title,
+      description: updatedBounty.description,
+      deliverables: updatedBounty.deliverables,
+      amount: updatedBounty.amount.toString(),
+      status: updatedBounty.status,
+      tags: updatedBounty.tags,
+      codingLanguages: updatedBounty.codingLanguages,
+      estimatedHours: updatedBounty.estimatedHours,
+      estimatedCompletionDate: updatedBounty.estimatedCompletionDate?.toISOString() || null,
+      githubIssueUrl: updatedBounty.githubIssueUrl,
+      loomVideoUrl: updatedBounty.loomVideoUrl,
     };
 
     return apiSuccess(response);
