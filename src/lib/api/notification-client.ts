@@ -2,7 +2,24 @@ import type { PaginationParams } from "@/types";
 import { apiFetch } from "@/lib/api/api-fetch";
 import { API_ROUTES } from "@/constants/api";
 
+/**
+ * Notification API Client
+ *
+ * All methods return ApiResponse<T> format:
+ * {
+ *   success: boolean,
+ *   data: T,
+ *   meta: {
+ *     timestamp: string,
+ *     pagination?: { page, pageSize, totalCount, totalPages }
+ *   }
+ * }
+ */
 export const notificationClient = {
+  /**
+   * Get all notifications for the authenticated user
+   * @returns ApiResponse with data as Notification[] and meta.pagination
+   */
   async getAll(pagination?: PaginationParams, unreadOnly?: boolean, type?: string) {
     const params = new URLSearchParams();
     if (pagination?.page) params.append("page", pagination.page.toString());

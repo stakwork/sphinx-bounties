@@ -3,7 +3,24 @@ import type { PaginationParams } from "@/types";
 import { apiFetch } from "@/lib/api/api-fetch";
 import { API_ROUTES } from "@/constants/api";
 
+/**
+ * User API Client
+ *
+ * All methods return ApiResponse<T> format:
+ * {
+ *   success: boolean,
+ *   data: T,
+ *   meta: {
+ *     timestamp: string,
+ *     pagination?: { page, pageSize, totalCount, totalPages }
+ *   }
+ * }
+ */
 export const userClient = {
+  /**
+   * Get all users with optional filtering and pagination
+   * @returns ApiResponse with data as User[] and meta.pagination
+   */
   async getAll(filters?: UserFilters, pagination?: PaginationParams, sort?: UserSortParams) {
     const params = new URLSearchParams();
 

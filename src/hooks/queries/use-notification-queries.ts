@@ -27,7 +27,7 @@ export function useGetUnreadCount() {
     queryKey: notificationKeys.unreadCount(),
     queryFn: async () => {
       const result = await notificationClient.getAll({ page: 1, pageSize: 1 }, true);
-      return result.pagination?.totalCount || 0;
+      return result.meta?.pagination?.totalCount || 0;
     },
     refetchInterval: 30000,
   });

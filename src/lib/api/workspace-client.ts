@@ -3,7 +3,24 @@ import type { PaginationParams } from "@/types";
 import { apiFetch } from "@/lib/api/api-fetch";
 import { API_ROUTES } from "@/constants/api";
 
+/**
+ * Workspace API Client
+ *
+ * All methods return ApiResponse<T> format:
+ * {
+ *   success: boolean,
+ *   data: T,
+ *   meta: {
+ *     timestamp: string,
+ *     pagination?: { page, pageSize, totalCount, totalPages }
+ *   }
+ * }
+ */
 export const workspaceClient = {
+  /**
+   * Get all workspaces for the authenticated user
+   * @returns ApiResponse with data as WorkspaceListItem[] and meta.pagination
+   */
   async getAll(
     filters?: WorkspaceFilters,
     pagination?: PaginationParams,
@@ -29,6 +46,10 @@ export const workspaceClient = {
     return result;
   },
 
+  /**
+   * Get workspace by ID
+   * @returns Single workspace data (unwrapped from ApiResponse.data)
+   */
   async getById(id: string) {
     const response = await apiFetch(API_ROUTES.WORKSPACES.BY_ID(id));
 

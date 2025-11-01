@@ -34,7 +34,10 @@ export default function BountiesPage() {
     limit,
   };
 
-  const { data, isLoading, error } = useGetBounties(filters, pagination);
+  const { data: response, isLoading, error } = useGetBounties(filters, pagination);
+
+  const bounties = response?.data || [];
+  const paginationMeta = response?.meta?.pagination;
 
   return (
     <div className="space-y-6">
@@ -93,21 +96,23 @@ export default function BountiesPage() {
         </div>
       )}
 
-      {data && !isLoading && (
+      {!isLoading && (
         <>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {data.data.map((bounty: BountyListItem) => (
-              <BountyCard key={bounty.id} bounty={bounty} />
-            ))}
-          </div>
-
-          {data.data.length === 0 && (
-            <div className="text-center py-12">
-              <p className="text-neutral-500">No bounties found. Try adjusting your filters.</p>
+          {bounties.length > 0 && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {bounties.map((bounty: BountyListItem) => (
+                <BountyCard key={bounty.id} bounty={bounty} />
+              ))}
             </div>
           )}
 
-          {data.pagination && data.pagination.totalPages > 1 && (
+          {bounties.length === 0 && (
+            <div className="text-center py-12 text-neutral-500">
+              No bounties found. Try adjusting your filters.
+            </div>
+          )}
+
+          {paginationMeta && paginationMeta.totalPages > 1 && (
             <div className="flex flex-col items-center gap-4 pt-4">
               <div className="flex items-center gap-2">
                 <Button
@@ -137,7 +142,7 @@ export default function BountiesPage() {
                   )}
 
                   {/* Pages around current page */}
-                  {Array.from({ length: data.pagination.totalPages }, (_, i) => i + 1)
+                  {Array.from({ length: paginationMeta.totalPages }, (_, i) => i + 1)
                     .filter((p) => p >= page - 2 && p <= page + 2)
                     .map((p) => (
                       <Button
@@ -152,18 +157,18 @@ export default function BountiesPage() {
                     ))}
 
                   {/* Last page */}
-                  {page < data.pagination.totalPages - 2 && (
+                  {page < paginationMeta.totalPages - 2 && (
                     <>
-                      {page < data.pagination.totalPages - 3 && (
-                        <span className="px-2 text-neutral-500">...</span>
+                      {page < paginationMeta.totalPages - 3 && (
+                        <span className="text-neutral-500">...</span>
                       )}
                       <Button
-                        variant={page === data.pagination.totalPages ? "default" : "outline"}
+                        variant={page === paginationMeta.totalPages ? "default" : "outline"}
                         size="sm"
-                        onClick={() => setPage(data.pagination.totalPages)}
+                        onClick={() => setPage(paginationMeta.totalPages)}
                         className="w-10"
                       >
-                        {data.pagination.totalPages}
+                        {paginationMeta.totalPages}
                       </Button>
                     </>
                   )}
@@ -172,8 +177,8 @@ export default function BountiesPage() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => setPage((p) => Math.min(data.pagination.totalPages, p + 1))}
-                  disabled={page === data.pagination.totalPages}
+                  onClick={() => setPage((p) => Math.min(paginationMeta.totalPages, p + 1))}
+                  disabled={page === paginationMeta.totalPages}
                 >
                   Next
                   <ChevronRight className="h-4 w-4 ml-1" />
@@ -181,8 +186,8 @@ export default function BountiesPage() {
               </div>
 
               <p className="text-sm text-neutral-600">
-                Page {data.pagination.page} of {data.pagination.totalPages} ({data.pagination.total}{" "}
-                total bounties)
+                Page {paginationMeta.page} of {paginationMeta.totalPages} (
+                {paginationMeta.totalCount} total bounties)
               </p>
             </div>
           )}
