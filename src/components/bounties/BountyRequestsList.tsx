@@ -18,6 +18,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BountyRequestStatus } from "@/types/enums";
 import { CheckCircle, XCircle, Clock, Users } from "lucide-react";
+import { formatDate } from "@/lib/utils/date";
 import type { BountyDetail, BountyRequest } from "@/types";
 
 interface BountyRequestsListProps {
@@ -179,7 +180,7 @@ export function BountyRequestsList({ bounty }: BountyRequestsListProps) {
                   </div>
 
                   <p className="text-sm text-neutral-600 mb-2">
-                    Requested {new Date(request.createdAt).toLocaleDateString()}
+                    Requested {formatDate(request.createdAt)}
                   </p>
 
                   {request.message && (

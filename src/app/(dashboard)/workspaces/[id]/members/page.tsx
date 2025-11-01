@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { AvatarWithFallback } from "@/components/common";
+import { formatDate } from "@/lib/utils/date";
 import {
   AddMemberModal,
   RemoveMemberDialog,
@@ -180,7 +181,7 @@ export default function WorkspaceMembersPage({
                         </Badge>
                         <span className="text-xs text-neutral-500 flex items-center gap-1">
                           <Calendar className="h-3 w-3" />
-                          Joined {new Date(member.joinedAt).toLocaleDateString()}
+                          Joined {formatDate(member.joinedAt)}
                         </span>
                       </div>
                     </div>

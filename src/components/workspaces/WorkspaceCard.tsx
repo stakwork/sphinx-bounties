@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CurrencyDisplay, AvatarWithFallback } from "@/components/common";
 import { Users, Target, Calendar } from "lucide-react";
+import { formatDate } from "@/lib/utils/date";
 import type { WorkspaceListItem } from "@/types";
 
 interface WorkspaceCardProps {
@@ -65,7 +66,7 @@ export function WorkspaceCard({ workspace }: WorkspaceCardProps) {
 
           <div className="flex items-center gap-2 text-xs text-neutral-500 pt-2">
             <Calendar className="h-3 w-3" />
-            <span>Joined {new Date(workspace.joinedAt).toLocaleDateString()}</span>
+            <span>Joined {formatDate(workspace.joinedAt)}</span>
           </div>
         </CardContent>
       </Card>

@@ -1,5 +1,7 @@
-export function formatDate(date: Date | string): string {
+export function formatDate(date: Date | string | null | undefined): string {
+  if (!date) return "N/A";
   const d = typeof date === "string" ? new Date(date) : date;
+  if (isNaN(d.getTime())) return "Invalid Date";
   return d.toLocaleDateString("en-US", {
     year: "numeric",
     month: "short",
@@ -7,8 +9,10 @@ export function formatDate(date: Date | string): string {
   });
 }
 
-export function formatDateTime(date: Date | string): string {
+export function formatDateTime(date: Date | string | null | undefined): string {
+  if (!date) return "N/A";
   const d = typeof date === "string" ? new Date(date) : date;
+  if (isNaN(d.getTime())) return "Invalid Date";
   return d.toLocaleDateString("en-US", {
     year: "numeric",
     month: "short",
@@ -18,8 +22,10 @@ export function formatDateTime(date: Date | string): string {
   });
 }
 
-export function formatRelativeTime(date: Date | string): string {
+export function formatRelativeTime(date: Date | string | null | undefined): string {
+  if (!date) return "N/A";
   const d = typeof date === "string" ? new Date(date) : date;
+  if (isNaN(d.getTime())) return "Invalid Date";
   const now = new Date();
   const diffInSeconds = Math.floor((now.getTime() - d.getTime()) / 1000);
 
@@ -56,8 +62,10 @@ export function formatRelativeTime(date: Date | string): string {
   return `${diffInYears}y ago`;
 }
 
-export function formatTimeRemaining(date: Date | string): string {
+export function formatTimeRemaining(date: Date | string | null | undefined): string {
+  if (!date) return "N/A";
   const d = typeof date === "string" ? new Date(date) : date;
+  if (isNaN(d.getTime())) return "Invalid Date";
   const now = new Date();
   const diffInSeconds = Math.floor((d.getTime() - now.getTime()) / 1000);
 
@@ -89,8 +97,10 @@ export function formatTimeRemaining(date: Date | string): string {
   return `${diffInMonths}mo left`;
 }
 
-export function isExpired(date: Date | string): boolean {
+export function isExpired(date: Date | string | null | undefined): boolean {
+  if (!date) return false;
   const d = typeof date === "string" ? new Date(date) : date;
+  if (isNaN(d.getTime())) return false;
   return d.getTime() < Date.now();
 }
 
