@@ -1,15 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { workspaceClient } from "@/lib/api/workspace-client";
+import { apiFetch } from "@/lib/api/api-fetch";
+import { API_ROUTES } from "@/constants/api";
 import type { WorkspaceFilters, WorkspaceSortParams } from "@/types/filters";
 import type { PaginationParams } from "@/types";
-import {
-  createWorkspaceAction,
-  updateWorkspaceAction,
-  deleteWorkspaceAction,
-  addMemberAction,
-  updateMemberRoleAction,
-  removeMemberAction,
-} from "@/actions";
 import { showSuccess, showError } from "@/lib/toast";
 
 export const workspaceKeys = {
@@ -122,9 +116,27 @@ export function useCreateWorkspace() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (formData: FormData) => {
-      const result = await createWorkspaceAction(formData);
-      return result.data;
+    mutationFn: async (data: {
+      name: string;
+      description?: string;
+      mission?: string;
+      avatarUrl?: string;
+      websiteUrl?: string;
+      githubUrl?: string;
+    }) => {
+      const response = await apiFetch(API_ROUTES.WORKSPACES.BASE, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Failed to create workspace");
+      }
+
+      const result = await response.json();
+      return result.data.workspace;
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: workspaceKeys.lists() });
@@ -145,9 +157,33 @@ export function useUpdateWorkspace() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ id, formData }: { id: string; formData: FormData }) => {
-      const result = await updateWorkspaceAction(id, formData);
-      return result.data;
+    mutationFn: async ({
+      id,
+      data,
+    }: {
+      id: string;
+      data: {
+        name?: string;
+        description?: string;
+        mission?: string;
+        avatarUrl?: string;
+        websiteUrl?: string;
+        githubUrl?: string;
+      };
+    }) => {
+      const response = await apiFetch(API_ROUTES.WORKSPACES.BY_ID(id), {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Failed to update workspace");
+      }
+
+      const result = await response.json();
+      return result.data.workspace;
     },
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: workspaceKeys.detail(variables.id) });
@@ -171,7 +207,16 @@ export function useDeleteWorkspace() {
 
   return useMutation({
     mutationFn: async (workspaceId: string) => {
-      const result = await deleteWorkspaceAction(workspaceId);
+      const response = await apiFetch(API_ROUTES.WORKSPACES.BY_ID(workspaceId), {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Failed to delete workspace");
+      }
+
+      const result = await response.json();
       return result.data;
     },
     onSuccess: (_, workspaceId) => {
@@ -194,17 +239,38 @@ export function useAddMember() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ workspaceId, formData }: { workspaceId: string; formData: FormData }) => {
-      const result = await addMemberAction(workspaceId, formData);
-      return result.data;
+    mutationFn: async ({
+      workspaceId,
+      data,
+    }: {
+      workspaceId: string;
+      data: {
+        userPubkey: string;
+        role: string;
+      };
+    }) => {
+      const response = await apiFetch(API_ROUTES.WORKSPACES.MEMBERS(workspaceId), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Failed to add member");
+      }
+
+      const result = await response.json();
+      return result.data.member;
     },
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: workspaceKeys.detail(variables.workspaceId) });
       queryClient.invalidateQueries({ queryKey: workspaceKeys.members(variables.workspaceId) });
 
-      const userPubkey = variables.formData.get("userPubkey") as string;
-      if (userPubkey) {
-        queryClient.invalidateQueries({ queryKey: workspaceKeys.member(userPubkey) });
+      if (variables.data.userPubkey) {
+        queryClient.invalidateQueries({
+          queryKey: workspaceKeys.member(variables.data.userPubkey),
+        });
       }
 
       showSuccess("Member added successfully");
@@ -221,15 +287,31 @@ export function useUpdateMemberRole() {
   return useMutation({
     mutationFn: async ({
       workspaceId,
-      memberId,
-      formData,
+      userPubkey,
+      data,
     }: {
       workspaceId: string;
-      memberId: string;
-      formData: FormData;
+      userPubkey: string;
+      data: {
+        role: string;
+      };
     }) => {
-      const result = await updateMemberRoleAction(workspaceId, memberId, formData);
-      return result.data;
+      const response = await apiFetch(
+        `${API_ROUTES.WORKSPACES.MEMBERS(workspaceId)}/${userPubkey}`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+        }
+      );
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Failed to update member role");
+      }
+
+      const result = await response.json();
+      return result.data.member;
     },
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: workspaceKeys.detail(variables.workspaceId) });
@@ -249,13 +331,24 @@ export function useRemoveMember() {
   return useMutation({
     mutationFn: async ({
       workspaceId,
-      memberId,
+      userPubkey,
     }: {
       workspaceId: string;
-      memberId: string;
-      userPubkey?: string;
+      userPubkey: string;
     }) => {
-      const result = await removeMemberAction(workspaceId, memberId);
+      const response = await apiFetch(
+        `${API_ROUTES.WORKSPACES.MEMBERS(workspaceId)}/${userPubkey}`,
+        {
+          method: "DELETE",
+        }
+      );
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Failed to remove member");
+      }
+
+      const result = await response.json();
       return result.data;
     },
     onSuccess: (data, variables) => {

@@ -85,15 +85,24 @@ export default function ProfileSettingsPage() {
         routeHint: routeHint || null,
       });
 
-      const formData = new FormData();
-      if (validatedData.username) formData.append("username", validatedData.username);
-      if (validatedData.alias) formData.append("alias", validatedData.alias);
-      if (validatedData.description) formData.append("description", validatedData.description);
-      if (validatedData.avatarUrl) formData.append("avatarUrl", validatedData.avatarUrl);
-      if (validatedData.contactKey) formData.append("contactKey", validatedData.contactKey);
-      if (validatedData.routeHint) formData.append("routeHint", validatedData.routeHint);
+      // Filter out null values for API call
+      const data: {
+        username?: string;
+        alias?: string;
+        description?: string;
+        avatarUrl?: string;
+        contactKey?: string;
+        routeHint?: string;
+      } = {};
 
-      await updateProfile.mutateAsync({ pubkey, formData });
+      if (validatedData.username) data.username = validatedData.username;
+      if (validatedData.alias) data.alias = validatedData.alias;
+      if (validatedData.description) data.description = validatedData.description;
+      if (validatedData.avatarUrl) data.avatarUrl = validatedData.avatarUrl;
+      if (validatedData.contactKey) data.contactKey = validatedData.contactKey;
+      if (validatedData.routeHint) data.routeHint = validatedData.routeHint;
+
+      await updateProfile.mutateAsync({ pubkey, data });
     } catch (error) {
       if (error instanceof z.ZodError) {
         const errors: Record<string, string> = {};

@@ -32,7 +32,6 @@ export function RemoveMemberDialog({
     try {
       await removeMember.mutateAsync({
         workspaceId,
-        memberId: member.id,
         userPubkey: member.userPubkey,
       });
       onOpenChange(false);

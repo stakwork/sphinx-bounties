@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { API_ROUTES } from "@/constants/api";
 import type { PaginationParams, PaginationMeta } from "@/types/api";
 
 export interface LeaderboardEntry {
@@ -25,7 +26,7 @@ export function useGetLeaderboard(params?: PaginationParams) {
   return useQuery<LeaderboardResponse>({
     queryKey: ["leaderboard", params?.page, params?.pageSize],
     queryFn: async () => {
-      const response = await fetch(`/api/leaderboard?${queryParams.toString()}`, {
+      const response = await fetch(`${API_ROUTES.LEADERBOARD}?${queryParams.toString()}`, {
         credentials: "include",
       });
 
@@ -35,6 +36,6 @@ export function useGetLeaderboard(params?: PaginationParams) {
 
       return response.json();
     },
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 5 * 60 * 1000,
   });
 }

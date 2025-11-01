@@ -1,14 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { bountyClient } from "@/lib/api/bounty-client";
+import { apiFetch } from "@/lib/api/api-fetch";
+import { API_ROUTES } from "@/constants/api";
 import type { BountyFilters, BountySortParams } from "@/types/filters";
 import type { PaginationParams } from "@/types";
-import {
-  createBountyAction,
-  updateBountyAction,
-  assignBountyAction,
-  submitProofAction,
-  reviewProofAction,
-} from "@/actions";
 import { showSuccess, showError } from "@/lib/toast";
 
 export const bountyKeys = {
@@ -100,8 +95,32 @@ export function useCreateBounty() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (formData: FormData) => {
-      const result = await createBountyAction(formData);
+    mutationFn: async (data: {
+      workspaceId: string;
+      title: string;
+      description: string;
+      deliverables: string;
+      amount: number;
+      status?: string;
+      estimatedHours?: number;
+      estimatedCompletionDate?: string;
+      githubIssueUrl?: string;
+      loomVideoUrl?: string;
+      tags?: string[];
+      codingLanguages?: string[];
+    }) => {
+      const response = await apiFetch(API_ROUTES.BOUNTIES.BASE, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Failed to create bounty");
+      }
+
+      const result = await response.json();
       return result.data;
     },
     onSuccess: (data) => {
@@ -123,8 +142,37 @@ export function useUpdateBounty() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ id, formData }: { id: string; formData: FormData }) => {
-      const result = await updateBountyAction(id, formData);
+    mutationFn: async ({
+      id,
+      data,
+    }: {
+      id: string;
+      data: {
+        title?: string;
+        description?: string;
+        deliverables?: string;
+        amount?: number;
+        status?: string;
+        tags?: string[];
+        codingLanguages?: string[];
+        estimatedHours?: number;
+        estimatedCompletionDate?: string;
+        githubIssueUrl?: string;
+        loomVideoUrl?: string;
+      };
+    }) => {
+      const response = await apiFetch(API_ROUTES.BOUNTIES.BY_ID(id), {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Failed to update bounty");
+      }
+
+      const result = await response.json();
       return result.data;
     },
     onSuccess: (data, variables) => {
@@ -132,8 +180,8 @@ export function useUpdateBounty() {
 
       queryClient.invalidateQueries({ queryKey: bountyKeys.lists() });
 
-      if (data?.workspaceId) {
-        queryClient.invalidateQueries({ queryKey: bountyKeys.workspace(data.workspaceId) });
+      if (data?.bounty?.workspaceId) {
+        queryClient.invalidateQueries({ queryKey: bountyKeys.workspace(data.bounty.workspaceId) });
       }
 
       showSuccess("Bounty updated successfully");
@@ -155,7 +203,18 @@ export function useAssignBounty() {
       bountyId: string;
       assigneePubkey: string;
     }) => {
-      const result = await assignBountyAction(bountyId, assigneePubkey);
+      const response = await apiFetch(API_ROUTES.BOUNTIES.ASSIGN(bountyId), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ assigneePubkey }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Failed to assign bounty");
+      }
+
+      const result = await response.json();
       return result.data;
     },
     onSuccess: (data, variables) => {
@@ -177,15 +236,33 @@ export function useSubmitProof() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ bountyId, formData }: { bountyId: string; formData: FormData }) => {
-      const result = await submitProofAction(bountyId, formData);
+    mutationFn: async ({
+      bountyId,
+      data,
+    }: {
+      bountyId: string;
+      data: {
+        proofUrl: string;
+        description: string;
+      };
+    }) => {
+      const response = await apiFetch(API_ROUTES.BOUNTIES.PROOFS(bountyId), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Failed to submit proof");
+      }
+
+      const result = await response.json();
       return result.data;
     },
-    onSuccess: (data) => {
-      if (data?.bountyId) {
-        queryClient.invalidateQueries({ queryKey: bountyKeys.detail(data.bountyId) });
-        queryClient.invalidateQueries({ queryKey: bountyKeys.proofs(data.bountyId) });
-      }
+    onSuccess: (data, variables) => {
+      queryClient.invalidateQueries({ queryKey: bountyKeys.detail(variables.bountyId) });
+      queryClient.invalidateQueries({ queryKey: bountyKeys.proofs(variables.bountyId) });
 
       showSuccess("Proof submitted successfully");
     },
@@ -199,18 +276,36 @@ export function useReviewProof() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ proofId, formData }: { proofId: string; formData: FormData }) => {
-      const result = await reviewProofAction(proofId, formData);
+    mutationFn: async ({
+      bountyId,
+      proofId,
+      data,
+    }: {
+      bountyId: string;
+      proofId: string;
+      data: {
+        approved: boolean;
+        feedback?: string;
+      };
+    }) => {
+      const response = await apiFetch(API_ROUTES.BOUNTIES.PROOF_BY_ID(bountyId, proofId), {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Failed to review proof");
+      }
+
+      const result = await response.json();
       return result.data;
     },
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: bountyKeys.proof(variables.proofId) });
-
-      if (data?.bountyId) {
-        queryClient.invalidateQueries({ queryKey: bountyKeys.detail(data.bountyId) });
-        queryClient.invalidateQueries({ queryKey: bountyKeys.proofs(data.bountyId) });
-      }
-
+      queryClient.invalidateQueries({ queryKey: bountyKeys.detail(variables.bountyId) });
+      queryClient.invalidateQueries({ queryKey: bountyKeys.proofs(variables.bountyId) });
       queryClient.invalidateQueries({ queryKey: bountyKeys.lists() });
 
       showSuccess("Proof reviewed successfully");

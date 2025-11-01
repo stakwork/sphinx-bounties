@@ -40,16 +40,25 @@ export function WorkspaceForm({ workspace, onSuccess }: WorkspaceFormProps) {
       return;
     }
 
-    const formData = new FormData();
-    formData.append("name", name.trim());
-    if (description.trim()) formData.append("description", description.trim());
-    if (mission.trim()) formData.append("mission", mission.trim());
-    if (websiteUrl.trim()) formData.append("websiteUrl", websiteUrl.trim());
-    if (githubUrl.trim()) formData.append("githubUrl", githubUrl.trim());
+    const data: {
+      name: string;
+      description?: string;
+      mission?: string;
+      avatarUrl?: string;
+      websiteUrl?: string;
+      githubUrl?: string;
+    } = {
+      name: name.trim(),
+    };
+
+    if (description.trim()) data.description = description.trim();
+    if (mission.trim()) data.mission = mission.trim();
+    if (websiteUrl.trim()) data.websiteUrl = websiteUrl.trim();
+    if (githubUrl.trim()) data.githubUrl = githubUrl.trim();
 
     if (isEditing && workspace) {
       await updateMutation.mutateAsync(
-        { id: workspace.id, formData },
+        { id: workspace.id, data },
         {
           onSuccess: () => {
             onSuccess?.();
@@ -58,11 +67,11 @@ export function WorkspaceForm({ workspace, onSuccess }: WorkspaceFormProps) {
         }
       );
     } else {
-      await createMutation.mutateAsync(formData, {
-        onSuccess: (data) => {
+      await createMutation.mutateAsync(data, {
+        onSuccess: (responseData) => {
           onSuccess?.();
-          if (data?.id) {
-            router.push(`/workspaces/${data.id}`);
+          if (responseData?.id) {
+            router.push(`/workspaces/${responseData.id}`);
           } else {
             router.push("/workspaces");
           }
