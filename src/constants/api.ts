@@ -84,7 +84,7 @@ export const ROUTES = {
   WORKSPACES: {
     LIST: "/workspaces",
     DETAILS: (id: string) => `/workspaces/${id}`,
-    CREATE: "/workspaces/new",
+
     EDIT: (id: string) => `/workspaces/${id}/edit`,
     SETTINGS: (id: string) => `/workspaces/${id}/settings`,
   },
