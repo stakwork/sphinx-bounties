@@ -11,6 +11,7 @@ This document contains concrete examples of established patterns in the Sphinx B
 - [Custom Hooks](#custom-hooks)
 - [Error Handling](#error-handling)
 - [Testing](#testing)
+- [FormData vs JSON - When to Use Each](#formdata-vs-json---when-to-use-each)
 
 ---
 
@@ -701,6 +702,220 @@ describe("Bounty Flow Integration", () => {
 
 ---
 
+## FormData vs JSON - When to Use Each
+
+### Decision Tree
+
+**Use FormData when:**
+
+1. Using Next.js Server Actions (`"use server"`)
+2. Uploading files (images, documents, etc.)
+3. Working with traditional HTML forms
+
+**Use JSON when:**
+
+1. Making direct API calls with `fetch()`
+2. Working with React Query mutations
+3. Need type safety with Zod schemas
+
+---
+
+### Pattern A: Server Actions + FormData ✅
+
+**When:** Form component → Server Action → Database
+
+**Example:** Create Bounty Form (uses actions)
+
+```typescript
+"use client";
+
+import { createBountyAction } from "@/actions";
+
+export function CreateBountyForm() {
+  const onSubmit = async (data: FormInput) => {
+    const formData = new FormData();
+    formData.append("title", data.title);
+    formData.append("amount", data.amount.toString());
+
+    const result = await createBountyAction(formData);
+  };
+}
+```
+
+**Server Action:**
+
+```typescript
+"use server";
+
+export async function createBountyAction(formData: FormData) {
+  const title = formData.get("title") as string;
+  const amount = Number(formData.get("amount"));
+
+  const bounty = await db.bounty.create({
+    data: { title, amount },
+  });
+
+  return { success: true, data: bounty };
+}
+```
+
+**Why this works:** Server Actions run server-side and properly parse FormData strings.
+
+---
+
+### Pattern B: Direct API Calls + JSON ✅
+
+**When:** Form component → API Route → Database
+
+**Example:** Bounty Form (fixed pattern)
+
+```typescript
+"use client";
+
+import { useMutation } from "@tanstack/react-query";
+
+export function BountyForm({ workspaceId }: Props) {
+  const mutation = useMutation({
+    mutationFn: async (data: { title: string; amount: number; estimatedHours?: number }) => {
+      const response = await fetch(`/api/workspaces/${workspaceId}/bounties`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+        credentials: "include",
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error?.message);
+      }
+
+      return await response.json();
+    },
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const data = {
+      title,
+      description,
+      deliverables: description,
+      amount: Number(amount),
+      ...(estimatedHours && { estimatedHours: Number(estimatedHours) }),
+    };
+
+    mutation.mutate(data);
+  };
+}
+```
+
+**API Route:**
+
+```typescript
+export async function POST(request: NextRequest) {
+  const validation = await validateBody(request, createBountySchema);
+
+  if (validation.error) {
+    return validation.error;
+  }
+
+  const data = validation.data!;
+}
+```
+
+**Why this works:**
+
+- `validateBody()` uses `request.json()` to parse body
+- Type coercion happens in the form (strings → numbers)
+- Zod schema validates typed values
+
+---
+
+### Pattern C: File Uploads + FormData ✅
+
+**When:** Uploading images/files to API
+
+**Example:** Image Upload
+
+```typescript
+const formData = new FormData();
+formData.append("file", file);
+
+const response = await fetch("/api/upload", {
+  method: "POST",
+  body: formData,
+});
+```
+
+**API Route:**
+
+```typescript
+export async function POST(request: NextRequest) {
+  const formData = await request.formData();
+  const file = formData.get("file") as File;
+
+  const buffer = Buffer.from(await file.arrayBuffer());
+  const url = await uploadImage(buffer, file.name, file.type);
+
+  return apiSuccess({ url });
+}
+```
+
+**Why this works:** File uploads REQUIRE multipart/form-data encoding.
+
+---
+
+### ❌ Anti-Pattern: Direct API Call + FormData
+
+**DON'T DO THIS:**
+
+```typescript
+const formData = new FormData();
+formData.append("amount", amount);
+
+const response = await fetch("/api/bounties", {
+  method: "POST",
+  body: formData,
+});
+```
+
+**Why it fails:**
+
+- API route calls `await request.json()`
+- FormData uses `multipart/form-data` encoding
+- Trying to parse multipart as JSON fails immediately
+- Error: "Invalid JSON in request body"
+
+---
+
+### Type Conversion Rules
+
+**FormData → All values are strings:**
+
+```typescript
+formData.append("amount", "30000");
+formData.get("amount");
+```
+
+**JSON → Preserves types:**
+
+```typescript
+JSON.stringify({ amount: 30000 });
+```
+
+**When using JSON, convert in the form:**
+
+```typescript
+const data = {
+  amount: Number(amountString),
+  estimatedHours: estimatedHoursString ? Number(estimatedHoursString) : undefined,
+};
+```
+
+---
+
 ## Summary
 
 **Key Takeaways:**
@@ -711,8 +926,10 @@ describe("Bounty Flow Integration", () => {
 4. Always use brand colors from Tailwind config
 5. Always use React Query for data fetching
 6. Always use Sonner for toast notifications
-7. Never add comments to code
-8. Never query database in middleware or client components
-9. Never create new patterns without approval
+7. Server Actions → FormData, Direct API calls → JSON
+8. Convert string inputs to numbers BEFORE sending JSON
+9. Never add comments to code
+10. Never query database in middleware or client components
+11. Never create new patterns without approval
 
 **When in doubt, search the codebase for similar examples!**
