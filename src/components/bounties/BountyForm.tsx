@@ -49,14 +49,28 @@ export function BountyForm({ workspaceId, bounty, onSuccess }: BountyFormProps) 
 
   // Create/Update mutation
   const mutation = useMutation({
-    mutationFn: async (data: FormData) => {
+    mutationFn: async (data: {
+      title: string;
+      description: string;
+      deliverables: string;
+      amount: number;
+      status: BountyStatus;
+      estimatedHours?: number;
+      githubIssueUrl?: string;
+      loomVideoUrl?: string;
+      codingLanguages?: string[];
+      tags?: string[];
+    }) => {
       const url = isEditing
         ? `/api/workspaces/${workspaceId}/bounties/${bounty.id}`
         : `/api/workspaces/${workspaceId}/bounties`;
 
       const response = await fetch(url, {
         method: isEditing ? "PATCH" : "POST",
-        body: data,
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
         credentials: "include",
       });
 
@@ -98,35 +112,20 @@ export function BountyForm({ workspaceId, bounty, onSuccess }: BountyFormProps) 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    const formData = new FormData();
-    formData.append("workspaceId", workspaceId);
-    formData.append("title", title);
-    formData.append("description", description);
-    formData.append("deliverables", description); // Using description as deliverables
-    formData.append("amount", amount);
-    formData.append("status", status);
+    const data = {
+      title,
+      description,
+      deliverables: description,
+      amount: Number(amount),
+      status,
+      ...(estimatedHours && { estimatedHours: Number(estimatedHours) }),
+      ...(githubIssueUrl && { githubIssueUrl }),
+      ...(loomVideoUrl && { loomVideoUrl }),
+      ...(selectedLanguages.length > 0 && { codingLanguages: selectedLanguages }),
+      ...(tags.length > 0 && { tags }),
+    };
 
-    if (estimatedHours) {
-      formData.append("estimatedHours", estimatedHours);
-    }
-
-    if (githubIssueUrl) {
-      formData.append("githubIssueUrl", githubIssueUrl);
-    }
-
-    if (loomVideoUrl) {
-      formData.append("loomVideoUrl", loomVideoUrl);
-    }
-
-    if (selectedLanguages.length > 0) {
-      formData.append("codingLanguages", JSON.stringify(selectedLanguages));
-    }
-
-    if (tags.length > 0) {
-      formData.append("tags", JSON.stringify(tags));
-    }
-
-    mutation.mutate(formData);
+    mutation.mutate(data);
   };
 
   const handleAddTag = () => {
