@@ -64,6 +64,25 @@ async function logout(): Promise<void> {
   }
 }
 
+async function refreshSession(): Promise<User> {
+  const response = await fetch("/api/auth/refresh", {
+    method: "POST",
+    credentials: "include",
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to refresh session");
+  }
+
+  const result: SessionResponse = await response.json();
+
+  if (!result.success || !result.data?.user) {
+    throw new Error("Failed to refresh session");
+  }
+
+  return result.data.user;
+}
+
 export function useAuth() {
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -97,6 +116,17 @@ export function useAuth() {
     },
   });
 
+  const refreshMutation = useMutation({
+    mutationFn: refreshSession,
+    onSuccess: (user) => {
+      queryClient.setQueryData(["auth", "session"], user);
+    },
+    onError: () => {
+      queryClient.setQueryData(["auth", "session"], null);
+      router.replace("/login");
+    },
+  });
+
   return {
     user,
     isAuthenticated: !!user,
@@ -104,6 +134,8 @@ export function useAuth() {
     error,
     logout: () => logoutMutation.mutate(),
     isLoggingOut: logoutMutation.isPending,
+    refresh: () => refreshMutation.mutate(),
+    isRefreshing: refreshMutation.isPending,
     refetch,
   };
 }

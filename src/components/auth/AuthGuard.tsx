@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
 import { Loader2 } from "lucide-react";
 
@@ -13,13 +13,23 @@ interface AuthGuardProps {
 
 export function AuthGuard({ children, redirectTo = "/login", fallback }: AuthGuardProps) {
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const { isAuthenticated, isLoading } = useAuth();
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
-      router.push(redirectTo);
+      const currentPath = pathname;
+      const currentSearch = searchParams.toString();
+      const fullPath = currentSearch ? `${currentPath}?${currentSearch}` : currentPath;
+
+      const loginUrl = new URL(redirectTo, window.location.origin);
+      if (currentPath !== redirectTo && currentPath !== "/login") {
+        loginUrl.searchParams.set("redirect", fullPath);
+      }
+      router.push(loginUrl.pathname + loginUrl.search);
     }
-  }, [isLoading, isAuthenticated, redirectTo, router]);
+  }, [isLoading, isAuthenticated, redirectTo, router, pathname, searchParams]);
 
   if (isLoading) {
     if (fallback) {

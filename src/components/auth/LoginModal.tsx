@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { QRCodeSVG } from "qrcode.react";
 import Image from "next/image";
@@ -44,6 +44,7 @@ const DEV_USERS = [
 
 export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const queryClient = useQueryClient();
   const [isDevLoggingIn, setIsDevLoggingIn] = useState(false);
   const {
@@ -78,15 +79,20 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
 
   useEffect(() => {
     if (verificationData) {
-      // Invalidate session cache to trigger re-fetch
       queryClient.invalidateQueries({ queryKey: ["auth", "session"] });
       toast.success("Successfully authenticated!");
       onSuccess?.();
       reset();
       onClose();
-      router.push("/bounties");
+
+      const redirectTo = searchParams.get("redirect");
+      if (redirectTo && redirectTo !== "/login") {
+        router.push(redirectTo);
+      } else {
+        router.push("/bounties");
+      }
     }
-  }, [verificationData, queryClient, onSuccess, onClose, router, reset]);
+  }, [verificationData, queryClient, onSuccess, onClose, router, reset, searchParams]);
 
   useEffect(() => {
     return () => {
@@ -134,7 +140,13 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
       toast.success(`Logged in as ${name}!`);
       onSuccess?.();
       handleClose();
-      router.push("/bounties");
+
+      const redirectTo = searchParams.get("redirect");
+      if (redirectTo && redirectTo !== "/login") {
+        router.push(redirectTo);
+      } else {
+        router.push("/bounties");
+      }
     } catch {
       toast.error("Dev login failed. Is the seed data loaded?");
     } finally {
