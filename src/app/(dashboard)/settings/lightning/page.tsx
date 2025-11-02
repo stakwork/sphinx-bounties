@@ -33,7 +33,7 @@ export default function LightningSettingsPage() {
   const pubkey = authUser?.pubkey || "";
 
   const { data: userData, isLoading } = useGetUser(pubkey, !!pubkey);
-  const user = userData?.user;
+  const user = userData;
 
   // Connection state
   const [isConnected, setIsConnected] = useState(false);

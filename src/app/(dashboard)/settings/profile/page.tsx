@@ -38,7 +38,7 @@ export default function ProfileSettingsPage() {
   const updateProfile = useUpdateProfile();
   const updateSocialLinks = useUpdateSocialLinks();
 
-  const user = userData?.user;
+  const user = userData;
 
   // Profile form state
   const [username, setUsername] = useState("");
