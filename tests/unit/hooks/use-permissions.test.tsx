@@ -51,6 +51,8 @@ describe("usePermissions", () => {
       error: null,
       logout: vi.fn(),
       isLoggingOut: false,
+      refresh: vi.fn(),
+      isRefreshing: false,
       refetch: vi.fn(),
     });
 
@@ -70,6 +72,8 @@ describe("usePermissions", () => {
       error: null,
       logout: vi.fn(),
       isLoggingOut: false,
+      refresh: vi.fn(),
+      isRefreshing: false,
       refetch: vi.fn(),
     });
 
@@ -104,6 +108,8 @@ describe("usePermissions", () => {
       error: null,
       logout: vi.fn(),
       isLoggingOut: false,
+      refresh: vi.fn(),
+      isRefreshing: false,
       refetch: vi.fn(),
     });
 
@@ -138,6 +144,8 @@ describe("usePermissions", () => {
       error: null,
       logout: vi.fn(),
       isLoggingOut: false,
+      refresh: vi.fn(),
+      isRefreshing: false,
       refetch: vi.fn(),
     });
 
@@ -172,6 +180,8 @@ describe("usePermissions", () => {
       error: null,
       logout: vi.fn(),
       isLoggingOut: false,
+      refresh: vi.fn(),
+      isRefreshing: false,
       refetch: vi.fn(),
     });
 
@@ -205,6 +215,8 @@ describe("usePermissions", () => {
       error: null,
       logout: vi.fn(),
       isLoggingOut: false,
+      refresh: vi.fn(),
+      isRefreshing: false,
       refetch: vi.fn(),
     });
 
@@ -238,6 +250,8 @@ describe("usePermissions", () => {
       error: null,
       logout: vi.fn(),
       isLoggingOut: false,
+      refresh: vi.fn(),
+      isRefreshing: false,
       refetch: vi.fn(),
     });
 
@@ -267,6 +281,8 @@ describe("usePermissions", () => {
       error: null,
       logout: vi.fn(),
       isLoggingOut: false,
+      refresh: vi.fn(),
+      isRefreshing: false,
       refetch: vi.fn(),
     });
 

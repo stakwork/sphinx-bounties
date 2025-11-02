@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 import type { NextRequest } from "next/server";
 import { verifyJWT, signJWT } from "./jwt";
-import { AUTH_COOKIE_NAME, COOKIE_MAX_AGE } from "./constants";
+import { AUTH_COOKIE_NAME, COOKIE_MAX_AGE, SESSION_REFRESH_THRESHOLD } from "./constants";
 import type { Session } from "@/types/auth";
 
 export async function setSessionCookie(pubkey: string, request?: NextRequest): Promise<string> {
@@ -39,10 +39,31 @@ export async function getSession(request?: NextRequest): Promise<Session | null>
   const payload = await verifyJWT(token);
   if (!payload) return null;
 
-  return {
+  const session: Session = {
     pubkey: payload.pubkey,
     expiresAt: new Date(payload.exp * 1000),
   };
+
+  if (shouldRefreshToken(session.expiresAt)) {
+    try {
+      await refreshSessionCookie(session.pubkey, request);
+    } catch (error) {
+      void error;
+    }
+  }
+
+  return session;
+}
+
+function shouldRefreshToken(expiresAt: Date): boolean {
+  const now = Date.now();
+  const expiryTime = expiresAt.getTime();
+  const timeUntilExpiry = (expiryTime - now) / 1000;
+  return timeUntilExpiry < SESSION_REFRESH_THRESHOLD && timeUntilExpiry > 0;
+}
+
+export async function refreshSessionCookie(pubkey: string, request?: NextRequest): Promise<string> {
+  return setSessionCookie(pubkey, request);
 }
 
 export const getSessionFromCookies = () => getSession();

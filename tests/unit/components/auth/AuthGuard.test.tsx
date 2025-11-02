@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation";
 
 vi.mock("next/navigation", () => ({
   useRouter: vi.fn(),
+  usePathname: vi.fn(),
+  useSearchParams: vi.fn(),
 }));
 
 vi.mock("@/hooks/use-auth", () => ({
@@ -13,6 +15,7 @@ vi.mock("@/hooks/use-auth", () => ({
 }));
 
 import { useAuth } from "@/hooks/use-auth";
+import { usePathname, useSearchParams } from "next/navigation";
 
 const mockRouter = {
   push: vi.fn(),
@@ -37,6 +40,10 @@ Wrapper.displayName = "QueryClientWrapper";
 describe("AuthGuard", () => {
   beforeEach(() => {
     vi.mocked(useRouter).mockReturnValue(mockRouter as ReturnType<typeof useRouter>);
+    vi.mocked(usePathname).mockReturnValue("/test-path");
+    vi.mocked(useSearchParams).mockReturnValue(
+      new URLSearchParams() as ReturnType<typeof useSearchParams>
+    );
   });
 
   afterEach(() => {
@@ -51,6 +58,8 @@ describe("AuthGuard", () => {
       error: null,
       logout: vi.fn(),
       isLoggingOut: false,
+      refresh: vi.fn(),
+      isRefreshing: false,
       refetch: vi.fn(),
     });
 
@@ -87,6 +96,8 @@ describe("AuthGuard", () => {
       error: null,
       logout: vi.fn(),
       isLoggingOut: false,
+      refresh: vi.fn(),
+      isRefreshing: false,
       refetch: vi.fn(),
     });
 
@@ -102,7 +113,7 @@ describe("AuthGuard", () => {
     expect(screen.queryByText("Authenticating...")).not.toBeInTheDocument();
   });
 
-  it("redirects to /login when not authenticated", async () => {
+  it("redirects to login when not authenticated", async () => {
     vi.mocked(useAuth).mockReturnValue({
       user: null,
       isAuthenticated: false,
@@ -110,6 +121,8 @@ describe("AuthGuard", () => {
       error: null,
       logout: vi.fn(),
       isLoggingOut: false,
+      refresh: vi.fn(),
+      isRefreshing: false,
       refetch: vi.fn(),
     });
 
@@ -122,7 +135,7 @@ describe("AuthGuard", () => {
     );
 
     await waitFor(() => {
-      expect(mockRouter.push).toHaveBeenCalledWith("/login");
+      expect(mockRouter.push).toHaveBeenCalledWith("/login?redirect=%2Ftest-path");
     });
 
     expect(screen.queryByText("Protected Content")).not.toBeInTheDocument();
@@ -136,6 +149,8 @@ describe("AuthGuard", () => {
       error: null,
       logout: vi.fn(),
       isLoggingOut: false,
+      refresh: vi.fn(),
+      isRefreshing: false,
       refetch: vi.fn(),
     });
 
@@ -148,11 +163,11 @@ describe("AuthGuard", () => {
     );
 
     await waitFor(() => {
-      expect(mockRouter.push).toHaveBeenCalledWith("/custom-login");
+      expect(mockRouter.push).toHaveBeenCalledWith("/custom-login?redirect=%2Ftest-path");
     });
   });
 
-  it("shows custom fallback while loading", () => {
+  it("shows custom fallback when provided during loading", () => {
     vi.mocked(useAuth).mockReturnValue({
       user: null,
       isAuthenticated: false,
@@ -160,6 +175,8 @@ describe("AuthGuard", () => {
       error: null,
       logout: vi.fn(),
       isLoggingOut: false,
+      refresh: vi.fn(),
+      isRefreshing: false,
       refetch: vi.fn(),
     });
 
