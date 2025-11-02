@@ -47,7 +47,7 @@ export default function ProfilePage({
     );
   }
 
-  if (!userData?.user) {
+  if (!userData) {
     return (
       <div className="text-center py-12">
         <AlertCircle className="h-12 w-12 text-neutral-400 mx-auto mb-4" />
@@ -62,7 +62,7 @@ export default function ProfilePage({
     );
   }
 
-  const user = userData.user;
+  const user = userData;
   const stats = statsData?.stats || user.stats;
 
   return (
